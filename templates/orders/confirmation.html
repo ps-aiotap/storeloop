@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}Order Confirmation - StoreLoop{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="text-center mb-6">
+            <svg class="w-16 h-16 text-green-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <h1 class="text-3xl font-bold text-gray-800 mt-4">Order Confirmed!</h1>
+            <p class="text-gray-600 mt-2">Thank you for your purchase.</p>
+        </div>
+        
+        <div class="border-t border-gray-200 pt-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Order Details</h2>
+            <p class="text-gray-600 mb-2"><span class="font-semibold">Order ID:</span> #{{ order.id }}</p>
+            <p class="text-gray-600 mb-2"><span class="font-semibold">Date:</span> {{ order.created_at|date:"F j, Y" }}</p>
+            <p class="text-gray-600 mb-2"><span class="font-semibold">Total Amount:</span> ₹{{ order.total_amount }}</p>
+            <p class="text-gray-600 mb-2"><span class="font-semibold">Status:</span> 
+                <span class="inline-block px-2 py-1 text-xs font-semibold rounded-full 
+                {% if order.status == 'completed' %}bg-green-100 text-green-800
+                {% elif order.status == 'processing' %}bg-blue-100 text-blue-800
+                {% elif order.status == 'cancelled' %}bg-red-100 text-red-800
+                {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                    {{ order.status|title }}
+                </span>
+            </p>
+        </div>
+        
+        <div class="border-t border-gray-200 pt-6 mt-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Items</h2>
+            <div class="space-y-4">
+                {% for item in order.items.all %}
+                <div class="flex items-center">
+                    {% if item.product.image %}
+                    <img src="{{ item.product.image.url }}" alt="{{ item.product.title }}" class="w-16 h-16 object-cover rounded mr-4">
+                    {% else %}
+                    <div class="w-16 h-16 bg-gray-200 rounded flex items-center justify-center mr-4">
+                        <span class="text-gray-500 text-xs">No image</span>
+                    </div>
+                    {% endif %}
+                    <div class="flex-1">
+                        <h3 class="font-semibold text-gray-800">{{ item.product.title }}</h3>
+                        <p class="text-gray-600">₹{{ item.price }} x {{ item.quantity }}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-semibold text-gray-800">₹{{ item.price|floatformat:2 }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="border-t border-gray-200 pt-6 mt-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Shipping Information</h2>
+            <p class="text-gray-600 mb-2"><span class="font-semibold">Name:</span> {{ order.customer_name }}</p>
+            <p class="text-gray-600 mb-2"><span class="font-semibold">Email:</span> {{ order.customer_email }}</p>
+            {% if order.customer_phone %}
+            <p class="text-gray-600 mb-2"><span class="font-semibold">Phone:</span> {{ order.customer_phone }}</p>
+            {% endif %}
+            <p class="text-gray-600 mb-2"><span class="font-semibold">Address:</span> {{ order.shipping_address }}</p>
+        </div>
+        
+        <div class="mt-8 text-center">
+            <a href="{% url 'product_list' %}" class="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700">Continue Shopping</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

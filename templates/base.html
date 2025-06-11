@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}StoreLoop{% endblock %}</title>
+    <link rel="stylesheet" href="/static/output.css">
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <header class="bg-white shadow">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <h1 class="text-3xl font-bold text-gray-900">
+                <a href="/">StoreLoop</a>
+            </h1>
+            <nav class="mt-4">
+                <ul class="flex space-x-4">
+                    <li><a href="/" class="text-blue-600 hover:text-blue-800">Home</a></li>
+                    <li><a href="/products/" class="text-blue-600 hover:text-blue-800">Products</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <footer class="bg-white shadow mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <p class="text-center text-gray-500">&copy; {% now "Y" %} StoreLoop. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

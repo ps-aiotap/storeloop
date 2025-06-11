@@ -1,0 +1,12 @@
+{
+  "name": "storeloop",
+  "version": "1.0.0",
+  "description": "StoreLoop e-commerce application",
+  "scripts": {
+    "build": "tailwindcss -i ./themestaticsrc/input.css -o ./staticcss/output.css",
+    "watch": "tailwindcss -i ./themestaticsrc/input.css -o ./staticcss/output.css --watch"
+  },
+  "dependencies": {
+    "tailwindcss": "^3.0.24"
+  }
+}

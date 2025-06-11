@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block title %}Checkout - StoreLoop{% endblock %}
+
+{% block extra_head %}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">Checkout</h1>
+    
+    <div class="bg-white rounded-lg shadow p-6 mb-6">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">Order Summary</h2>
+        <div class="flex items-center mb-4">
+            {% if product.image %}
+            <img src="{{ product.image.url }}" alt="{{ product.title }}" class="w-16 h-16 object-cover rounded mr-4">
+            {% else %}
+            <div class="w-16 h-16 bg-gray-200 rounded flex items-center justify-center mr-4">
+                <span class="text-gray-500 text-xs">No image</span>
+            </div>
+            {% endif %}
+            <div>
+                <h3 class="font-semibold text-gray-800">{{ product.title }}</h3>
+                <p class="text-gray-600">₹{{ product.price }}</p>
+            </div>
+        </div>
+        <div class="border-t border-gray-200 pt-4">
+            <div class="flex justify-between">
+                <span class="font-semibold">Total:</span>
+                <span class="font-bold text-indigo-600">₹{{ product.price }}</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">Customer Information</h2>
+        <form id="checkout-form" class="space-y-4">
+            <div>
+                <label for="name" class="block text-gray-700 mb-1">Name</label>
+                <input type="text" id="name" name="name" required class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div>
+                <label for="email" class="block text-gray-700 mb-1">Email</label>
+                <input type="email" id="email" name="email" required class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div>
+                <label for="phone" class="block text-gray-700 mb-1">Phone</label>
+                <input type="tel" id="phone" name="phone" class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div>
+                <label for="address" class="block text-gray-700 mb-1">Shipping Address</label>
+                <textarea id="address" name="address" required class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500" rows="3"></textarea>
+            </div>
+            <button type="button" id="pay-button" class="w-full bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700">Pay Now</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.getElementById('pay-button').addEventListener('click', function() {
+        const form = document.getElementById('checkout-form');
+        const name = document.getElementById('name').value;
+        const email = document.getElementById('email').value;
+        const phone = document.getElementById('phone').value;
+        const address = document.getElementById('address').value;
+        
+        if (!name || !email || !address) {
+            alert('Please fill in all required fields');
+            return;
+        }
+        
+        const options = {
+            key: "{{ razorpay_key_id }}",
+            amount: {{ product.price }} * 100,
+            currency: "INR",
+            name: "StoreLoop",
+            description: "Purchase of {{ product.title }}",
+            order_id: "{{ razorpay_order_id }}",
+            handler: function(response) {
+                // Send payment details to server
+                fetch("{% url 'payment_callback' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        razorpay_payment_id: response.razorpay_payment_id,
+                        razorpay_order_id: response.razorpay_order_id,
+                        razorpay_signature: response.razorpay_signature,
+                        customer_name: name,
+                        customer_email: email,
+                        customer_phone: phone,
+                        shipping_address: address
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        window.location.href = "/orders/confirmation/" + data.order_id + "/";
+                    } else {
+                        alert('Payment failed: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred during payment processing');
+                });
+            },
+            prefill: {
+                name: name,
+                email: email,
+                contact: phone
+            },
+            notes: {
+                product_id: "{{ product.id }}"
+            },
+            theme: {
+                color: "#4f46e5"
+            }
+        };
+        
+        const rzp = new Razorpay(options);
+        rzp.open();
+    });
+</script>
+{% endblock %}

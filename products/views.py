@@ -1,11 +1,13 @@
 from django.shortcuts import render, get_object_or_404
 from django.views.generic import ListView, DetailView
 from .models import Product
+from stores.models import Store
 
 class ProductListView(ListView):
     model = Product
     template_name = 'products/product_list.html'
     context_object_name = 'products'
+    paginate_by = 12
     
     def get_template_names(self):
         # Check if there's a current store with a theme
@@ -20,7 +22,8 @@ class ProductListView(ListView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['page_title'] = 'Our Products'
+        context['page_title'] = 'All Products'
+        context['stores'] = Store.objects.all()
         return context
 
 class ProductDetailView(DetailView):
@@ -30,6 +33,7 @@ class ProductDetailView(DetailView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Add related products
-        context['related_products'] = Product.objects.exclude(id=self.object.id)[:3]
+        # Add related products from the same store
+        store = self.object.store
+        context['related_products'] = Product.objects.filter(store=store).exclude(id=self.object.id)[:3]
         return context

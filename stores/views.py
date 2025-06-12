@@ -1,8 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.views.generic import ListView
 from .models import Store
 from .forms import StoreThemeForm
+from products.models import Product
 
 @login_required
 def store_theme_settings(request, store_id):
@@ -21,3 +23,19 @@ def store_theme_settings(request, store_id):
         'form': form,
         'store': store
     })
+
+class StoreProductListView(ListView):
+    model = Product
+    template_name = 'products/product_list.html'
+    context_object_name = 'products'
+    paginate_by = 12
+    
+    def get_queryset(self):
+        self.store = get_object_or_404(Store, slug=self.kwargs['slug'])
+        return Product.objects.filter(store=self.store)
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['store'] = self.store
+        context['page_title'] = f"Products from {self.store.name}"
+        return context

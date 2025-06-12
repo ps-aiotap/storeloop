@@ -3,58 +3,92 @@
 {% block title %}Products - StoreLoop{% endblock %}
 
 {% block content %}
-<div class="mb-8">
-    <h1 class="text-3xl font-bold text-gray-800">Products</h1>
-</div>
-
-<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-    {% for product in products %}
-    <div class="bg-white rounded-lg shadow overflow-hidden hover:shadow-lg">
-        {% if product.image %}
-        <div class="overflow-hidden rounded-t-lg">
-            <img src="{{ product.image.url }}" alt="{{ product.title }}" 
-                 class="w-full h-48 object-cover transition-all duration-300 ease-in-out hover:scale-110 hover:brightness-110 hover:shadow-lg">
+<div class="container mx-auto px-4 py-8">
+    <div class="flex flex-col md:flex-row justify-between items-start mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800">{{ page_title|default:"Products" }}</h1>
+            {% if store %}
+            <p class="text-gray-600 mt-2">Store: {{ store.name }}</p>
+            {% endif %}
         </div>
-        {% else %}
-        <div class="w-full h-48 bg-gray-200 flex items-center justify-center">
-            <span class="text-gray-500">No image</span>
+        
+        {% if stores %}
+        <div class="mt-4 md:mt-0">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Filter by Store:</label>
+            <select id="store-filter" class="rounded border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                <option value="">All Stores</option>
+                {% for store in stores %}
+                <option value="{% url 'store_products' store.slug %}">{{ store.name }}</option>
+                {% endfor %}
+            </select>
         </div>
         {% endif %}
-        <div class="p-4">
-            <h2 class="text-xl font-semibold text-gray-800 mb-2">{{ product.title }}</h2>
-            <p class="text-gray-600 mb-4 line-clamp-2">{{ product.description|truncatechars:100 }}</p>
-            <div class="flex justify-between items-center">
-                <span class="text-lg font-bold text-indigo-600">₹{{ product.price }}</span>
-                <a href="{% url 'product_detail' product.id %}" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">View</a>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {% for product in products %}
+        <div class="bg-white rounded-lg shadow overflow-hidden transform transition duration-300 hover:shadow-lg">
+            {% if product.image %}
+            <div class="overflow-hidden rounded-t-lg">
+                <img src="{{ product.image.url }}" alt="{{ product.title }}" 
+                     class="w-full h-48 object-cover transition-all duration-300 ease-in-out hover:scale-110 hover:brightness-110 hover:shadow-lg">
+            </div>
+            {% else %}
+            <div class="w-full h-48 bg-gray-200 flex items-center justify-center">
+                <span class="text-gray-500">No image</span>
+            </div>
+            {% endif %}
+            <div class="p-4">
+                <h2 class="text-xl font-semibold text-gray-800 mb-2">{{ product.title }}</h2>
+                <p class="text-gray-600 mb-4 line-clamp-2">{{ product.description|truncatechars:100 }}</p>
+                <div class="flex justify-between items-center">
+                    <span class="text-lg font-bold text-indigo-600">₹{{ product.price }}</span>
+                    <a href="{% url 'product_detail' product.id %}" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">View</a>
+                </div>
+                <div class="mt-2 text-sm text-gray-500">
+                    <a href="{% url 'store_products' product.store.slug %}" class="hover:underline">{{ product.store.name }}</a>
+                </div>
             </div>
         </div>
+        {% empty %}
+        <div class="col-span-full text-center py-12">
+            <p class="text-gray-500 text-lg">No products available.</p>
+        </div>
+        {% endfor %}
     </div>
-    {% empty %}
-    <div class="col-span-full text-center py-12">
-        <p class="text-gray-500 text-lg">No products available.</p>
+
+    {% if is_paginated %}
+    <div class="mt-8 flex justify-center">
+        <nav class="inline-flex rounded-md shadow">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-2 rounded-l-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50">Previous</a>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <span class="px-3 py-2 border border-gray-300 bg-indigo-600 text-white">{{ num }}</span>
+            {% else %}
+            <a href="?page={{ num }}" class="px-3 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50">{{ num }}</a>
+            {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-2 rounded-r-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50">Next</a>
+            {% endif %}
+        </nav>
     </div>
-    {% endfor %}
+    {% endif %}
 </div>
 
-{% if is_paginated %}
-<div class="mt-8 flex justify-center">
-    <nav class="inline-flex rounded-md shadow">
-        {% if page_obj.has_previous %}
-        <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-2 rounded-l-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50">Previous</a>
-        {% endif %}
-        
-        {% for num in page_obj.paginator.page_range %}
-        {% if page_obj.number == num %}
-        <span class="px-3 py-2 border border-gray-300 bg-indigo-600 text-white">{{ num }}</span>
-        {% else %}
-        <a href="?page={{ num }}" class="px-3 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50">{{ num }}</a>
-        {% endif %}
-        {% endfor %}
-        
-        {% if page_obj.has_next %}
-        <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-2 rounded-r-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50">Next</a>
-        {% endif %}
-    </nav>
-</div>
-{% endif %}
+{% block extra_js %}
+<script>
+    document.getElementById('store-filter').addEventListener('change', function() {
+        if (this.value) {
+            window.location.href = this.value;
+        } else {
+            window.location.href = '{% url "product_list" %}';
+        }
+    });
+</script>
+{% endblock %}
 {% endblock %}

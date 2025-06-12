@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils.text import slugify
 
 class Store(models.Model):
     THEME_CHOICES = [
@@ -15,6 +16,7 @@ class Store(models.Model):
     ]
     
     name = models.CharField(max_length=100)
+    slug = models.SlugField(max_length=100, unique=True)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='stores')
     description = models.TextField(blank=True, null=True)
     
@@ -29,3 +31,8 @@ class Store(models.Model):
     
     def __str__(self):
         return self.name
+        
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)

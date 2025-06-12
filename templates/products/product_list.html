@@ -9,11 +9,11 @@
 
 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
     {% for product in products %}
-    <div class="bg-white rounded-lg shadow overflow-hidden transform transition duration-300 hover:shadow-lg">
+    <div class="bg-white rounded-lg shadow overflow-hidden hover:shadow-lg">
         {% if product.image %}
         <div class="overflow-hidden rounded-t-lg">
             <img src="{{ product.image.url }}" alt="{{ product.title }}" 
-                 class="w-full h-48 object-cover transition duration-300 ease-in-out transform hover:scale-110 hover:brightness-105">
+                 class="w-full h-48 object-cover transition-all duration-300 ease-in-out hover:scale-110 hover:brightness-110 hover:shadow-lg">
         </div>
         {% else %}
         <div class="w-full h-48 bg-gray-200 flex items-center justify-center">

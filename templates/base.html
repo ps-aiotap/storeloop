@@ -59,9 +59,13 @@
     {% endif %}
 </head>
 <body class="{% if store_theme.theme_name == 'dark' %}bg-gray-900 text-gray-100{% elif store_theme.theme_name == 'warm' %}bg-amber-50{% else %}bg-gray-100{% endif %} min-h-screen flex flex-col">
-    <header class="{% if store_theme.theme_name == 'dark' %}bg-gray-800 text-white{% elif store_theme.theme_name == 'warm' %}bg-amber-100{% else %}bg-white{% endif %} shadow">
+    
+
+
+    <div>
+        <header class="{% if store_theme.theme_name == 'dark' %}bg-gray-800 text-white{% elif store_theme.theme_name == 'warm' %}bg-amber-100{% else %}bg-white{% endif %} shadow">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div class="flex justify-between items-center">
+            <div class="flex items-center justify-between">
                 <h1 class="text-3xl font-bold {% if store_theme.theme_name == 'dark' %}text-white{% elif store_theme.theme_name == 'warm' %}text-amber-900{% else %}text-gray-900{% endif %}">
                     {% if store_theme.logo_url %}
                         <a href="/" class="flex items-center">
@@ -72,10 +76,10 @@
                         <a href="/">StoreLoop</a>
                     {% endif %}
                 </h1>
-                <nav>
-                    <ul class="flex space-x-4">
-                        <li><a href="/" class="text-primary hover:underline">Home</a></li>
-                        <li><a href="/products/" class="text-primary hover:underline">Products</a></li>
+                <nav class="ml-auto">
+                    <ul class="flex space-x-8">
+                        <li><a href="/" class="text-primary hover:underline font-medium text-lg">Home</a></li>
+                        <li><a href="/products/" class="text-primary hover:underline font-medium text-lg">Products</a></li>
                     </ul>
                 </nav>
             </div>
@@ -87,11 +91,15 @@
     </main>
     
     <footer class="{% if store_theme.theme_name == 'dark' %}bg-gray-800 text-gray-300{% elif store_theme.theme_name == 'warm' %}bg-amber-100 text-amber-900{% else %}bg-white text-gray-500{% endif %} shadow mt-auto">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <p class="text-center">&copy; {% now "Y" %} StoreLoop. All rights reserved.</p>
+        <div class="container mx-auto px-4 py-6 text-center">
+            <p>&copy; {% now "Y" %} StoreLoop. All rights reserved.</p>
         </div>
     </footer>
+</div>
     
     {% block extra_js %}{% endblock %}
 </body>
+
+
+
 </html>

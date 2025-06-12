@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Theme Settings - {{ store.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto py-8">
+    <h1 class="text-2xl font-bold mb-6">Theme Settings for {{ store.name }}</h1>
+    
+    <form method="post" enctype="multipart/form-data" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+        {% csrf_token %}
+        
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="{{ form.theme_name.id_for_label }}">
+                Theme
+            </label>
+            {{ form.theme_name }}
+            {% if form.theme_name.errors %}
+                <p class="text-red-500 text-xs italic">{{ form.theme_name.errors }}</p>
+            {% endif %}
+        </div>
+        
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="{{ form.primary_color.id_for_label }}">
+                Primary Color
+            </label>
+            {{ form.primary_color }}
+            {% if form.primary_color.errors %}
+                <p class="text-red-500 text-xs italic">{{ form.primary_color.errors }}</p>
+            {% endif %}
+        </div>
+        
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="{{ form.font_choice.id_for_label }}">
+                Font Style
+            </label>
+            {{ form.font_choice }}
+            {% if form.font_choice.errors %}
+                <p class="text-red-500 text-xs italic">{{ form.font_choice.errors }}</p>
+            {% endif %}
+        </div>
+        
+        <div class="mb-6">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="{{ form.logo.id_for_label }}">
+                Store Logo
+            </label>
+            {% if store.logo %}
+                <div class="mb-2">
+                    <img src="{{ store.logo.url }}" alt="{{ store.name }} logo" class="h-16">
+                </div>
+            {% endif %}
+            {{ form.logo }}
+            {% if form.logo.errors %}
+                <p class="text-red-500 text-xs italic">{{ form.logo.errors }}</p>
+            {% endif %}
+        </div>
+        
+        <div class="flex items-center justify-between">
+            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+                Save Theme Settings
+            </button>
+        </div>
+    </form>
+    
+    <div class="mt-8">
+        <h2 class="text-xl font-bold mb-4">Theme Preview</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Minimal Theme Preview -->
+            <div class="border rounded p-4 {% if store.theme_name == 'minimal' %}ring-2 ring-blue-500{% endif %}">
+                <h3 class="font-bold mb-2">Minimal Theme</h3>
+                <div class="bg-white p-4 shadow rounded">
+                    <div class="h-4 w-24 bg-gray-200 mb-2"></div>
+                    <div class="h-3 w-full bg-gray-100 mb-1"></div>
+                    <div class="h-3 w-full bg-gray-100 mb-1"></div>
+                    <div class="h-3 w-3/4 bg-gray-100"></div>
+                </div>
+            </div>
+            
+            <!-- Warm Theme Preview -->
+            <div class="border rounded p-4 {% if store.theme_name == 'warm' %}ring-2 ring-blue-500{% endif %}">
+                <h3 class="font-bold mb-2">Warm Theme</h3>
+                <div class="bg-amber-50 p-4 shadow-md rounded-lg">
+                    <div class="h-4 w-24 bg-amber-200 mb-2"></div>
+                    <div class="h-3 w-full bg-amber-100 mb-1"></div>
+                    <div class="h-3 w-full bg-amber-100 mb-1"></div>
+                    <div class="h-3 w-3/4 bg-amber-100"></div>
+                </div>
+            </div>
+            
+            <!-- Dark Theme Preview -->
+            <div class="border rounded p-4 {% if store.theme_name == 'dark' %}ring-2 ring-blue-500{% endif %}">
+                <h3 class="font-bold mb-2">Dark Theme</h3>
+                <div class="bg-gray-800 p-4 shadow-lg rounded-lg">
+                    <div class="h-4 w-24 bg-gray-600 mb-2"></div>
+                    <div class="h-3 w-full bg-gray-700 mb-1"></div>
+                    <div class="h-3 w-full bg-gray-700 mb-1"></div>
+                    <div class="h-3 w-3/4 bg-gray-700"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

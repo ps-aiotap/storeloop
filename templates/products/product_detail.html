@@ -11,7 +11,10 @@
     <div class="md:flex">
         <div class="md:w-1/2">
             {% if product.image %}
-            <img src="{{ product.image.url }}" alt="{{ product.title }}" class="w-full h-96 object-cover">
+            <div class="overflow-hidden">
+                <img src="{{ product.image.url }}" alt="{{ product.title }}" 
+                     class="w-full h-96 object-cover transition duration-500 ease-in-out transform hover:scale-105 hover:brightness-105">
+            </div>
             {% else %}
             <div class="w-full h-96 bg-gray-200 flex items-center justify-center">
                 <span class="text-gray-500">No image</span>

@@ -6,29 +6,89 @@
     <title>{% block title %}StoreLoop{% endblock %}</title>
     <link rel="stylesheet" href="/static/output.css">
     {% block extra_css %}{% endblock %}
+    
+    {% if store_theme %}
+    <style>
+        /* Dynamic theme styles based on store settings */
+        :root {
+            --primary-color: {{ store_theme.primary_color|default:'#3b82f6' }};
+        }
+        
+        /* Font family based on store settings */
+        body {
+            font-family: 
+                {% if store_theme.font_choice == 'serif' %}
+                    ui-serif, Georgia, Cambria, serif
+                {% elif store_theme.font_choice == 'mono' %}
+                    ui-monospace, SFMono-Regular, Menlo, monospace
+                {% else %}
+                    ui-sans-serif, system-ui, -apple-system, sans-serif
+                {% endif %};
+        }
+        
+        /* Theme-specific background colors */
+        {% if store_theme.theme_name == 'warm' %}
+        body {
+            background-color: #fffbf0;
+        }
+        {% elif store_theme.theme_name == 'dark' %}
+        body {
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+        }
+        header, footer {
+            background-color: #111111;
+        }
+        {% endif %}
+        
+        /* Common theme elements */
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        .btn-primary:hover {
+            filter: brightness(90%);
+        }
+        .text-primary {
+            color: var(--primary-color);
+        }
+        .border-primary {
+            border-color: var(--primary-color);
+        }
+    </style>
+    {% endif %}
 </head>
-<body class="bg-gray-100 min-h-screen">
-    <header class="bg-white shadow">
+<body class="{% if store_theme.theme_name == 'dark' %}bg-gray-900 text-gray-100{% elif store_theme.theme_name == 'warm' %}bg-amber-50{% else %}bg-gray-100{% endif %} min-h-screen flex flex-col">
+    <header class="{% if store_theme.theme_name == 'dark' %}bg-gray-800 text-white{% elif store_theme.theme_name == 'warm' %}bg-amber-100{% else %}bg-white{% endif %} shadow">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <h1 class="text-3xl font-bold text-gray-900">
-                <a href="/">StoreLoop</a>
-            </h1>
-            <nav class="mt-4">
-                <ul class="flex space-x-4">
-                    <li><a href="/" class="text-blue-600 hover:text-blue-800">Home</a></li>
-                    <li><a href="/products/" class="text-blue-600 hover:text-blue-800">Products</a></li>
-                </ul>
-            </nav>
+            <div class="flex justify-between items-center">
+                <h1 class="text-3xl font-bold {% if store_theme.theme_name == 'dark' %}text-white{% elif store_theme.theme_name == 'warm' %}text-amber-900{% else %}text-gray-900{% endif %}">
+                    {% if store_theme.logo_url %}
+                        <a href="/" class="flex items-center">
+                            <img src="{{ store_theme.logo_url }}" alt="Store Logo" class="h-10 mr-2">
+                            <span>StoreLoop</span>
+                        </a>
+                    {% else %}
+                        <a href="/">StoreLoop</a>
+                    {% endif %}
+                </h1>
+                <nav>
+                    <ul class="flex space-x-4">
+                        <li><a href="/" class="text-primary hover:underline">Home</a></li>
+                        <li><a href="/products/" class="text-primary hover:underline">Products</a></li>
+                    </ul>
+                </nav>
+            </div>
         </div>
     </header>
     
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <main class="flex-grow">
         {% block content %}{% endblock %}
     </main>
     
-    <footer class="bg-white shadow mt-auto">
+    <footer class="{% if store_theme.theme_name == 'dark' %}bg-gray-800 text-gray-300{% elif store_theme.theme_name == 'warm' %}bg-amber-100 text-amber-900{% else %}bg-white text-gray-500{% endif %} shadow mt-auto">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <p class="text-center text-gray-500">&copy; {% now "Y" %} StoreLoop. All rights reserved.</p>
+            <p class="text-center">&copy; {% now "Y" %} StoreLoop. All rights reserved.</p>
         </div>
     </footer>
     

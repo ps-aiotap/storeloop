@@ -1,3 +1,32 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Custom components for StoreLoop */
+@layer components {
+  /* Product card hover effects */
+  .product-image-container {
+    @apply overflow-hidden rounded-t-lg;
+  }
+  
+  .product-image {
+    @apply w-full h-48 object-cover transition duration-300 ease-in-out transform;
+  }
+  
+  .product-image:hover {
+    @apply scale-110 brightness-105;
+  }
+  
+  /* Theme-specific styles */
+  .theme-minimal .product-card {
+    @apply bg-white rounded shadow overflow-hidden transition duration-300 hover:shadow-lg;
+  }
+  
+  .theme-warm .product-card {
+    @apply bg-amber-50 rounded-lg shadow-md overflow-hidden border border-amber-100 transition duration-300 hover:shadow-xl hover:border-amber-200;
+  }
+  
+  .theme-dark .product-card {
+    @apply bg-gray-800 rounded-lg shadow-lg overflow-hidden border border-gray-700 transition duration-300 hover:shadow-2xl hover:border-gray-600;
+  }
+}

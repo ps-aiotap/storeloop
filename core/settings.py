@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     # Local apps
     'products',
     'orders',
+    'stores',
 ]
 
 MIDDLEWARE = [
@@ -42,6 +43,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'stores.middleware.StoreMiddleware',
 ]
 
 ROOT_URLCONF = 'core.urls'
@@ -57,6 +59,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'stores.context_processors.store_theme',
             ],
         },
     },

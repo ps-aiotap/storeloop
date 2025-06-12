@@ -1,124 +1,54 @@
 # StoreLoop
 
-StoreLoop is a Django-based eCommerce platform designed for single-seller storefronts with future multi-seller capabilities.
+StoreLoop is a Django-based e-commerce platform with multi-seller and theme support.
 
 ## Features
 
-- Product catalog with images and QR codes
-- Razorpay payment integration
-- Order management
-- Admin panel for product and order management
-- Responsive design with Tailwind CSS
-- Email notifications for orders
+- Product catalog with images, descriptions, and pricing
+- Order processing with Razorpay integration
+- QR code generation for products (for easy sharing/scanning)
+- Multi-seller support with per-store theming
+- Customizable themes per seller (Minimal, Warm, Dark)
+- Enhanced product cards with hover effects and animations
+- Responsive, mobile-friendly design
+- Tailwind CSS for modern styling
 
-## Setup Instructions
+## Theme System
 
-### Prerequisites
+StoreLoop supports customizable themes for each seller's store:
 
-- Python 3.8+
-- pip
+- **Theme Options**: Minimal, Warm, and Dark
+- **Customization**: Primary color, font style, and store logo
+- **Dynamic Templates**: Templates adapt based on the selected theme
+- **Interactive UI**: Hover effects and animations enhance user experience
 
-### Installation
+## Product Features
 
-1. Clone the repository:
-   ```
-   git clone https://github.com/yourusername/storeloop.git
-   cd storeloop
-   ```
+- Product images with hover-to-zoom effects
+- Product details with descriptions and pricing
+- QR codes for easy product sharing
+- Categorization and organization options
+- Interactive product cards with visual feedback
 
-2. Create a virtual environment:
-   ```
-   python -m venv venv
-   ```
+## Setup
 
-3. Activate the virtual environment:
-   - Windows:
-     ```
-     venv\Scripts\activate
-     ```
-   - macOS/Linux:
-     ```
-     source venv/bin/activate
-     ```
+1. Create a virtual environment and install dependencies from requirements.txt
+2. Create a .env file based on .env.example
+3. Run migrations and create a superuser
+4. Run the development server
 
-4. Install dependencies:
-   ```
-   pip install -r requirements.txt
-   ```
+## Theme Configuration
 
-5. Create a `.env` file from the example:
-   ```
-   cp .env.example .env
-   ```
-   Then edit the `.env` file with your own settings.
-
-6. Run migrations:
-   ```
-   python manage.py migrate
-   ```
-
-7. Create a superuser:
-   ```
-   python manage.py createsuperuser
-   ```
-
-8. Run the development server:
-   ```
-   python manage.py runserver
-   ```
-
-9. Access the site at http://127.0.0.1:8000/
-
-### Razorpay Setup
-
-1. Create a Razorpay account at https://razorpay.com/
-2. Get your API keys from the Razorpay Dashboard
-3. Add your Razorpay API keys to the `.env` file
+1. Create a Store in the admin interface
+2. Navigate to `/stores/store/{store_id}/theme/` to configure the theme
+3. Choose from Minimal, Warm, or Dark themes
+4. Select a primary color and font style
+5. Upload a store logo
 
 ## Development
 
-### Adding Sample Data
-
-To add sample products:
-
-```
-python manage.py loaddata sample_data.json
-```
-
-### Running Tests
-
-```
-pytest
-```
-
-## Project Structure
-
-- `core/` - Main project settings
-- `products/` - Product catalog app
-- `orders/` - Order management app
-- `templates/` - HTML templates
-- `static/` - Static files (CSS, JS, images)
-- `media/` - User-uploaded files
-
-## Future Enhancements
-
-- Multi-seller support
-- Product categories and filtering
-- User accounts and profiles
-- Wishlist functionality
-- Product reviews and ratings
-
-## GitHub Issue Tracker Setup
-
-Suggested labels for GitHub issues:
-
-- `bug`: Something isn't working
-- `enhancement`: New feature or request
-- `documentation`: Documentation improvements
-- `good first issue`: Good for newcomers
-- `help wanted`: Extra attention is needed
-- `question`: Further information is requested
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
+- Built with Django 4.2 LTS
+- Uses Tailwind CSS for styling
+- Includes QR code generation for products
+- Mobile-first responsive design
+- Modular architecture for easy extension

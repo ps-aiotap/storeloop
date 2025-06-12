@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<style>
+    body {
+        font-family: {% if store_theme.font_choice == 'sans' %}ui-sans-serif, system-ui, sans-serif{% elif store_theme.font_choice == 'serif' %}ui-serif, Georgia, serif{% elif store_theme.font_choice == 'mono' %}ui-monospace, monospace{% endif %};
+        background-color: #1a1a1a;
+        color: #e0e0e0;
+    }
+    
+    .btn-primary {
+        background-color: {{ store_theme.primary_color }};
+    }
+    
+    .btn-primary:hover {
+        filter: brightness(120%);
+    }
+    
+    .header-accent {
+        border-bottom: 2px solid {{ store_theme.primary_color }};
+    }
+    
+    header, footer {
+        background-color: #111111;
+    }
+    
+    a {
+        color: {{ store_theme.primary_color }};
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    {% if store_theme.logo_url %}
+    <div class="flex justify-center mb-8">
+        <img src="{{ store_theme.logo_url }}" alt="Store Logo" class="h-20 bg-gray-800 p-2 rounded">
+    </div>
+    {% endif %}
+    
+    <h1 class="text-3xl font-bold text-center mb-8 header-accent pb-2 text-white">{{ page_title|default:"Welcome to our Store" }}</h1>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {% for product in products %}
+        <div class="bg-gray-800 rounded-lg shadow-lg overflow-hidden border border-gray-700 transition duration-300 hover:shadow-2xl hover:border-gray-600">
+            {% if product.image %}
+            <div class="overflow-hidden">
+                <img src="{{ product.image.url }}" alt="{{ product.title }}" 
+                     class="w-full h-48 object-cover transition duration-300 ease-in-out transform hover:scale-110 hover:brightness-125">
+            </div>
+            {% else %}
+            <div class="w-full h-48 bg-gray-700 flex items-center justify-center">
+                <span class="text-gray-500">No image</span>
+            </div>
+            {% endif %}
+            
+            <div class="p-5">
+                <h2 class="text-xl font-bold mb-3 text-white">{{ product.title }}</h2>
+                <p class="text-gray-400 mb-4 line-clamp-2">{{ product.description }}</p>
+                <div class="flex justify-between items-center">
+                    <span class="text-lg font-bold text-white">${{ product.price }}</span>
+                    <a href="{% url 'product_detail' product.id %}" class="btn-primary text-white px-4 py-2 rounded">Explore</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-3 text-center py-12">
+            <p class="text-gray-500">No products available.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

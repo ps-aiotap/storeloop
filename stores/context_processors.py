@@ -1,24 +1,23 @@
 def store_theme(request):
     """
-    Context processor to inject store theme settings into all templates.
+    Context processor to add store theme to template context
     """
-    # Default theme settings
-    theme_context = {
-        'theme_name': 'minimal',
-        'primary_color': 'blue',
-        'font_choice': 'sans',
-        'logo_url': None,
-    }
+    context = {}
     
-    # Try to get the current store from the request
+    # Get current store from request (set by StoreThemeMiddleware)
     current_store = getattr(request, 'current_store', None)
     
     if current_store:
-        theme_context = {
+        # Create store_theme context variable
+        context['store_theme'] = {
+            'name': current_store.name,
             'theme_name': current_store.theme_name,
             'primary_color': current_store.primary_color,
             'font_choice': current_store.font_choice,
             'logo_url': current_store.logo.url if current_store.logo else None,
+            'custom_css': current_store.custom_css,
+            'custom_js': current_store.custom_js,
+            'theme_version': current_store.theme_version,
         }
     
-    return {'store_theme': theme_context}
+    return context

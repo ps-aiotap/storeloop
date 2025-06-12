@@ -13,9 +13,11 @@ class ProductListView(ListView):
         # Check if there's a current store with a theme
         current_store = getattr(self.request, 'current_store', None)
         if current_store and current_store.theme_name:
-            # Try to use the store's theme template first
+            # Try to use the store's theme template with version
+            theme_version = current_store.theme_version
+            theme_template = f'stores/themes/{current_store.theme_name}/{theme_version}/product_list.html'
             return [
-                f'stores/themes/{current_store.theme_name}.html',
+                theme_template,
                 'products/product_list.html'  # Fallback to default
             ]
         return ['products/product_list.html']
@@ -30,6 +32,19 @@ class ProductDetailView(DetailView):
     model = Product
     template_name = 'products/product_detail.html'
     context_object_name = 'product'
+    
+    def get_template_names(self):
+        # Check if there's a current store with a theme
+        current_store = getattr(self.request, 'current_store', None)
+        if current_store and current_store.theme_name:
+            # Try to use the store's theme template with version
+            theme_version = current_store.theme_version
+            theme_template = f'stores/themes/{current_store.theme_name}/{theme_version}/product_detail.html'
+            return [
+                theme_template,
+                'products/product_detail.html'  # Fallback to default
+            ]
+        return ['products/product_detail.html']
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

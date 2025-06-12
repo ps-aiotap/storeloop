@@ -78,8 +78,16 @@
                 </h1>
                 <nav class="ml-auto">
                     <ul class="flex space-x-8">
-                        <li><a href="/" class="text-primary hover:underline font-medium text-lg">Home</a></li>
-                        <li><a href="/products/" class="text-primary hover:underline font-medium text-lg">Products</a></li>
+                        <li>
+                            <a href="/" class="{% if store_theme.theme_name == 'dark' %}text-blue-400{% else %}text-primary{% endif %} hover:underline font-medium text-lg">
+                                Home
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/products/" class="{% if store_theme.theme_name == 'dark' %}text-blue-400{% else %}text-primary{% endif %} hover:underline font-medium text-lg">
+                                Products
+                            </a>
+                        </li>
                     </ul>
                 </nav>
             </div>

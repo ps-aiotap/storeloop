@@ -1,0 +1,1 @@
+# StoreLoop plugins package

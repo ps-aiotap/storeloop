@@ -1,0 +1,91 @@
+name: Release Checklist
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number (e.g., v1.0.0)'
+        required: true
+      release_branch:
+        description: 'Branch to create release from'
+        required: true
+        default: 'main'
+
+jobs:
+  release-checklist:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.inputs.release_branch }}
+      
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-django pytest-cov flake8
+      
+      - name: Check version number format
+        run: |
+          if [[ ! ${{ github.event.inputs.version }} =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Version number must be in format vX.Y.Z"
+            exit 1
+          fi
+      
+      - name: Check for CHANGELOG.md updates
+        run: |
+          if ! grep -q "${{ github.event.inputs.version }}" CHANGELOG.md; then
+            echo "CHANGELOG.md does not contain the version ${{ github.event.inputs.version }}"
+            exit 1
+          fi
+      
+      - name: Run linting
+        run: |
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+      
+      - name: Run tests
+        run: |
+          pytest --cov=./ --cov-report=xml
+        env:
+          SECRET_KEY: test_secret_key
+          DEBUG: 'True'
+          RAZORPAY_KEY_ID: test_key_id
+          RAZORPAY_KEY_SECRET: test_key_secret
+      
+      - name: Check test coverage
+        run: |
+          COVERAGE=$(python -c "import xml.etree.ElementTree as ET; tree = ET.parse('coverage.xml'); root = tree.getroot(); print(float(root.attrib['line-rate']) * 100)")
+          echo "Test coverage: $COVERAGE%"
+          if (( $(echo "$COVERAGE < 70" | bc -l) )); then
+            echo "Test coverage is below 70%"
+            exit 1
+          fi
+      
+      - name: Check for security vulnerabilities
+        run: |
+          pip install safety
+          safety check
+      
+      - name: Create release tag
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git tag -a ${{ github.event.inputs.version }} -m "Release ${{ github.event.inputs.version }}"
+          git push origin ${{ github.event.inputs.version }}
+      
+      - name: Create GitHub release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.event.inputs.version }}
+          release_name: Release ${{ github.event.inputs.version }}
+          body_path: CHANGELOG.md
+          draft: true
+          prerelease: false

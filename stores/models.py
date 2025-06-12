@@ -26,6 +26,13 @@ class Store(models.Model):
     font_choice = models.CharField(max_length=20, choices=FONT_CHOICES, default='sans')
     logo = models.ImageField(upload_to='store_logos/', blank=True, null=True)
     
+    # Custom code injection
+    custom_css = models.TextField(blank=True, null=True, help_text="Custom CSS to be injected into store pages")
+    custom_js = models.TextField(blank=True, null=True, help_text="Custom JavaScript to be injected into store pages")
+    
+    # Theme version tracking
+    theme_version = models.CharField(max_length=10, default='v1', help_text="Theme version to use for this store")
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     

@@ -1,0 +1,130 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply text-secondary-800 scroll-smooth;
+  }
+  
+  body {
+    @apply bg-secondary-50 dark:bg-secondary-900 dark:text-secondary-100;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-medium text-secondary-900 dark:text-white;
+  }
+  
+  h1 {
+    @apply text-3xl md:text-4xl;
+  }
+  
+  h2 {
+    @apply text-2xl md:text-3xl;
+  }
+  
+  h3 {
+    @apply text-xl md:text-2xl;
+  }
+}
+
+@layer components {
+  /* Button styles */
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors;
+  }
+  
+  .btn-primary {
+    @apply bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500;
+  }
+  
+  .btn-secondary {
+    @apply bg-secondary-200 text-secondary-900 hover:bg-secondary-300 focus:ring-secondary-500;
+  }
+  
+  .btn-danger {
+    @apply bg-danger-600 text-white hover:bg-danger-700 focus:ring-danger-500;
+  }
+  
+  .btn-sm {
+    @apply px-3 py-1.5 text-sm;
+  }
+  
+  .btn-lg {
+    @apply px-6 py-3 text-lg;
+  }
+  
+  /* Card styles */
+  .card {
+    @apply bg-white dark:bg-secondary-800 rounded-lg shadow-card overflow-hidden transition-shadow duration-300 hover:shadow-card-hover;
+  }
+  
+  .card-body {
+    @apply p-4 md:p-5;
+  }
+  
+  .card-title {
+    @apply text-lg font-medium text-secondary-900 dark:text-white mb-2;
+  }
+  
+  .card-text {
+    @apply text-secondary-600 dark:text-secondary-300;
+  }
+  
+  /* Badge styles */
+  .badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium;
+  }
+  
+  .badge-primary {
+    @apply bg-primary-100 text-primary-800 dark:bg-primary-800 dark:text-primary-100;
+  }
+  
+  .badge-success {
+    @apply bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100;
+  }
+  
+  .badge-warning {
+    @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100;
+  }
+  
+  .badge-danger {
+    @apply bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100;
+  }
+  
+  /* Form styles */
+  .form-input {
+    @apply block w-full rounded-md border-secondary-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-secondary-700 dark:border-secondary-600 dark:text-white;
+  }
+  
+  .form-label {
+    @apply block text-sm font-medium text-secondary-700 dark:text-secondary-300 mb-1;
+  }
+  
+  .form-error {
+    @apply mt-1 text-sm text-danger-600 dark:text-danger-500;
+  }
+  
+  /* Mobile navigation */
+  .mobile-nav {
+    @apply fixed inset-0 z-40 transform transition-transform duration-300 ease-in-out;
+  }
+  
+  .mobile-nav-closed {
+    @apply -translate-x-full;
+  }
+  
+  .mobile-nav-open {
+    @apply translate-x-0;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .scroll-mt-header {
+    scroll-margin-top: 4rem;
+  }
+}

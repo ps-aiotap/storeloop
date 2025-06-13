@@ -10,7 +10,7 @@
                 {{ page_title|default:"Products" }}
             </h1>
             {% if store %}
-            <p  class="{% if store_theme.theme_name == 'dark' %}text-gray-300{% else %}text-gray-600{% endif %} mt-2">
+            <p class="{% if store_theme.theme_name == 'dark' %}text-gray-300{% else %}text-gray-600{% endif %} mt-2">
                 Store: {{ store.name }}
             </p>
             {% endif %}
@@ -45,9 +45,26 @@
             <div class="p-4">
                 <h2 class="text-xl font-semibold text-gray-800 mb-2">{{ product.title }}</h2>
                 <p class="text-gray-600 mb-4 line-clamp-2">{{ product.description|truncatechars:100 }}</p>
+                
+                <!-- Product badges -->
+                <div class="flex flex-wrap gap-2 mb-3">
+                    {% now "Y-m-d" as today_date %}
+                    {% if product.created_at|date:"Y-m-d" >= today_date %}
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">New</span>
+                    {% endif %}
+                    
+                    {% if product.stock <= 5 %}
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Limited</span>
+                    {% endif %}
+                    
+                    {% if product.is_featured %}
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Featured</span>
+                    {% endif %}
+                </div>
+                
                 <div class="flex justify-between items-center">
                     <span class="text-lg font-bold text-indigo-600">₹{{ product.price }}</span>
-                    <a href="{% url 'product_detail' product.id %}" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">View</a>
+                    <a href="{% url 'product_detail' product.id %}" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 min-h-[44px] flex items-center">View</a>
                 </div>
                 <div class="mt-2 text-sm text-gray-500">
                     <a href="{% url 'store_products' product.store.slug %}" class="hover:underline">{{ product.store.name }}</a>

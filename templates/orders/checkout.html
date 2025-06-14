@@ -48,9 +48,31 @@
                 <label for="phone" class="block text-gray-700 dark:text-gray-300 mb-1">Phone</label>
                 <input type="tel" id="phone" name="phone" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded focus:outline-none focus:ring-2 focus:ring-indigo-500">
             </div>
-            <div>
-                <label for="address" class="block text-gray-700 dark:text-gray-300 mb-1">Shipping Address</label>
-                <textarea id="address" name="address" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded focus:outline-none focus:ring-2 focus:ring-indigo-500" rows="3"></textarea>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="address_line1" class="block text-gray-700 dark:text-gray-300 mb-1">Address Line 1</label>
+                    <input type="text" id="address_line1" name="address_line1" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label for="address_line2" class="block text-gray-700 dark:text-gray-300 mb-1">Address Line 2</label>
+                    <input type="text" id="address_line2" name="address_line2" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label for="city" class="block text-gray-700 dark:text-gray-300 mb-1">City</label>
+                    <input type="text" id="city" name="city" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label for="state" class="block text-gray-700 dark:text-gray-300 mb-1">State</label>
+                    <input type="text" id="state" name="state" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label for="postal_code" class="block text-gray-700 dark:text-gray-300 mb-1">Postal Code</label>
+                    <input type="text" id="postal_code" name="postal_code" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label for="country" class="block text-gray-700 dark:text-gray-300 mb-1">Country</label>
+                    <input type="text" id="country" name="country" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
             </div>
             <button type="button" id="pay-button" class="w-full bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700">Pay Now</button>
         </form>
@@ -65,9 +87,15 @@
         const name = document.getElementById('name').value;
         const email = document.getElementById('email').value;
         const phone = document.getElementById('phone').value;
-        const address = document.getElementById('address').value;
+        const address_line1 = document.getElementById('address_line1').value;
+        const address_line2 = document.getElementById('address_line2').value;
+        const city = document.getElementById('city').value;
+        const state = document.getElementById('state').value;
+        const postal_code = document.getElementById('postal_code').value;
+        const country = document.getElementById('country').value;
+        const address = `${address_line1}, ${address_line2 ? address_line2 + ', ' : ''}${city}, ${state}, ${postal_code}, ${country}`;
         
-        if (!name || !email || !address) {
+        if (!name || !email || !address_line1 || !city || !state || !postal_code || !country) {
             alert('Please fill in all required fields');
             return;
         }

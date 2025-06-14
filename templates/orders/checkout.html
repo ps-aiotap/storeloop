@@ -2,7 +2,7 @@
 
 {% block title %}Checkout - StoreLoop{% endblock %}
 
-{% block extra_head %}
+{% block extra_css %}
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 {% endblock %}
 
@@ -74,13 +74,13 @@
                     <input type="text" id="country" name="country" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded focus:outline-none focus:ring-2 focus:ring-indigo-500">
                 </div>
             </div>
-            <button type="button" id="pay-button" class="w-full bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700">Pay Now</button>
+            <button type="button" id="pay-button" class="w-full bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400">Pay Now</button>
         </form>
     </div>
 </div>
 {% endblock %}
 
-{% block extra_scripts %}
+{% block extra_js %}
 <script>
     document.getElementById('pay-button').addEventListener('click', function() {
         const form = document.getElementById('checkout-form');

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<style>
+    /* Font family based on store settings */
+    body {
+        font-family: 
+            {% if store_theme.font_choice == 'serif' %}
+                ui-serif, Georgia, Cambria, serif
+            {% elif store_theme.font_choice == 'mono' %}
+                ui-monospace, SFMono-Regular, Menlo, monospace
+            {% else %}
+                ui-sans-serif, system-ui, -apple-system, sans-serif
+            {% endif %};
+    }
+    
+    /* Primary color customization */
+    .bg-primary {
+        background-color: {{ store_theme.primary_color|default:'#3b82f6' }};
+    }
+    
+    .border-primary {
+        border-color: {{ store_theme.primary_color|default:'#3b82f6' }};
+    }
+    
+    .text-primary {
+        color: {{ store_theme.primary_color|default:'#3b82f6' }};
+    }
+    
+    /* Warm theme specific styles */
+    [data-theme="warm"] .warm-amber {
+        background-color: #fffbf0;
+    }
+    
+    [data-theme="warm"] .warm-text {
+        color: #92400e;
+    }
+    
+    [data-theme="warm"] .warm-border {
+        border-color: #fbbf24;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    {% include "stores/components/theme_block.html" %}
+{% endblock %}

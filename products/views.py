@@ -10,17 +10,8 @@ class ProductListView(ListView):
     paginate_by = 12
     
     def get_template_names(self):
-        # Check if there's a current store with a theme
-        current_store = getattr(self.request, 'current_store', None)
-        if current_store and current_store.theme_name:
-            # Try to use the store's theme template with version
-            theme_version = current_store.theme_version
-            theme_template = f'stores/themes/{current_store.theme_name}/{theme_version}/product_list.html'
-            return [
-                theme_template,
-                'products/product_list.html'  # Fallback to default
-            ]
-        return ['products/product_list.html']
+        # Always use the unified theme template
+        return ['stores/theme_view.html']
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -34,17 +25,8 @@ class ProductDetailView(DetailView):
     context_object_name = 'product'
     
     def get_template_names(self):
-        # Check if there's a current store with a theme
-        current_store = getattr(self.request, 'current_store', None)
-        if current_store and current_store.theme_name:
-            # Try to use the store's theme template with version
-            theme_version = current_store.theme_version
-            theme_template = f'stores/themes/{current_store.theme_name}/{theme_version}/product_detail.html'
-            return [
-                theme_template,
-                'products/product_detail.html'  # Fallback to default
-            ]
-        return ['products/product_detail.html']
+        # Always use the unified theme template
+        return ['stores/theme_view.html']
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="{% if store_theme.theme_name == 'dark' %}dark{% endif %}" data-theme="{{ store_theme.theme_name }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -27,20 +27,7 @@
                 {% endif %};
         }
         
-        /* Theme-specific background colors */
-        {% if store_theme.theme_name == 'warm' %}
-        body {
-            background-color: #fffbf0;
-        }
-        {% elif store_theme.theme_name == 'dark' %}
-        body {
-            background-color: #1a1a1a;
-            color: #e0e0e0;
-        }
-        header, footer {
-            background-color: #111111;
-        }
-        {% endif %}
+        /* Theme styles are now handled by Tailwind dark mode classes */
         
         /* Common theme elements */
         .btn-primary {
@@ -65,12 +52,12 @@
     </style>
     {% endif %}
 </head>
-<body class="{% if store_theme.theme_name == 'dark' %}bg-gray-900 text-gray-100{% elif store_theme.theme_name == 'warm' %}bg-amber-50{% else %}bg-gray-100{% endif %} min-h-screen flex flex-col">
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen flex flex-col">
     <div class="flex flex-col min-h-screen">
-        <header class="{% if store_theme.theme_name == 'dark' %}bg-gray-800 text-white{% elif store_theme.theme_name == 'warm' %}bg-amber-100{% else %}bg-white{% endif %} shadow sticky top-0 z-30">
+        <header class="bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow sticky top-0 z-30">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                 <div class="flex items-center justify-between">
-                    <h1 class="text-2xl font-bold {% if store_theme.theme_name == 'dark' %}text-white{% elif store_theme.theme_name == 'warm' %}text-amber-900{% else %}text-gray-900{% endif %}">
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
                         {% if store_theme.logo_url %}
                             <a href="/" class="flex items-center">
                                 <img src="{{ store_theme.logo_url }}" alt="Store Logo" class="h-10 mr-2">
@@ -128,12 +115,12 @@
                     <nav class="hidden md:block ml-auto">
                         <ul class="flex space-x-8">
                             <li>
-                                <a href="/" class="{% if store_theme.theme_name == 'dark' %}text-blue-400{% else %}text-primary{% endif %} hover:underline font-medium text-lg">
+                                <a href="/" class="text-primary dark:text-blue-400 hover:underline font-medium text-lg">
                                     Home
                                 </a>
                             </li>
                             <li>
-                                <a href="/products/" class="{% if store_theme.theme_name == 'dark' %}text-blue-400{% else %}text-primary{% endif %} hover:underline font-medium text-lg">
+                                <a href="/products/" class="text-primary dark:text-blue-400 hover:underline font-medium text-lg">
                                     Products
                                 </a>
                             </li>
@@ -147,7 +134,7 @@
             {% block content %}{% endblock %}
         </main>
         
-        <footer class="{% if store_theme.theme_name == 'dark' %}bg-gray-800 text-gray-300{% elif store_theme.theme_name == 'warm' %}bg-amber-100 text-amber-900{% else %}bg-white text-gray-500{% endif %} shadow mt-auto">
+        <footer class="bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-300 shadow mt-auto">
             <div class="container mx-auto px-4 py-6 text-center">
                 <p>&copy; {% now "Y" %} StoreLoop. All rights reserved.</p>
             </div>

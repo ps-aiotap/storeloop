@@ -85,7 +85,17 @@ def payment_callback(request):
 
 def order_confirmation(request, order_id):
     order = get_object_or_404(Order, id=order_id)
-    return render(request, 'orders/confirmation.html', {'order': order})
+    # Get store theme from the product's store
+    store_theme = None
+    if order.items.exists():
+        product = order.items.first().product
+        if hasattr(product, 'store') and product.store:
+            store_theme = product.store
+    
+    return render(request, 'orders/confirmation.html', {
+        'order': order,
+        'store_theme': store_theme
+    })
 
 def send_order_confirmation_email(order):
     subject = f'Order Confirmation - StoreLoop #{order.id}'

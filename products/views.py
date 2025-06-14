@@ -25,8 +25,8 @@ class ProductDetailView(DetailView):
     context_object_name = 'product'
     
     def get_template_names(self):
-        # Always use the unified theme template
-        return ['stores/theme_view.html']
+        # Use the product detail template
+        return ['stores/product_detail.html', 'products/product_detail.html']
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

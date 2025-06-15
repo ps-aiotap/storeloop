@@ -4,6 +4,16 @@
 
 {% block extra_css %}
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<style>
+    .error-message {
+        color: #ef4444;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    .input-error {
+        border-color: #ef4444 !important;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -35,43 +45,60 @@
     
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <h2 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">Customer Information</h2>
-        <form id="checkout-form" class="space-y-4">
+        <form id="checkout-form" class="space-y-4" novalidate>
             <div>
                 <label for="name" class="block text-gray-700 dark:text-gray-300 mb-1">Name</label>
-                <input type="text" id="name" name="name" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <input type="text" id="name" name="name" required minlength="3" 
+                       class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <div id="name-error" class="error-message hidden"></div>
             </div>
             <div>
                 <label for="email" class="block text-gray-700 dark:text-gray-300 mb-1">Email</label>
-                <input type="email" id="email" name="email" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <input type="email" id="email" name="email" required 
+                       class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <div id="email-error" class="error-message hidden"></div>
             </div>
             <div>
                 <label for="phone" class="block text-gray-700 dark:text-gray-300 mb-1">Phone</label>
-                <input type="tel" id="phone" name="phone" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <input type="tel" id="phone" name="phone" pattern="[0-9+\-\s]{10,15}"
+                       class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <div id="phone-error" class="error-message hidden"></div>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label for="address_line1" class="block text-gray-700 dark:text-gray-300 mb-1">Address Line 1</label>
-                    <input type="text" id="address_line1" name="address_line1" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <input type="text" id="address_line1" name="address_line1" required 
+                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <div id="address_line1-error" class="error-message hidden"></div>
                 </div>
                 <div>
                     <label for="address_line2" class="block text-gray-700 dark:text-gray-300 mb-1">Address Line 2</label>
-                    <input type="text" id="address_line2" name="address_line2" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <input type="text" id="address_line2" name="address_line2" 
+                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded focus:outline-none focus:ring-2 focus:ring-indigo-500">
                 </div>
                 <div>
                     <label for="city" class="block text-gray-700 dark:text-gray-300 mb-1">City</label>
-                    <input type="text" id="city" name="city" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <input type="text" id="city" name="city" required 
+                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <div id="city-error" class="error-message hidden"></div>
                 </div>
                 <div>
                     <label for="state" class="block text-gray-700 dark:text-gray-300 mb-1">State</label>
-                    <input type="text" id="state" name="state" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <input type="text" id="state" name="state" required 
+                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <div id="state-error" class="error-message hidden"></div>
                 </div>
                 <div>
                     <label for="postal_code" class="block text-gray-700 dark:text-gray-300 mb-1">Postal Code</label>
-                    <input type="text" id="postal_code" name="postal_code" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <input type="text" id="postal_code" name="postal_code" required pattern="[0-9]{5,10}" 
+                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <div id="postal_code-error" class="error-message hidden"></div>
                 </div>
                 <div>
                     <label for="country" class="block text-gray-700 dark:text-gray-300 mb-1">Country</label>
-                    <input type="text" id="country" name="country" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <input type="text" id="country" name="country" required 
+                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <div id="country-error" class="error-message hidden"></div>
                 </div>
             </div>
             <button type="button" id="pay-button" class="w-full bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400">Pay Now</button>
@@ -84,21 +111,88 @@
 <script>
     document.getElementById('pay-button').addEventListener('click', function() {
         const form = document.getElementById('checkout-form');
-        const name = document.getElementById('name').value;
-        const email = document.getElementById('email').value;
-        const phone = document.getElementById('phone').value;
-        const address_line1 = document.getElementById('address_line1').value;
-        const address_line2 = document.getElementById('address_line2').value;
-        const city = document.getElementById('city').value;
-        const state = document.getElementById('state').value;
-        const postal_code = document.getElementById('postal_code').value;
-        const country = document.getElementById('country').value;
-        const address = `${address_line1}, ${address_line2 ? address_line2 + ', ' : ''}${city}, ${state}, ${postal_code}, ${country}`;
+        const name = document.getElementById('name').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+        const address_line1 = document.getElementById('address_line1').value.trim();
+        const address_line2 = document.getElementById('address_line2').value.trim();
+        const city = document.getElementById('city').value.trim();
+        const state = document.getElementById('state').value.trim();
+        const postal_code = document.getElementById('postal_code').value.trim();
+        const country = document.getElementById('country').value.trim();
         
-        if (!name || !email || !address_line1 || !city || !state || !postal_code || !country) {
-            alert('Please fill in all required fields');
+        // Reset all error messages
+        document.querySelectorAll('.error-message').forEach(el => {
+            el.textContent = '';
+            el.classList.add('hidden');
+        });
+        document.querySelectorAll('input').forEach(el => {
+            el.classList.remove('input-error');
+        });
+        
+        // Validation
+        let isValid = true;
+        
+        // Name validation
+        if (!name) {
+            showError('name', 'Name is required');
+            isValid = false;
+        } else if (name.length < 3) {
+            showError('name', 'Name must be at least 3 characters');
+            isValid = false;
+        }
+        
+        // Email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!email) {
+            showError('email', 'Email is required');
+            isValid = false;
+        } else if (!emailRegex.test(email)) {
+            showError('email', 'Please enter a valid email address');
+            isValid = false;
+        }
+        
+        // Phone validation
+        if (phone && !/^[0-9+\-\s]{10,15}$/.test(phone)) {
+            showError('phone', 'Please enter a valid phone number');
+            isValid = false;
+        }
+        
+        // Address validation
+        if (!address_line1) {
+            showError('address_line1', 'Address Line 1 is required');
+            isValid = false;
+        }
+        
+        if (!city) {
+            showError('city', 'City is required');
+            isValid = false;
+        }
+        
+        if (!state) {
+            showError('state', 'State is required');
+            isValid = false;
+        }
+        
+        if (!postal_code) {
+            showError('postal_code', 'Postal Code is required');
+            isValid = false;
+        } else if (!/^[0-9]{5,10}$/.test(postal_code)) {
+            showError('postal_code', 'Please enter a valid postal code (5-10 digits)');
+            isValid = false;
+        }
+        
+        if (!country) {
+            showError('country', 'Country is required');
+            isValid = false;
+        }
+        
+        // Stop if validation failed
+        if (!isValid) {
             return;
         }
+        
+        const address = `${address_line1}, ${address_line2 ? address_line2 + ', ' : ''}${city}, ${state}, ${postal_code}, ${country}`;
         
         const options = {
             key: "{{ razorpay_key_id }}",
@@ -153,5 +247,78 @@
         const rzp = new Razorpay(options);
         rzp.open();
     });
+    
+    // Helper function to show error messages
+    function showError(fieldId, message) {
+        const field = document.getElementById(fieldId);
+        const errorElement = document.getElementById(fieldId + '-error');
+        field.classList.add('input-error');
+        errorElement.textContent = message;
+        errorElement.classList.remove('hidden');
+    }
+    
+    // Real-time validation
+    document.querySelectorAll('input[required], input[pattern]').forEach(input => {
+        input.addEventListener('blur', function() {
+            validateField(this);
+        });
+        
+        input.addEventListener('input', function() {
+            if (this.classList.contains('input-error')) {
+                validateField(this);
+            }
+        });
+    });
+    
+    function validateField(field) {
+        const errorElement = document.getElementById(field.id + '-error');
+        field.classList.remove('input-error');
+        errorElement.textContent = '';
+        errorElement.classList.add('hidden');
+        
+        if (field.required && !field.value.trim()) {
+            field.classList.add('input-error');
+            errorElement.textContent = `${field.name.charAt(0).toUpperCase() + field.name.slice(1).replace('_', ' ')} is required`;
+            errorElement.classList.remove('hidden');
+            return false;
+        }
+        
+        if (field.id === 'name' && field.value.trim().length < 3) {
+            field.classList.add('input-error');
+            errorElement.textContent = 'Name must be at least 3 characters';
+            errorElement.classList.remove('hidden');
+            return false;
+        }
+        
+        if (field.id === 'email' && field.value.trim()) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(field.value.trim())) {
+                field.classList.add('input-error');
+                errorElement.textContent = 'Please enter a valid email address';
+                errorElement.classList.remove('hidden');
+                return false;
+            }
+        }
+        
+        if (field.id === 'phone' && field.value.trim()) {
+            if (!/^[0-9+\-\s]{10,15}$/.test(field.value.trim())) {
+                field.classList.add('input-error');
+                errorElement.textContent = 'Please enter a valid phone number';
+                errorElement.classList.remove('hidden');
+                return false;
+            }
+        }
+        
+        if (field.id === 'postal_code' && field.value.trim()) {
+            if (!/^[0-9]{5,10}$/.test(field.value.trim())) {
+                field.classList.add('input-error');
+                errorElement.textContent = 'Please enter a valid postal code (5-10 digits)';
+                errorElement.classList.remove('hidden');
+                return false;
+            }
+        }
+        
+        return true;
+    }
 </script>
 {% endblock %}

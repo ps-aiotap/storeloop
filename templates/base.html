@@ -1,20 +1,16 @@
 <!DOCTYPE html>
-<html lang="en" class="{% if store_theme.theme_name == 'dark' %}dark{% endif %}" data-theme="{{ store_theme.theme_name }}">
+<html lang="en" data-theme="{{ store_theme.theme_name }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}StoreLoop{% endblock %}</title>
     <link rel="stylesheet" href="/static/output.css">
+    <link rel="stylesheet" href="/static/theme-config.css">
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     {% block extra_css %}{% endblock %}
     
     {% if store_theme %}
     <style>
-        /* Dynamic theme styles based on store settings */
-        :root {
-            --primary-color: {{ store_theme.primary_color|default:'#3b82f6' }};
-        }
-        
         /* Font family based on store settings */
         body {
             font-family: 
@@ -27,21 +23,10 @@
                 {% endif %};
         }
         
-        /* Theme styles are now handled by Tailwind dark mode classes */
-        
-        /* Common theme elements */
-        .btn-primary {
-            background-color: var(--primary-color);
-            color: white;
-        }
-        .btn-primary:hover {
-            filter: brightness(90%);
-        }
-        .text-primary {
-            color: var(--primary-color);
-        }
-        .border-primary {
-            border-color: var(--primary-color);
+        /* Override primary color from store settings */
+        :root {
+            --color-primary: {{ store_theme.primary_color|default:'#3b82f6' }};
+            --color-primary-hover: {{ store_theme.primary_color|default:'#2563eb' }};
         }
     </style>
     {% endif %}
@@ -51,13 +36,15 @@
         {{ store_theme.custom_css|default:""|safe }}
     </style>
     {% endif %}
+    
+    {% include "stores/components/theme-script.html" %}
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen flex flex-col">
+<body class="bg-theme text-theme min-h-screen flex flex-col">
     <div class="flex flex-col min-h-screen">
-        <header class="bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow sticky top-0 z-30">
+        <header class="bg-card text-theme shadow sticky top-0 z-30">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                 <div class="flex items-center justify-between">
-                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+                    <h1 class="text-2xl font-bold text-theme">
                         {% if store_theme.logo_url %}
                             <a href="/" class="flex items-center">
                                 <img src="{{ store_theme.logo_url }}" alt="Store Logo" class="h-10 mr-2">
@@ -72,7 +59,7 @@
                     <div class="md:hidden" x-data="{ open: false }">
                         <button 
                             @click="open = !open" 
-                            class="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white focus:outline-none"
+                            class="text-theme-secondary hover:text-theme focus:outline-none"
                             aria-label="Toggle menu"
                         >
                             <svg x-show="!open" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -92,17 +79,17 @@
                             x-transition:leave="transition ease-in duration-150"
                             x-transition:leave-start="opacity-100 transform scale-100"
                             x-transition:leave-end="opacity-0 transform scale-95"
-                            class="absolute top-16 right-0 left-0 bg-white dark:bg-gray-800 shadow-lg p-4 z-40"
+                            class="absolute top-16 right-0 left-0 bg-card shadow-lg p-4 z-40"
                         >
                             <nav>
                                 <ul class="space-y-4">
                                     <li>
-                                        <a href="/" class="block text-indigo-600 hover:text-indigo-800 font-medium text-lg">
+                                        <a href="/" class="block text-primary hover:bg-primary-hover font-medium text-lg">
                                             Home
                                         </a>
                                     </li>
                                     <li>
-                                        <a href="/products/" class="block text-indigo-600 hover:text-indigo-800 font-medium text-lg">
+                                        <a href="/products/" class="block text-primary hover:bg-primary-hover font-medium text-lg">
                                             Products
                                         </a>
                                     </li>
@@ -115,12 +102,12 @@
                     <nav class="hidden md:block ml-auto">
                         <ul class="flex space-x-8">
                             <li>
-                                <a href="/" class="text-primary dark:text-blue-400 hover:underline font-medium text-lg">
+                                <a href="/" class="text-primary hover:underline font-medium text-lg">
                                     Home
                                 </a>
                             </li>
                             <li>
-                                <a href="/products/" class="text-primary dark:text-blue-400 hover:underline font-medium text-lg">
+                                <a href="/products/" class="text-primary hover:underline font-medium text-lg">
                                     Products
                                 </a>
                             </li>
@@ -134,7 +121,7 @@
             {% block content %}{% endblock %}
         </main>
         
-        <footer class="bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-300 shadow mt-auto">
+        <footer class="bg-card text-theme-secondary shadow mt-auto">
             <div class="container mx-auto px-4 py-6 text-center">
                 <p>&copy; {% now "Y" %} StoreLoop. All rights reserved.</p>
             </div>

@@ -1,0 +1,69 @@
+/* Base theme variables */
+:root {
+  --color-primary: #3b82f6;
+  --color-primary-hover: #2563eb;
+  --color-text: #1f2937;
+  --color-text-secondary: #4b5563;
+  --color-bg: #f3f4f6;
+  --color-card-bg: #ffffff;
+  --color-border: #e5e7eb;
+}
+
+/* Dark theme */
+[data-theme="dark"] {
+  --color-primary: #3b82f6;
+  --color-primary-hover: #2563eb;
+  --color-text: #f9fafb;
+  --color-text-secondary: #d1d5db;
+  --color-bg: #111827;
+  --color-card-bg: #1f2937;
+  --color-border: #374151;
+}
+
+/* Warm theme */
+[data-theme="warm"] {
+  --color-primary: #f59e0b;
+  --color-primary-hover: #d97706;
+  --color-text: #92400e;
+  --color-text-secondary: #b45309;
+  --color-bg: #fffbeb;
+  --color-card-bg: #fef3c7;
+  --color-border: #fbbf24;
+}
+
+/* Utility classes */
+.bg-theme {
+  background-color: var(--color-bg);
+}
+
+.bg-card {
+  background-color: var(--color-card-bg);
+}
+
+.text-theme {
+  color: var(--color-text);
+}
+
+.text-theme-secondary {
+  color: var(--color-text-secondary);
+}
+
+.border-theme {
+  border-color: var(--color-border);
+}
+
+.bg-primary {
+  background-color: var(--color-primary);
+}
+
+.bg-primary-hover:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.text-primary {
+  color: var(--color-primary);
+}
+
+.border-primary {
+  border-color: var(--color-primary);
+}

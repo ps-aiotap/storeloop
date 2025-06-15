@@ -1,0 +1,14 @@
+{% comment %}
+  Script to handle theme switching and dark mode
+{% endcomment %}
+<script>
+  // Apply dark class based on data-theme attribute
+  document.addEventListener('DOMContentLoaded', function() {
+    const theme = document.documentElement.getAttribute('data-theme');
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  });
+</script>

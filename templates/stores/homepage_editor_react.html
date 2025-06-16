@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Homepage Editor - {{ store.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/react-beautiful-dnd@13.1.0/dist/react-beautiful-dnd.min.css">
+<style>
+    .editor-panel {
+        height: calc(100vh - 80px);
+        overflow-y: auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bg-theme min-h-screen">
+    <div class="container mx-auto px-4 py-6">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-theme">Homepage Editor - {{ store.name }}</h1>
+            <div class="flex space-x-4">
+                <button id="save-changes-btn" class="bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded">
+                    Save Changes
+                </button>
+                <a href="{% url 'store_homepage' store.slug %}" class="bg-card text-theme px-4 py-2 rounded border border-theme">
+                    Preview Homepage
+                </a>
+            </div>
+        </div>
+        
+        {% csrf_token %}
+        <div id="homepage-builder" data-blocks="{{ current_blocks_json|safe }}"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- React and ReactDOM -->
+<script src="https://unpkg.com/react@17/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-beautiful-dnd@13.1.0/dist/react-beautiful-dnd.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<!-- Store slug for API calls -->
+<script>
+    window.storeSlug = "{{ store.slug }}";
+</script>
+
+<!-- Homepage Builder React Component -->
+<script type="text/babel" src="/static/js/homepage-builder.jsx"></script>
+
+<script>
+    document.getElementById('save-changes-btn').addEventListener('click', function() {
+        alert('Changes saved successfully!');
+    });
+</script>
+{% endblock %}

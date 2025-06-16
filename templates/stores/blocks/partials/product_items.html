@@ -1,0 +1,33 @@
+{% for product in products %}
+<div class="bg-card rounded-lg shadow-lg overflow-hidden border border-theme transition duration-300 hover:shadow-xl">
+    {% if product.image %}
+    <div class="overflow-hidden">
+        <img src="{{ product.image.url }}" alt="{{ product.title }}" 
+             class="w-full h-48 object-cover transition duration-300 ease-in-out transform hover:scale-110">
+    </div>
+    {% else %}
+    <div class="w-full h-48 bg-theme-secondary flex items-center justify-center">
+        <span class="text-theme-secondary">No image</span>
+    </div>
+    {% endif %}
+    
+    <div class="p-5">
+        <h3 class="text-xl font-bold mb-2 text-theme">{{ product.title }}</h3>
+        
+        {% if show_description %}
+        <p class="text-theme-secondary mb-4 line-clamp-2">{{ product.description }}</p>
+        {% endif %}
+        
+        <div class="flex justify-between items-center">
+            {% if show_price|default:True %}
+            <span class="text-lg font-bold text-primary">${{ product.price }}</span>
+            {% endif %}
+            <a href="{% url 'product_detail' product.id %}" class="bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded">View</a>
+        </div>
+    </div>
+</div>
+{% empty %}
+<div class="col-span-full text-center py-12">
+    <p class="text-theme-secondary">No products available.</p>
+</div>
+{% endfor %}

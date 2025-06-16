@@ -1,0 +1,44 @@
+{% comment %}
+Hero Banner Block Template
+Parameters:
+- title: Banner title
+- subtitle: Banner subtitle
+- image_url: Background image URL
+- button_text: CTA button text
+- button_url: CTA button URL
+- text_color: Text color (default: white)
+- overlay_opacity: Background overlay opacity (0-100)
+- height: Banner height (sm, md, lg, xl)
+{% endcomment %}
+
+<section class="relative {% if block.configuration.height == 'sm' %}h-64{% elif block.configuration.height == 'md' %}h-80{% elif block.configuration.height == 'xl' %}h-screen{% else %}h-96{% endif %} overflow-hidden bg-theme">
+    {% if block.configuration.image_url %}
+    <div class="absolute inset-0">
+        <img src="{{ block.configuration.image_url }}" alt="{{ block.title }}" class="w-full h-full object-cover">
+        <div class="absolute inset-0 bg-black opacity-{{ block.configuration.overlay_opacity|default:50 }}"></div>
+    </div>
+    {% endif %}
+    
+    <div class="relative h-full flex items-center justify-center">
+        <div class="text-center px-4 max-w-3xl">
+            {% if block.title %}
+            <h1 class="text-4xl md:text-5xl font-bold mb-4" style="color: {{ block.configuration.text_color|default:'white' }}">
+                {{ block.title }}
+            </h1>
+            {% endif %}
+            
+            {% if block.content %}
+            <p class="text-xl mb-8" style="color: {{ block.configuration.text_color|default:'white' }}">
+                {{ block.content }}
+            </p>
+            {% endif %}
+            
+            {% if block.configuration.button_text and block.configuration.button_url %}
+            <a href="{{ block.configuration.button_url }}" 
+               class="bg-primary hover:bg-primary-hover text-white px-8 py-3 rounded-lg inline-block font-medium">
+                {{ block.configuration.button_text }}
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</section>

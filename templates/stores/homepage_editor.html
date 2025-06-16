@@ -1,0 +1,458 @@
+{% extends "base.html" %}
+
+{% block title %}Homepage Editor - {{ store.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.css">
+<style>
+    .block-item {
+        cursor: move;
+    }
+    .block-item.sortable-ghost {
+        opacity: 0.4;
+    }
+    .block-library-item {
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .block-library-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+    .editor-panel {
+        height: calc(100vh - 80px);
+        overflow-y: auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bg-theme min-h-screen" x-data="homepageEditor()">
+    <div class="container mx-auto px-4 py-6">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-theme">Homepage Editor - {{ store.name }}</h1>
+            <div class="flex space-x-4">
+                <button @click="saveChanges()" class="bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded">
+                    Save Changes
+                </button>
+                <a href="{% url 'store_homepage' store.slug %}" class="bg-card text-theme px-4 py-2 rounded border border-theme">
+                    Preview Homepage
+                </a>
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <!-- Block Library -->
+            <div class="lg:col-span-1 bg-card p-4 rounded-lg shadow editor-panel">
+                <h2 class="text-xl font-bold text-theme mb-4">Block Library</h2>
+                <div class="space-y-3">
+                    {% for block_type in available_blocks %}
+                    <div class="block-library-item bg-theme p-3 rounded border border-theme" 
+                         @click="addNewBlock('{{ block_type.block_type }}', '{{ block_type.name }}')">
+                        <h3 class="font-medium text-theme">{{ block_type.name }}</h3>
+                        <p class="text-sm text-theme-secondary">{{ block_type.description }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Block Editor -->
+            <div class="lg:col-span-2 bg-card p-4 rounded-lg shadow editor-panel">
+                <h2 class="text-xl font-bold text-theme mb-4">Homepage Layout</h2>
+                
+                <div id="blocks-container" class="space-y-3">
+                    <template x-if="blocks.length === 0">
+                        <div class="text-center py-8 border-2 border-dashed border-theme-secondary rounded-lg">
+                            <p class="text-theme-secondary">Drag blocks from the library to build your homepage</p>
+                        </div>
+                    </template>
+                    
+                    <template x-for="(block, index) in blocks" :key="block.id">
+                        <div :id="'block-' + block.id" class="block-item bg-theme p-3 rounded border border-theme" 
+                             :class="{'border-primary': selectedBlockId === block.id}">
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center">
+                                    <span class="mr-2 text-theme-secondary" x-text="index + 1"></span>
+                                    <h3 class="font-medium text-theme" x-text="block.title || getBlockTypeName(block.block_type)"></h3>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <button @click="toggleBlockActive(block)" class="p-1 rounded hover:bg-theme-secondary">
+                                        <span x-show="block.is_active" class="text-green-500">●</span>
+                                        <span x-show="!block.is_active" class="text-red-500">○</span>
+                                    </button>
+                                    <button @click="selectBlock(block)" class="p-1 rounded hover:bg-theme-secondary">
+                                        <span class="text-theme">✎</span>
+                                    </button>
+                                    <button @click="deleteBlock(block)" class="p-1 rounded hover:bg-theme-secondary">
+                                        <span class="text-red-500">✕</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+            
+            <!-- Block Configuration -->
+            <div class="lg:col-span-1 bg-card p-4 rounded-lg shadow editor-panel">
+                <h2 class="text-xl font-bold text-theme mb-4">Block Configuration</h2>
+                
+                <template x-if="!selectedBlock">
+                    <div class="text-center py-8">
+                        <p class="text-theme-secondary">Select a block to configure</p>
+                    </div>
+                </template>
+                
+                <template x-if="selectedBlock">
+                    <div>
+                        <div class="mb-4">
+                            <label class="block text-theme-secondary mb-1">Block Type</label>
+                            <div class="font-medium text-theme" x-text="getBlockTypeName(selectedBlock.block_type)"></div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="block-title" class="block text-theme-secondary mb-1">Title</label>
+                            <input type="text" id="block-title" x-model="selectedBlock.title" 
+                                   class="w-full px-3 py-2 border border-theme-secondary rounded bg-theme text-theme">
+                        </div>
+                        
+                        <template x-if="['text_block', 'testimonials'].includes(selectedBlock.block_type)">
+                            <div class="mb-4">
+                                <label for="block-content" class="block text-theme-secondary mb-1">Content</label>
+                                <textarea id="block-content" x-model="selectedBlock.content" rows="4"
+                                          class="w-full px-3 py-2 border border-theme-secondary rounded bg-theme text-theme"></textarea>
+                            </div>
+                        </template>
+                        
+                        <!-- Hero Banner Configuration -->
+                        <template x-if="selectedBlock.block_type === 'hero_banner'">
+                            <div class="space-y-4">
+                                <div>
+                                    <label for="hero-image-url" class="block text-theme-secondary mb-1">Image URL</label>
+                                    <input type="text" id="hero-image-url" x-model="selectedBlock.configuration.image_url" 
+                                           class="w-full px-3 py-2 border border-theme-secondary rounded bg-theme text-theme">
+                                </div>
+                                <div>
+                                    <label for="hero-button-text" class="block text-theme-secondary mb-1">Button Text</label>
+                                    <input type="text" id="hero-button-text" x-model="selectedBlock.configuration.button_text" 
+                                           class="w-full px-3 py-2 border border-theme-secondary rounded bg-theme text-theme">
+                                </div>
+                                <div>
+                                    <label for="hero-button-url" class="block text-theme-secondary mb-1">Button URL</label>
+                                    <input type="text" id="hero-button-url" x-model="selectedBlock.configuration.button_url" 
+                                           class="w-full px-3 py-2 border border-theme-secondary rounded bg-theme text-theme">
+                                </div>
+                                <div>
+                                    <label for="hero-height" class="block text-theme-secondary mb-1">Height</label>
+                                    <select id="hero-height" x-model="selectedBlock.configuration.height" 
+                                            class="w-full px-3 py-2 border border-theme-secondary rounded bg-theme text-theme">
+                                        <option value="sm">Small</option>
+                                        <option value="md">Medium</option>
+                                        <option value="lg">Large</option>
+                                        <option value="xl">Extra Large</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </template>
+                        
+                        <!-- Product Grid Configuration -->
+                        <template x-if="selectedBlock.block_type === 'product_grid'">
+                            <div class="space-y-4">
+                                <div>
+                                    <label for="products-count" class="block text-theme-secondary mb-1">Number of Products</label>
+                                    <input type="number" id="products-count" x-model="selectedBlock.configuration.products_count" 
+                                           class="w-full px-3 py-2 border border-theme-secondary rounded bg-theme text-theme">
+                                </div>
+                                <div>
+                                    <label for="products-columns" class="block text-theme-secondary mb-1">Columns</label>
+                                    <select id="products-columns" x-model="selectedBlock.configuration.columns" 
+                                            class="w-full px-3 py-2 border border-theme-secondary rounded bg-theme text-theme">
+                                        <option value="2">2 Columns</option>
+                                        <option value="3">3 Columns</option>
+                                        <option value="4">4 Columns</option>
+                                    </select>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="show-price" x-model="selectedBlock.configuration.show_price">
+                                    <label for="show-price" class="ml-2 text-theme">Show Price</label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="show-description" x-model="selectedBlock.configuration.show_description">
+                                    <label for="show-description" class="ml-2 text-theme">Show Description</label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="show-view-all" x-model="selectedBlock.configuration.show_view_all">
+                                    <label for="show-view-all" class="ml-2 text-theme">Show "View All" Button</label>
+                                </div>
+                            </div>
+                        </template>
+                        
+                        <div class="mt-6">
+                            <button @click="updateBlock()" class="w-full bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded">
+                                Update Block
+                            </button>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script>
+    function homepageEditor() {
+        return {
+            blocks: [],
+            selectedBlock: null,
+            selectedBlockId: null,
+            blockTypes: {
+                'hero_banner': 'Hero Banner',
+                'product_grid': 'Product Grid',
+                'featured_products': 'Featured Products',
+                'testimonials': 'Testimonials',
+                'text_block': 'Text Block',
+                'image_gallery': 'Image Gallery',
+                'newsletter_signup': 'Newsletter Signup',
+                'video_embed': 'Video Embed'
+            },
+            
+            init() {
+                // Load existing blocks
+                this.loadBlocks();
+                
+                // Initialize sortable
+                this.initSortable();
+            },
+            
+            loadBlocks() {
+                // Load blocks from server
+                fetch(`/api/stores/{{ store.slug }}/homepage-blocks/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            this.blocks = data.blocks;
+                        }
+                    });
+                
+                // For demo, initialize with some blocks
+                this.blocks = [
+                    {% for block in current_blocks %}
+                    {
+                        id: {{ block.id }},
+                        block_type: '{{ block.block_type }}',
+                        title: '{{ block.title|escapejs }}',
+                        content: '{{ block.content|escapejs }}',
+                        order: {{ block.order }},
+                        is_active: {% if block.is_active %}true{% else %}false{% endif %},
+                        configuration: {{ block.configuration|safe }}
+                    },
+                    {% endfor %}
+                ];
+            },
+            
+            initSortable() {
+                const container = document.getElementById('blocks-container');
+                const self = this;
+                
+                Sortable.create(container, {
+                    animation: 150,
+                    handle: '.block-item',
+                    ghostClass: 'sortable-ghost',
+                    onEnd: function(evt) {
+                        self.reorderBlocks();
+                    }
+                });
+            },
+            
+            reorderBlocks() {
+                const blockElements = document.querySelectorAll('.block-item');
+                const blockOrder = Array.from(blockElements).map(el => parseInt(el.id.replace('block-', '')));
+                
+                // Update local order
+                const newBlocks = [];
+                blockOrder.forEach((id, index) => {
+                    const block = this.blocks.find(b => b.id === id);
+                    if (block) {
+                        block.order = index;
+                        newBlocks.push(block);
+                    }
+                });
+                
+                this.blocks = newBlocks;
+                
+                // Send to server
+                fetch(`/stores/{{ store.slug }}/homepage/blocks/reorder/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': this.getCsrfToken()
+                    },
+                    body: JSON.stringify({
+                        block_order: blockOrder
+                    })
+                });
+            },
+            
+            addNewBlock(blockType, blockName) {
+                fetch(`/stores/{{ store.slug }}/homepage/blocks/create/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': this.getCsrfToken()
+                    },
+                    body: JSON.stringify({
+                        block_type: blockType,
+                        title: blockName
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        const newBlock = {
+                            id: data.block_id,
+                            block_type: data.block_type,
+                            title: data.title,
+                            content: '',
+                            order: data.order,
+                            is_active: true,
+                            configuration: this.getDefaultConfiguration(data.block_type)
+                        };
+                        
+                        this.blocks.push(newBlock);
+                        this.selectBlock(newBlock);
+                    }
+                });
+            },
+            
+            selectBlock(block) {
+                this.selectedBlock = JSON.parse(JSON.stringify(block)); // Clone to avoid direct reference
+                this.selectedBlockId = block.id;
+            },
+            
+            updateBlock() {
+                if (!this.selectedBlock) return;
+                
+                // Update local block
+                const index = this.blocks.findIndex(b => b.id === this.selectedBlock.id);
+                if (index !== -1) {
+                    this.blocks[index] = JSON.parse(JSON.stringify(this.selectedBlock));
+                }
+                
+                // Send to server
+                fetch(`/stores/{{ store.slug }}/homepage/blocks/${this.selectedBlock.id}/update/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': this.getCsrfToken()
+                    },
+                    body: JSON.stringify(this.selectedBlock)
+                });
+            },
+            
+            deleteBlock(block) {
+                if (!confirm('Are you sure you want to delete this block?')) return;
+                
+                // Remove from local blocks
+                this.blocks = this.blocks.filter(b => b.id !== block.id);
+                
+                // If the deleted block was selected, clear selection
+                if (this.selectedBlockId === block.id) {
+                    this.selectedBlock = null;
+                    this.selectedBlockId = null;
+                }
+                
+                // Send to server
+                fetch(`/stores/{{ store.slug }}/homepage/blocks/${block.id}/delete/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': this.getCsrfToken()
+                    }
+                });
+            },
+            
+            toggleBlockActive(block) {
+                block.is_active = !block.is_active;
+                
+                // Send to server
+                fetch(`/stores/{{ store.slug }}/homepage/blocks/${block.id}/update/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': this.getCsrfToken()
+                    },
+                    body: JSON.stringify({
+                        is_active: block.is_active
+                    })
+                });
+            },
+            
+            saveChanges() {
+                alert('Changes saved successfully!');
+            },
+            
+            getBlockTypeName(blockType) {
+                return this.blockTypes[blockType] || blockType;
+            },
+            
+            getDefaultConfiguration(blockType) {
+                switch(blockType) {
+                    case 'hero_banner':
+                        return {
+                            image_url: '',
+                            button_text: 'Shop Now',
+                            button_url: '/products/',
+                            height: 'lg',
+                            overlay_opacity: 50,
+                            text_color: 'white'
+                        };
+                    case 'product_grid':
+                        return {
+                            products_count: 6,
+                            columns: 3,
+                            show_price: true,
+                            show_description: false,
+                            show_view_all: true,
+                            sort_by: 'newest'
+                        };
+                    case 'testimonials':
+                        return {
+                            style: 'cards',
+                            testimonials: [
+                                {
+                                    name: 'Customer Name',
+                                    role: 'Customer',
+                                    content: 'This is a great product!',
+                                    image_url: ''
+                                }
+                            ]
+                        };
+                    case 'text_block':
+                        return {
+                            alignment: 'left',
+                            max_width: 'lg',
+                            background_color: '',
+                            text_color: ''
+                        };
+                    default:
+                        return {};
+                }
+            },
+            
+            getCsrfToken() {
+                const cookies = document.cookie.split(';');
+                for (let cookie of cookies) {
+                    const [name, value] = cookie.trim().split('=');
+                    if (name === 'csrftoken') {
+                        return value;
+                    }
+                }
+                return '';
+            }
+        };
+    }
+</script>
+{% endblock %}

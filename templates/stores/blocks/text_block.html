@@ -1,0 +1,28 @@
+{% comment %}
+Text Block Template
+Parameters:
+- title: Section title
+- content: Main text content
+- alignment: Text alignment (left, center, right)
+- max_width: Maximum width (sm, md, lg, xl, full)
+- background_color: Custom background color (optional)
+- text_color: Custom text color (optional)
+{% endcomment %}
+
+<section class="py-12" {% if block.configuration.background_color %}style="background-color: {{ block.configuration.background_color }};"{% else %}class="bg-card"{% endif %}>
+    <div class="container mx-auto px-4">
+        <div class="{% if block.configuration.max_width == 'sm' %}max-w-2xl{% elif block.configuration.max_width == 'md' %}max-w-4xl{% elif block.configuration.max_width == 'lg' %}max-w-6xl{% elif block.configuration.max_width == 'xl' %}max-w-7xl{% else %}w-full{% endif %} mx-auto">
+            {% if block.title %}
+            <h2 class="text-3xl font-bold mb-6 {% if block.configuration.alignment == 'center' %}text-center{% elif block.configuration.alignment == 'right' %}text-right{% endif %}" 
+                {% if block.configuration.text_color %}style="color: {{ block.configuration.text_color }};"{% else %}class="text-theme"{% endif %}>
+                {{ block.title }}
+            </h2>
+            {% endif %}
+            
+            <div class="prose prose-lg max-w-none {% if block.configuration.alignment == 'center' %}text-center mx-auto{% elif block.configuration.alignment == 'right' %}text-right ml-auto{% endif %}"
+                 {% if block.configuration.text_color %}style="color: {{ block.configuration.text_color }};"{% else %}class="text-theme-secondary"{% endif %}>
+                {{ block.content|safe }}
+            </div>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}{{ store.name }} - Home{% endblock %}
+
+{% block content %}
+    {% for block in homepage_blocks %}
+        {% if block.is_active %}
+            {% include "stores/blocks/"|add:block.block_type|add:".html" with block=block %}
+        {% endif %}
+    {% empty %}
+        <div class="py-16 text-center">
+            <h2 class="text-2xl font-bold text-theme mb-4">Welcome to {{ store.name }}</h2>
+            <p class="text-theme-secondary">This store's homepage is currently being set up.</p>
+            {% if user.is_authenticated and user == store.owner %}
+            <div class="mt-8">
+                <a href="{% url 'store_homepage_editor' store.slug %}" class="bg-primary hover:bg-primary-hover text-white px-6 py-3 rounded-lg">
+                    Configure Homepage
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    {% endfor %}
+{% endblock %}

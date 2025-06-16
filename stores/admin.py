@@ -1,32 +1,52 @@
 from django.contrib import admin
-from .models import Store
+from django import forms
+from .models import Store, HomepageBlock, StoreHomepageBlock
 
+class StoreHomepageBlockInline(admin.TabularInline):
+    model = StoreHomepageBlock
+    extra = 0
+    fields = ('block_type', 'title', 'order', 'is_active')
+
+class StoreAdminForm(forms.ModelForm):
+    class Meta:
+        model = Store
+        fields = '__all__'
+        widgets = {
+            'homepage_layout': forms.HiddenInput(),
+        }
+
+@admin.register(Store)
 class StoreAdmin(admin.ModelAdmin):
-    list_display = ('name', 'owner', 'theme_name', 'created_at')
-    list_filter = ('theme_name', 'created_at')
-    search_fields = ('name', 'description')
+    list_display = ('name', 'owner', 'theme_name')
+    search_fields = ('name', 'owner__username')
+    list_filter = ('theme_name',)
     prepopulated_fields = {'slug': ('name',)}
-    
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        if request.user.is_superuser:
-            return qs
-        return qs.filter(owner=request.user)
-    
-    def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if db_field.name == "owner" and not request.user.is_superuser:
-            kwargs["initial"] = request.user
-            kwargs["disabled"] = True
-        return super().formfield_for_foreignkey(db_field, request, **kwargs)
-    
-    def has_change_permission(self, request, obj=None):
-        if not obj or request.user.is_superuser:
-            return True
-        return obj.owner == request.user
-        
-    def has_delete_permission(self, request, obj=None):
-        if not obj or request.user.is_superuser:
-            return True
-        return obj.owner == request.user
+    form = StoreAdminForm
+    inlines = [StoreHomepageBlockInline]
 
-admin.site.register(Store, StoreAdmin)
+@admin.register(HomepageBlock)
+class HomepageBlockAdmin(admin.ModelAdmin):
+    list_display = ('name', 'block_type', 'template_name')
+    list_filter = ('block_type',)
+    search_fields = ('name', 'description')
+
+@admin.register(StoreHomepageBlock)
+class StoreHomepageBlockAdmin(admin.ModelAdmin):
+    list_display = ('store', 'block_type', 'title', 'order', 'is_active')
+    list_filter = ('store', 'block_type', 'is_active')
+    search_fields = ('store__name', 'title', 'content')
+    list_editable = ('order', 'is_active')
+    
+    fieldsets = (
+        (None, {
+            'fields': ('store', 'block_type', 'title', 'order', 'is_active')
+        }),
+        ('Content', {
+            'fields': ('content',),
+            'classes': ('collapse',),
+        }),
+        ('Advanced Configuration', {
+            'fields': ('configuration',),
+            'classes': ('collapse',),
+        }),
+    )

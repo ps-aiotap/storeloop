@@ -1,0 +1,47 @@
+{% comment %}
+Product Grid Block Template
+Parameters:
+- title: Section title
+- products_count: Number of products to display (default: 6)
+- columns: Number of columns (2-4, default: 3)
+- show_price: Whether to show product price (default: true)
+- show_description: Whether to show product description (default: false)
+- category: Filter by category (optional)
+- sort_by: Sort products by (newest, price_low, price_high, popular)
+{% endcomment %}
+
+<section class="py-12 bg-card">
+    <div class="container mx-auto px-4">
+        {% if block.title %}
+        <h2 class="text-3xl font-bold text-theme mb-8 text-center">{{ block.title }}</h2>
+        {% endif %}
+        
+        <div class="grid grid-cols-1 {% if block.configuration.columns == 2 %}md:grid-cols-2{% elif block.configuration.columns == 4 %}md:grid-cols-2 lg:grid-cols-4{% else %}md:grid-cols-3{% endif %} gap-6">
+            {% with products_count=block.configuration.products_count|default:6 %}
+            {% with category=block.configuration.category %}
+            {% with sort_by=block.configuration.sort_by|default:'newest' %}
+            
+            {% if category %}
+                {% with products=products|filter_by_category:category|sort_by:sort_by|slice:":products_count" %}
+                    {% include "stores/blocks/partials/product_items.html" with products=products show_price=block.configuration.show_price show_description=block.configuration.show_description %}
+                {% endwith %}
+            {% else %}
+                {% with products=products|sort_by:sort_by|slice:":products_count" %}
+                    {% include "stores/blocks/partials/product_items.html" with products=products show_price=block.configuration.show_price show_description=block.configuration.show_description %}
+                {% endwith %}
+            {% endif %}
+            
+            {% endwith %}
+            {% endwith %}
+            {% endwith %}
+        </div>
+        
+        {% if block.configuration.show_view_all %}
+        <div class="text-center mt-8">
+            <a href="{% url 'product_list' %}" class="bg-primary hover:bg-primary-hover text-white px-6 py-2 rounded-lg inline-block">
+                View All Products
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</section>

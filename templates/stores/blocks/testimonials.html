@@ -1,0 +1,70 @@
+{% comment %}
+Testimonials Block Template
+Parameters:
+- title: Section title
+- testimonials: List of testimonials in configuration
+  Each testimonial has: name, role, content, image_url
+- style: Display style (cards, quotes, minimal)
+{% endcomment %}
+
+<section class="py-12 bg-theme">
+    <div class="container mx-auto px-4">
+        {% if block.title %}
+        <h2 class="text-3xl font-bold text-theme mb-8 text-center">{{ block.title }}</h2>
+        {% endif %}
+        
+        {% with style=block.configuration.style|default:'cards' %}
+        {% if style == 'cards' %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for testimonial in block.configuration.testimonials %}
+            <div class="bg-card p-6 rounded-lg shadow-md">
+                <div class="flex items-center mb-4">
+                    {% if testimonial.image_url %}
+                    <img src="{{ testimonial.image_url }}" alt="{{ testimonial.name }}" class="w-12 h-12 rounded-full mr-4 object-cover">
+                    {% endif %}
+                    <div>
+                        <h4 class="font-bold text-theme">{{ testimonial.name }}</h4>
+                        {% if testimonial.role %}
+                        <p class="text-theme-secondary text-sm">{{ testimonial.role }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <p class="text-theme-secondary">{{ testimonial.content }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% elif style == 'quotes' %}
+        <div class="space-y-8">
+            {% for testimonial in block.configuration.testimonials %}
+            <blockquote class="relative p-8 bg-card rounded-lg shadow-md">
+                <div class="text-4xl absolute top-2 left-2 text-primary opacity-30">"</div>
+                <p class="text-theme-secondary mb-4 relative z-10">{{ testimonial.content }}</p>
+                <footer class="flex items-center">
+                    {% if testimonial.image_url %}
+                    <img src="{{ testimonial.image_url }}" alt="{{ testimonial.name }}" class="w-10 h-10 rounded-full mr-3 object-cover">
+                    {% endif %}
+                    <div>
+                        <cite class="font-bold text-theme not-italic">{{ testimonial.name }}</cite>
+                        {% if testimonial.role %}
+                        <p class="text-theme-secondary text-sm">{{ testimonial.role }}</p>
+                        {% endif %}
+                    </div>
+                </footer>
+            </blockquote>
+            {% endfor %}
+        </div>
+        
+        {% else %}
+        <div class="space-y-6">
+            {% for testimonial in block.configuration.testimonials %}
+            <div class="border-l-4 border-primary pl-4">
+                <p class="text-theme-secondary mb-2">{{ testimonial.content }}</p>
+                <p class="font-bold text-theme">— {{ testimonial.name }}{% if testimonial.role %}, <span class="font-normal text-theme-secondary">{{ testimonial.role }}</span>{% endif %}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+    </div>
+</section>

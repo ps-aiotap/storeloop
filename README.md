@@ -9,6 +9,7 @@ StoreLoop is a Django-based e-commerce platform with multi-seller support, custo
 - Store-specific product catalogs and branding
 - Custom domain support for each store
 - Store analytics and performance metrics
+- JSON-driven homepage builder for each store
 
 ### Product Management
 - Comprehensive product catalog with images, descriptions, and pricing
@@ -28,12 +29,25 @@ StoreLoop is a Django-based e-commerce platform with multi-seller support, custo
 - Responsive design across all themes
 - Dark mode support with automatic detection
 
+### Homepage Builder
+- Drag-and-drop interface for arranging content blocks
+- Multiple block types:
+  - Hero banners with customizable images and CTAs
+  - Product grids with filtering options
+  - Testimonial sections with different display styles
+  - Text blocks with rich formatting
+  - Image galleries and video embeds
+- Block-specific configuration options
+- Enable/disable blocks without deleting them
+- Real-time preview of changes
+
 ### Shopping Experience
 - Responsive, mobile-friendly design
 - Product search and filtering
 - Related products recommendations
 - Interactive product cards with hover effects and animations
 - Streamlined checkout process
+- Form validation with real-time feedback
 
 ### Payment Processing
 - Integrated Razorpay payment gateway
@@ -50,7 +64,8 @@ StoreLoop is a Django-based e-commerce platform with multi-seller support, custo
 ### Technical Features
 - Built with Django 4.2 LTS
 - Tailwind CSS for modern styling
-- Alpine.js for interactive UI components
+- React components for interactive UI elements
+- Alpine.js for lightweight interactions
 - CSS variables for theme customization
 - Modular architecture for easy extension
 - Optimized for performance and SEO
@@ -84,6 +99,15 @@ StoreLoop is a Django-based e-commerce platform with multi-seller support, custo
 5. Upload a store logo
 6. Add custom CSS/JS if needed
 
+## Homepage Builder
+
+1. Navigate to `/stores/{store_slug}/homepage/editor/` to access the homepage builder
+2. Add blocks from the library panel on the left
+3. Configure each block's settings in the right panel
+4. Drag and drop blocks to reorder them
+5. Toggle blocks on/off using the visibility control
+6. Preview your homepage with the "Preview Homepage" button
+
 ## Payment Integration
 
 1. Sign up for a Razorpay account
@@ -95,4 +119,6 @@ StoreLoop is a Django-based e-commerce platform with multi-seller support, custo
 - The application follows a modular architecture with separate apps for products, orders, and stores
 - Templates use a component-based approach for reusability
 - Theme system uses CSS variables and Tailwind's dark mode
+- React is used for interactive components like the homepage builder
+- Alpine.js is used for lightweight interactions
 - Form validation combines HTML5 validation with JavaScript for enhanced user experience

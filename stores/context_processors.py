@@ -10,17 +10,9 @@ def store_theme(request):
     current_store = getattr(request, 'current_store', None)
     
     if current_store:
-        # Create store_theme context variable with safe defaults for new fields
-        context['store_theme'] = {
-            'name': current_store.name,
-            'theme_name': current_store.theme_name,
-            'primary_color': current_store.primary_color,
-            'font_choice': current_store.font_choice,
-            'logo_url': current_store.logo_url.url if current_store.logo_url else None,
-            'custom_css': getattr(current_store, 'custom_css', ''),
-            'custom_js': getattr(current_store, 'custom_js', ''),
-            'theme_version': getattr(current_store, 'theme_version', 'v1'),
-        }
+        # Get theme settings with inheritance from base theme
+        theme_settings = current_store.get_theme_settings()
+        context['store_theme'] = theme_settings
     else:
         # Try to derive store from URL if not already set
         store_slug = None
@@ -38,16 +30,7 @@ def store_theme(request):
         if store_slug:
             try:
                 derived_store = Store.objects.get(slug=store_slug)
-                context['store_theme'] = {
-                    'name': derived_store.name,
-                    'theme_name': derived_store.theme_name,
-                    'primary_color': derived_store.primary_color,
-                    'font_choice': derived_store.font_choice,
-                    'logo_url': derived_store.logo_url.url if derived_store.logo_url else None,
-                    'custom_css': getattr(derived_store, 'custom_css', ''),
-                    'custom_js': getattr(derived_store, 'custom_js', ''),
-                    'theme_version': getattr(derived_store, 'theme_version', 'v1'),
-                }
+                context['store_theme'] = derived_store.get_theme_settings()
                 return context
             except Store.DoesNotExist:
                 pass
@@ -57,6 +40,7 @@ def store_theme(request):
             'name': 'StoreLoop',
             'theme_name': 'light',
             'primary_color': '#3b82f6',
+            'secondary_color': '#1f2937',
             'font_choice': 'sans',
             'logo_url': None,
             'custom_css': '',

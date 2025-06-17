@@ -1,0 +1,123 @@
+{% comment %}
+Contact Form Block Template
+Parameters:
+- title: Form title
+- subtitle: Form subtitle or description
+- background_color: Custom background color
+- text_color: Custom text color
+- contact_form_id: ID of the contact form to use
+{% endcomment %}
+
+<section class="py-12" {% if block.configuration.background_color %}style="background-color: {{ block.configuration.background_color }};"{% else %}class="bg-card"{% endif %}>
+    <div class="container mx-auto px-4 max-w-3xl">
+        {% if block.title %}
+        <h2 class="text-3xl font-bold mb-2 text-center" 
+            {% if block.configuration.text_color %}style="color: {{ block.configuration.text_color }};"{% else %}class="text-theme"{% endif %}>
+            {{ block.title }}
+        </h2>
+        {% endif %}
+        
+        {% if block.content %}
+        <div class="text-center mb-8" 
+             {% if block.configuration.text_color %}style="color: {{ block.configuration.text_color }};"{% else %}class="text-theme-secondary"{% endif %}>
+            {{ block.content }}
+        </div>
+        {% endif %}
+        
+        {% with form_id=block.configuration.contact_form_id %}
+        {% if form_id %}
+            {% with contact_form=contact_forms|filter_by_id:form_id %}
+                <form id="contact-form-{{ form_id }}" class="space-y-6" action="{% url 'submit_contact_form' form_id %}" method="post">
+                    {% csrf_token %}
+                    
+                    <div>
+                        <label for="name" class="block mb-1 {% if not block.configuration.text_color %}text-theme{% endif %}" 
+                               {% if block.configuration.text_color %}style="color: {{ block.configuration.text_color }};"{% endif %}>
+                            Name
+                        </label>
+                        <input type="text" id="name" name="name" required 
+                               class="w-full px-4 py-2 border border-theme-secondary rounded bg-theme text-theme">
+                    </div>
+                    
+                    <div>
+                        <label for="email" class="block mb-1 {% if not block.configuration.text_color %}text-theme{% endif %}" 
+                               {% if block.configuration.text_color %}style="color: {{ block.configuration.text_color }};"{% endif %}>
+                            Email
+                        </label>
+                        <input type="email" id="email" name="email" required 
+                               class="w-full px-4 py-2 border border-theme-secondary rounded bg-theme text-theme">
+                    </div>
+                    
+                    {% if contact_form.show_phone %}
+                    <div>
+                        <label for="phone" class="block mb-1 {% if not block.configuration.text_color %}text-theme{% endif %}" 
+                               {% if block.configuration.text_color %}style="color: {{ block.configuration.text_color }};"{% endif %}>
+                            Phone
+                        </label>
+                        <input type="tel" id="phone" name="phone" 
+                               class="w-full px-4 py-2 border border-theme-secondary rounded bg-theme text-theme">
+                    </div>
+                    {% endif %}
+                    
+                    {% if contact_form.show_subject %}
+                    <div>
+                        <label for="subject" class="block mb-1 {% if not block.configuration.text_color %}text-theme{% endif %}" 
+                               {% if block.configuration.text_color %}style="color: {{ block.configuration.text_color }};"{% endif %}>
+                            Subject
+                        </label>
+                        <input type="text" id="subject" name="subject" 
+                               class="w-full px-4 py-2 border border-theme-secondary rounded bg-theme text-theme">
+                    </div>
+                    {% endif %}
+                    
+                    <div>
+                        <label for="message" class="block mb-1 {% if not block.configuration.text_color %}text-theme{% endif %}" 
+                               {% if block.configuration.text_color %}style="color: {{ block.configuration.text_color }};"{% endif %}>
+                            Message
+                        </label>
+                        <textarea id="message" name="message" rows="4" required 
+                                  class="w-full px-4 py-2 border border-theme-secondary rounded bg-theme text-theme"></textarea>
+                    </div>
+                    
+                    {% if contact_form.newsletter_integration %}
+                    <div class="flex items-center">
+                        <input type="checkbox" id="newsletter" name="newsletter" class="mr-2">
+                        <label for="newsletter" class="{% if not block.configuration.text_color %}text-theme-secondary{% endif %}" 
+                               {% if block.configuration.text_color %}style="color: {{ block.configuration.text_color }};"{% endif %}>
+                            Subscribe to our newsletter
+                        </label>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="flex justify-center">
+                        <button type="submit" class="bg-primary hover:bg-primary-hover text-white px-8 py-3 rounded-lg">
+                            Send Message
+                        </button>
+                    </div>
+                </form>
+                
+                {% if contact_form.whatsapp_number %}
+                <div class="mt-8 text-center">
+                    <p class="mb-2 {% if not block.configuration.text_color %}text-theme-secondary{% endif %}" 
+                       {% if block.configuration.text_color %}style="color: {{ block.configuration.text_color }};"{% endif %}>
+                        Prefer WhatsApp?
+                    </p>
+                    <a href="https://wa.me/{{ contact_form.whatsapp_number }}" target="_blank" 
+                       class="inline-flex items-center bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">
+                        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+                            <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 22c-5.523 0-10-4.477-10-10S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/>
+                        </svg>
+                        Chat on WhatsApp
+                    </a>
+                </div>
+                {% endif %}
+            {% endwith %}
+        {% else %}
+            <div class="text-center py-4 text-theme-secondary">
+                No contact form configured. Please select a contact form in the block settings.
+            </div>
+        {% endif %}
+        {% endwith %}
+    </div>
+</section>

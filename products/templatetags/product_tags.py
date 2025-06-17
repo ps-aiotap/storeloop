@@ -1,20 +1,65 @@
 from django import template
-from django.utils import timezone
-from datetime import timedelta
+from django.utils.safestring import mark_safe
+from ..models import TagType, Tag, ContactForm, TrustBadge
 
 register = template.Library()
 
 @register.filter
-def is_new(product):
-    """Return True if product was created within the last 7 days"""
-    return product.created_at >= (timezone.now() - timedelta(days=7))
+def filter_by_id(queryset, id_value):
+    """Filter a queryset by ID"""
+    try:
+        return queryset.get(id=id_value)
+    except:
+        return None
 
 @register.filter
-def is_limited(product):
-    """Return True if product stock is 5 or less"""
-    return product.stock <= 5
+def filter_by_slug(queryset, slug):
+    """Filter a queryset by slug"""
+    try:
+        return queryset.get(slug=slug)
+    except:
+        return None
 
 @register.filter
-def is_bestseller(product):
-    """Return True if product is in top 3 most ordered this month"""
-    return product.is_bestseller()
+def get_tags(tag_type):
+    """Get all tags for a tag type"""
+    if tag_type:
+        return tag_type.tags.all()
+    return []
+
+@register.simple_tag
+def get_trust_badges(store):
+    """Get all trust badges for a store"""
+    return TrustBadge.objects.filter(store=store)
+
+@register.simple_tag
+def get_contact_forms(store):
+    """Get all contact forms for a store"""
+    return ContactForm.objects.filter(store=store)
+
+@register.simple_tag
+def get_tag_types():
+    """Get all tag types"""
+    return TagType.objects.all()
+
+@register.simple_tag
+def get_tags_by_type(tag_type_slug):
+    """Get all tags for a tag type by slug"""
+    try:
+        tag_type = TagType.objects.get(slug=tag_type_slug)
+        return tag_type.tags.all()
+    except TagType.DoesNotExist:
+        return []
+
+@register.simple_tag
+def get_product_count_by_tag(tag):
+    """Get the number of products with a specific tag"""
+    return tag.products.count()
+
+@register.filter
+def format_price(value):
+    """Format a price with currency symbol"""
+    try:
+        return f"₹{float(value):.2f}"
+    except (ValueError, TypeError):
+        return value

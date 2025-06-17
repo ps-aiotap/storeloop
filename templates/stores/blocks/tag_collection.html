@@ -1,0 +1,84 @@
+{% comment %}
+Tag Collection Block Template
+Parameters:
+- title: Section title
+- tag_type: Type of tags to display (e.g., Occasion, Lifestyle)
+- layout: Display layout (grid, list, carousel)
+- show_description: Whether to show tag descriptions
+{% endcomment %}
+
+<section class="py-8 bg-card">
+    <div class="container mx-auto px-4">
+        {% if block.title %}
+        <h2 class="text-2xl font-bold text-theme mb-6 text-center">{{ block.title }}</h2>
+        {% endif %}
+        
+        {% with tag_type=block.configuration.tag_type %}
+        {% with layout=block.configuration.layout|default:'grid' %}
+        {% with show_description=block.configuration.show_description|default:False %}
+        
+        {% if tag_type %}
+            {% with tags=tag_types|filter_by_slug:tag_type|get_tags %}
+                {% if layout == 'list' %}
+                    <ul class="space-y-2">
+                        {% for tag in tags %}
+                        <li>
+                            <a href="{% url 'tag_collection' tag_type=tag.tag_type.slug tag=tag.slug %}" 
+                               class="flex items-center p-3 bg-theme border border-theme-secondary rounded-lg hover:border-primary transition">
+                                <span class="text-theme font-medium">{{ tag.name }}</span>
+                                {% if show_description and tag.description %}
+                                <span class="text-theme-secondary ml-2 text-sm">- {{ tag.description }}</span>
+                                {% endif %}
+                            </a>
+                        </li>
+                        {% empty %}
+                        <li class="text-center py-4 text-theme-secondary">
+                            No tags available.
+                        </li>
+                        {% endfor %}
+                    </ul>
+                {% elif layout == 'carousel' %}
+                    <div class="flex overflow-x-auto py-4 gap-4">
+                        {% for tag in tags %}
+                        <a href="{% url 'tag_collection' tag_type=tag.tag_type.slug tag=tag.slug %}" 
+                           class="flex-shrink-0 p-4 bg-theme border border-theme-secondary rounded-lg hover:border-primary transition min-w-[200px]">
+                            <div class="text-theme font-medium">{{ tag.name }}</div>
+                            {% if show_description and tag.description %}
+                            <div class="text-theme-secondary text-sm mt-1">{{ tag.description }}</div>
+                            {% endif %}
+                        </a>
+                        {% empty %}
+                        <div class="text-center py-4 text-theme-secondary flex-grow">
+                            No tags available.
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        {% for tag in tags %}
+                        <a href="{% url 'tag_collection' tag_type=tag.tag_type.slug tag=tag.slug %}" 
+                           class="p-4 bg-theme border border-theme-secondary rounded-lg hover:border-primary transition text-center">
+                            <div class="text-theme font-medium">{{ tag.name }}</div>
+                            {% if show_description and tag.description %}
+                            <div class="text-theme-secondary text-sm mt-1">{{ tag.description }}</div>
+                            {% endif %}
+                        </a>
+                        {% empty %}
+                        <div class="col-span-full text-center py-4 text-theme-secondary">
+                            No tags available.
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+        {% else %}
+            <div class="text-center py-4 text-theme-secondary">
+                No tag type selected. Please configure the block settings.
+            </div>
+        {% endif %}
+        
+        {% endwith %}
+        {% endwith %}
+        {% endwith %}
+    </div>
+</section>

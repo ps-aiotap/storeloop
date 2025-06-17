@@ -1,0 +1,40 @@
+{% comment %}
+Trust Badges Block Template
+Parameters:
+- title: Section title
+- layout: Display layout (grid, inline, carousel)
+- badge_size: Size of badges (small, medium, large)
+{% endcomment %}
+
+<section class="py-8 bg-card">
+    <div class="container mx-auto px-4">
+        {% if block.title %}
+        <h2 class="text-2xl font-bold text-theme mb-6 text-center">{{ block.title }}</h2>
+        {% endif %}
+        
+        {% with layout=block.configuration.layout|default:'grid' %}
+        {% with badge_size=block.configuration.badge_size|default:'medium' %}
+        
+        <div class="{% if layout == 'inline' %}flex flex-wrap justify-center gap-8{% elif layout == 'carousel' %}flex overflow-x-auto py-4 gap-8{% else %}grid grid-cols-2 md:grid-cols-4 gap-6{% endif %}">
+            {% for badge in trust_badges %}
+            <div class="flex flex-col items-center {% if layout == 'inline' %}mx-4{% endif %}">
+                <img src="{{ badge.icon.url }}" alt="{{ badge.name }}" 
+                     class="{% if badge_size == 'small' %}h-12{% elif badge_size == 'large' %}h-24{% else %}h-16{% endif %} w-auto mb-2">
+                <div class="text-center">
+                    <div class="font-medium text-theme">{{ badge.name }}</div>
+                    {% if badge.description %}
+                    <div class="text-sm text-theme-secondary">{{ badge.description }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-full text-center py-4 text-theme-secondary">
+                No trust badges available.
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% endwith %}
+        {% endwith %}
+    </div>
+</section>

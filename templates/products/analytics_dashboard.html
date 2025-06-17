@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics Dashboard - {{ store.name }}{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    .stat-card {
+        @apply bg-card rounded-lg shadow p-4 border border-theme;
+    }
+    .stat-value {
+        @apply text-3xl font-bold text-primary;
+    }
+    .stat-label {
+        @apply text-sm text-theme-secondary;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-theme">Analytics Dashboard</h1>
+        
+        <div class="flex space-x-2">
+            <a href="?days=7" class="px-3 py-1 rounded {% if days == 7 %}bg-primary text-white{% else %}bg-card text-theme-secondary{% endif %}">
+                7 Days
+            </a>
+            <a href="?days=30" class="px-3 py-1 rounded {% if days == 30 %}bg-primary text-white{% else %}bg-card text-theme-secondary{% endif %}">
+                30 Days
+            </a>
+            <a href="?days=90" class="px-3 py-1 rounded {% if days == 90 %}bg-primary text-white{% else %}bg-card text-theme-secondary{% endif %}">
+                90 Days
+            </a>
+        </div>
+    </div>
+    
+    <!-- Stats Overview -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="stat-card">
+            <div class="stat-value">{{ total_views }}</div>
+            <div class="stat-label">Total Product Views</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-value">{{ total_products }}</div>
+            <div class="stat-label">Total Products</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-value">{{ tag_performance|length }}</div>
+            <div class="stat-label">Active Tags</div>
+        </div>
+    </div>
+    
+    <!-- Views Over Time Chart -->
+    <div class="bg-card rounded-lg shadow p-4 border border-theme mb-8">
+        <h2 class="text-xl font-semibold text-theme mb-4">Product Views Over Time</h2>
+        <div style="height: 300px;">
+            <canvas id="viewsChart"></canvas>
+        </div>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Top Products -->
+        <div class="bg-card rounded-lg shadow p-4 border border-theme">
+            <h2 class="text-xl font-semibold text-theme mb-4">Top Products</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr>
+                            <th class="text-left py-2 text-theme-secondary">Product</th>
+                            <th class="text-right py-2 text-theme-secondary">Views</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in top_products %}
+                        <tr class="border-t border-theme">
+                            <td class="py-2 text-theme">
+                                <a href="{% url 'product_detail' product.id %}" class="hover:text-primary">
+                                    {{ product.title }}
+                                </a>
+                            </td>
+                            <td class="py-2 text-right text-theme">{{ product.views }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="2" class="py-4 text-center text-theme-secondary">No product data available</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Tag Performance -->
+        <div class="bg-card rounded-lg shadow p-4 border border-theme">
+            <h2 class="text-xl font-semibold text-theme mb-4">Tag Performance</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr>
+                            <th class="text-left py-2 text-theme-secondary">Tag</th>
+                            <th class="text-center py-2 text-theme-secondary">Products</th>
+                            <th class="text-right py-2 text-theme-secondary">Views</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tag in tag_performance %}
+                        <tr class="border-t border-theme">
+                            <td class="py-2 text-theme">
+                                {{ tag.tag }} <span class="text-xs text-theme-secondary">({{ tag.tag_type }})</span>
+                            </td>
+                            <td class="py-2 text-center text-theme">{{ tag.product_count }}</td>
+                            <td class="py-2 text-right text-theme">{{ tag.total_views }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="py-4 text-center text-theme-secondary">No tag data available</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Views over time chart
+        const viewData = {{ view_data|safe }};
+        
+        const ctx = document.getElementById('viewsChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: viewData.map(item => item.date),
+                datasets: [{
+                    label: 'Product Views',
+                    data: viewData.map(item => item.views),
+                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                    borderColor: 'rgba(59, 130, 246, 1)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

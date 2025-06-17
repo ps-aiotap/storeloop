@@ -93,6 +93,9 @@
                                             Products
                                         </a>
                                     </li>
+                                    <li class="pt-2">
+                                        {% include "stores/components/store_switcher.html" %}
+                                    </li>
                                 </ul>
                             </nav>
                         </div>
@@ -100,7 +103,7 @@
                     
                     <!-- Desktop navigation -->
                     <nav class="hidden md:block ml-auto">
-                        <ul class="flex space-x-8">
+                        <ul class="flex space-x-8 items-center">
                             <li>
                                 <a href="/" class="text-primary hover:underline font-medium text-lg">
                                     Home
@@ -110,6 +113,9 @@
                                 <a href="/products/" class="text-primary hover:underline font-medium text-lg">
                                     Products
                                 </a>
+                            </li>
+                            <li>
+                                {% include "stores/components/store_switcher.html" %}
                             </li>
                         </ul>
                     </nav>

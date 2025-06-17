@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Browse Stores - StoreLoop{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <h1 class="text-3xl font-bold text-center mb-8 text-theme">Browse Stores</h1>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for store in stores %}
+        <div class="bg-card rounded-lg shadow-lg overflow-hidden border border-theme transition duration-300 hover:shadow-xl">
+            <div class="p-6">
+                {% if store.logo_url %}
+                <div class="flex justify-center mb-4">
+                    <img src="{{ store.logo_url.url }}" alt="{{ store.name }}" class="h-16 object-contain">
+                </div>
+                {% endif %}
+                
+                <h2 class="text-xl font-bold mb-3 text-theme text-center">{{ store.name }}</h2>
+                
+                {% if store.description %}
+                <p class="text-theme-secondary mb-4">{{ store.description }}</p>
+                {% endif %}
+                
+                <div class="flex justify-center mt-4">
+                    <a href="{% url 'store_homepage' store.slug %}" 
+                       class="bg-primary hover:bg-primary-hover text-white px-6 py-2 rounded-lg">
+                        Browse Store
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full text-center py-12">
+            <p class="text-theme-secondary">No stores available.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,6 +1,5 @@
 from django import template
-from django.utils.safestring import mark_safe
-from ..models import TagType, Tag, ContactForm, TrustBadge
+from ..models import TagType, ContactForm, TrustBadge
 
 register = template.Library()
 

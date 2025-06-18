@@ -1,7 +1,7 @@
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404
 from django.views.generic import ListView, DetailView, TemplateView
 from django.http import Http404
-from django.db.models import Count, Q
+from django.db.models import Count
 from django.utils import timezone
 from datetime import timedelta
 from .models import Product, Tag, TagType, Bundle, StaticPage, TrustBadge, ProductView

@@ -5,7 +5,7 @@ from django.views.generic import ListView
 from django.http import JsonResponse
 from .models import Store, StoreHomepageBlock, HomepageBlock
 from .forms import StoreThemeForm
-from products.models import Product
+from products.models import Product, ContactForm, TrustBadge
 import json
 
 @login_required
@@ -33,7 +33,7 @@ class StoreProductListView(ListView):
     paginate_by = 12
     
     def get_queryset(self):
-        self.store = get_object_or_404(Store, slug=self.kwargs['slug'])
+        self.store = get_object_or_404(Store, slug=self.kwargs['store_slug'])
         return Product.objects.filter(store=self.store)
     
     def get_context_data(self, **kwargs):
@@ -46,9 +46,15 @@ def store_homepage(request, store_slug):
     store = get_object_or_404(Store, slug=store_slug)
     homepage_blocks = StoreHomepageBlock.objects.filter(store=store, is_active=True).order_by('order')
     
+    # Get contact forms and trust badges for this store
+    contact_forms = ContactForm.objects.filter(store=store)
+    trust_badges = TrustBadge.objects.filter(store=store)
+    
     return render(request, 'stores/homepage.html', {
         'store': store,
         'homepage_blocks': homepage_blocks,
+        'contact_forms': contact_forms,
+        'trust_badges': trust_badges,
     })
 
 @login_required

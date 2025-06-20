@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Logged Out - StoreLoop{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto my-12 p-6 bg-card rounded-lg shadow-lg text-center">
+    <h1 class="text-2xl font-bold mb-6 text-theme">You have been logged out</h1>
+    <p class="text-theme-secondary mb-6">Thank you for using StoreLoop!</p>
+    <a href="{% url 'login' %}" class="bg-primary hover:bg-primary-hover text-white font-bold py-2 px-4 rounded">
+        Log in again
+    </a>
+</div>
+{% endblock %}

@@ -1,577 +1,524 @@
-import React, { useState, useEffect } from 'react';
-import ReactDOM from 'react-dom';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+// Homepage Builder React Component
+const { useState, useEffect } = React;
+const { DragDropContext, Droppable, Draggable } = ReactBeautifulDnd;
 
-// Block Type Components
-const BlockTypeLibrary = ({ blockTypes, onAddBlock }) => {
-  return (
-    <div className="block-library">
-      <h2 className="text-xl font-bold text-theme mb-4">Block Library</h2>
-      <div className="space-y-3">
-        {blockTypes.map((blockType) => (
-          <div
-            key={blockType.type}
-            className="block-library-item bg-theme p-3 rounded border border-theme cursor-pointer hover:shadow-md transition-transform hover:-translate-y-1"
-            onClick={() => onAddBlock(blockType.type, blockType.name)}
-          >
-            <h3 className="font-medium text-theme">{blockType.name}</h3>
-            <p className="text-sm text-theme-secondary">{blockType.description}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+// Block type definitions
+const blockTypes = {
+  hero_banner: { name: "Hero Banner", icon: "🖼️" },
+  product_grid: { name: "Product Grid", icon: "🛍️" },
+  featured_products: { name: "Featured Products", icon: "⭐" },
+  testimonials: { name: "Testimonials", icon: "💬" },
+  text_block: { name: "Text Block", icon: "📝" },
+  image_gallery: { name: "Image Gallery", icon: "🖼️" },
+  video_embed: { name: "Video Embed", icon: "🎬" },
+  trust_badges: { name: "Trust Badges", icon: "🛡️" },
+  contact_form: { name: "Contact Form", icon: "📧" },
+  tag_collection: { name: "Tag Collection", icon: "🏷️" },
 };
 
-// Block List Component
-const BlockList = ({ blocks, onSelectBlock, onToggleActive, onDeleteBlock, selectedBlockId }) => {
-  const getBlockTypeName = (blockType) => {
-    const blockTypeMap = {
-      'hero_banner': 'Hero Banner',
-      'product_grid': 'Product Grid',
-      'featured_products': 'Featured Products',
-      'testimonials': 'Testimonials',
-      'text_block': 'Text Block',
-      'image_gallery': 'Image Gallery',
-      'newsletter_signup': 'Newsletter Signup',
-      'video_embed': 'Video Embed'
-    };
-    return blockTypeMap[blockType] || blockType;
-  };
-
-  return (
-    <DragDropContext onDragEnd={(result) => console.log(result)}>
-      <Droppable droppableId="blocks-list">
-        {(provided) => (
-          <div
-            ref={provided.innerRef}
-            {...provided.droppableProps}
-            className="space-y-3"
-          >
-            {blocks.length === 0 ? (
-              <div className="text-center py-8 border-2 border-dashed border-theme-secondary rounded-lg">
-                <p className="text-theme-secondary">Drag blocks from the library to build your homepage</p>
-              </div>
-            ) : (
-              blocks.map((block, index) => (
-                <Draggable key={block.id} draggableId={`block-${block.id}`} index={index}>
-                  {(provided) => (
-                    <div
-                      ref={provided.innerRef}
-                      {...provided.draggableProps}
-                      {...provided.dragHandleProps}
-                      className={`block-item bg-theme p-3 rounded border ${
-                        selectedBlockId === block.id ? 'border-primary' : 'border-theme'
-                      }`}
-                    >
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center">
-                          <span className="mr-2 text-theme-secondary">{index + 1}</span>
-                          <h3 className="font-medium text-theme">
-                            {block.title || getBlockTypeName(block.block_type)}
-                          </h3>
-                        </div>
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={() => onToggleActive(block)}
-                            className="p-1 rounded hover:bg-theme-secondary"
-                          >
-                            <span className={block.is_active ? 'text-green-500' : 'text-red-500'}>
-                              {block.is_active ? '●' : '○'}
-                            </span>
-                          </button>
-                          <button
-                            onClick={() => onSelectBlock(block)}
-                            className="p-1 rounded hover:bg-theme-secondary"
-                          >
-                            <span className="text-theme">✎</span>
-                          </button>
-                          <button
-                            onClick={() => onDeleteBlock(block)}
-                            className="p-1 rounded hover:bg-theme-secondary"
-                          >
-                            <span className="text-red-500">✕</span>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </Draggable>
-              ))
-            )}
-            {provided.placeholder}
-          </div>
-        )}
-      </Droppable>
-    </DragDropContext>
-  );
-};
-
-// Block Configuration Component
-const BlockConfiguration = ({ selectedBlock, onUpdateBlock }) => {
-  const [blockData, setBlockData] = useState(selectedBlock);
-
-  useEffect(() => {
-    setBlockData(selectedBlock);
-  }, [selectedBlock]);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setBlockData({
-      ...blockData,
-      [name]: value
-    });
-  };
-
-  const handleConfigChange = (e) => {
-    const { name, value } = e.target;
-    setBlockData({
-      ...blockData,
-      configuration: {
-        ...blockData.configuration,
-        [name]: value
-      }
-    });
-  };
-
-  const handleCheckboxChange = (e) => {
-    const { name, checked } = e.target;
-    setBlockData({
-      ...blockData,
-      configuration: {
-        ...blockData.configuration,
-        [name]: checked
-      }
-    });
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onUpdateBlock(blockData);
-  };
-
-  const getBlockTypeName = (blockType) => {
-    const blockTypeMap = {
-      'hero_banner': 'Hero Banner',
-      'product_grid': 'Product Grid',
-      'featured_products': 'Featured Products',
-      'testimonials': 'Testimonials',
-      'text_block': 'Text Block',
-      'image_gallery': 'Image Gallery',
-      'newsletter_signup': 'Newsletter Signup',
-      'video_embed': 'Video Embed'
-    };
-    return blockTypeMap[blockType] || blockType;
-  };
-
-  if (!selectedBlock) {
-    return (
-      <div className="text-center py-8">
-        <p className="text-theme-secondary">Select a block to configure</p>
-      </div>
-    );
-  }
-
-  return (
-    <form onSubmit={handleSubmit}>
-      <div className="mb-4">
-        <label className="block text-theme-secondary mb-1">Block Type</label>
-        <div className="font-medium text-theme">{getBlockTypeName(blockData.block_type)}</div>
-      </div>
-
-      <div className="mb-4">
-        <label htmlFor="title" className="block text-theme-secondary mb-1">Title</label>
-        <input
-          type="text"
-          id="title"
-          name="title"
-          value={blockData.title}
-          onChange={handleChange}
-          className="w-full px-3 py-2 border border-theme-secondary rounded bg-theme text-theme"
-        />
-      </div>
-
-      {['text_block', 'testimonials'].includes(blockData.block_type) && (
-        <div className="mb-4">
-          <label htmlFor="content" className="block text-theme-secondary mb-1">Content</label>
-          <textarea
-            id="content"
-            name="content"
-            value={blockData.content}
-            onChange={handleChange}
-            rows="4"
-            className="w-full px-3 py-2 border border-theme-secondary rounded bg-theme text-theme"
-          ></textarea>
-        </div>
-      )}
-
-      {/* Hero Banner Configuration */}
-      {blockData.block_type === 'hero_banner' && (
-        <div className="space-y-4">
-          <div>
-            <label htmlFor="image_url" className="block text-theme-secondary mb-1">Image URL</label>
-            <input
-              type="text"
-              id="image_url"
-              name="image_url"
-              value={blockData.configuration.image_url || ''}
-              onChange={handleConfigChange}
-              className="w-full px-3 py-2 border border-theme-secondary rounded bg-theme text-theme"
-            />
-          </div>
-          <div>
-            <label htmlFor="button_text" className="block text-theme-secondary mb-1">Button Text</label>
-            <input
-              type="text"
-              id="button_text"
-              name="button_text"
-              value={blockData.configuration.button_text || ''}
-              onChange={handleConfigChange}
-              className="w-full px-3 py-2 border border-theme-secondary rounded bg-theme text-theme"
-            />
-          </div>
-          <div>
-            <label htmlFor="button_url" className="block text-theme-secondary mb-1">Button URL</label>
-            <input
-              type="text"
-              id="button_url"
-              name="button_url"
-              value={blockData.configuration.button_url || ''}
-              onChange={handleConfigChange}
-              className="w-full px-3 py-2 border border-theme-secondary rounded bg-theme text-theme"
-            />
-          </div>
-          <div>
-            <label htmlFor="height" className="block text-theme-secondary mb-1">Height</label>
-            <select
-              id="height"
-              name="height"
-              value={blockData.configuration.height || 'lg'}
-              onChange={handleConfigChange}
-              className="w-full px-3 py-2 border border-theme-secondary rounded bg-theme text-theme"
-            >
-              <option value="sm">Small</option>
-              <option value="md">Medium</option>
-              <option value="lg">Large</option>
-              <option value="xl">Extra Large</option>
-            </select>
-          </div>
-        </div>
-      )}
-
-      {/* Product Grid Configuration */}
-      {blockData.block_type === 'product_grid' && (
-        <div className="space-y-4">
-          <div>
-            <label htmlFor="products_count" className="block text-theme-secondary mb-1">Number of Products</label>
-            <input
-              type="number"
-              id="products_count"
-              name="products_count"
-              value={blockData.configuration.products_count || 6}
-              onChange={handleConfigChange}
-              className="w-full px-3 py-2 border border-theme-secondary rounded bg-theme text-theme"
-            />
-          </div>
-          <div>
-            <label htmlFor="columns" className="block text-theme-secondary mb-1">Columns</label>
-            <select
-              id="columns"
-              name="columns"
-              value={blockData.configuration.columns || 3}
-              onChange={handleConfigChange}
-              className="w-full px-3 py-2 border border-theme-secondary rounded bg-theme text-theme"
-            >
-              <option value="2">2 Columns</option>
-              <option value="3">3 Columns</option>
-              <option value="4">4 Columns</option>
-            </select>
-          </div>
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="show_price"
-              name="show_price"
-              checked={blockData.configuration.show_price !== false}
-              onChange={handleCheckboxChange}
-            />
-            <label htmlFor="show_price" className="ml-2 text-theme">Show Price</label>
-          </div>
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="show_description"
-              name="show_description"
-              checked={blockData.configuration.show_description === true}
-              onChange={handleCheckboxChange}
-            />
-            <label htmlFor="show_description" className="ml-2 text-theme">Show Description</label>
-          </div>
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="show_view_all"
-              name="show_view_all"
-              checked={blockData.configuration.show_view_all === true}
-              onChange={handleCheckboxChange}
-            />
-            <label htmlFor="show_view_all" className="ml-2 text-theme">Show "View All" Button</label>
-          </div>
-        </div>
-      )}
-
-      <div className="mt-6">
-        <button
-          type="submit"
-          className="w-full bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded"
-        >
-          Update Block
-        </button>
-      </div>
-    </form>
-  );
-};
-
-// Main Homepage Builder Component
-const HomepageBuilder = () => {
+// Main component
+function HomepageBuilder() {
   const [blocks, setBlocks] = useState([]);
   const [selectedBlock, setSelectedBlock] = useState(null);
-  const [selectedBlockId, setSelectedBlockId] = useState(null);
-  const [blockTypes, setBlockTypes] = useState([
-    { type: 'hero_banner', name: 'Hero Banner', description: 'Large banner with image and call-to-action' },
-    { type: 'product_grid', name: 'Product Grid', description: 'Display products in a grid layout' },
-    { type: 'featured_products', name: 'Featured Products', description: 'Showcase featured or bestselling products' },
-    { type: 'testimonials', name: 'Testimonials', description: 'Customer reviews and testimonials' },
-    { type: 'text_block', name: 'Text Block', description: 'Rich text content area' },
-    { type: 'image_gallery', name: 'Image Gallery', description: 'Multiple images in a gallery layout' },
-    { type: 'newsletter_signup', name: 'Newsletter Signup', description: 'Email subscription form' },
-    { type: 'video_embed', name: 'Video Embed', description: 'Embed video content' }
-  ]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [addingBlock, setAddingBlock] = useState(false);
+  const [newBlockType, setNewBlockType] = useState("");
+  const [csrfToken, setCsrfToken] = useState("");
 
-  // Load initial blocks from the server
+  // Load initial blocks
   useEffect(() => {
-    // Get blocks from the data attribute
-    const blocksContainer = document.getElementById('homepage-builder');
-    if (blocksContainer) {
+    // Get CSRF token
+    const tokenElement = document.querySelector("[name=csrfmiddlewaretoken]");
+    if (tokenElement) {
+      setCsrfToken(tokenElement.value);
+    }
+
+    // Get blocks from data attribute
+    const builderElement = document.getElementById("homepage-builder");
+    if (builderElement && builderElement.dataset.blocks) {
       try {
-        const initialBlocks = JSON.parse(blocksContainer.dataset.blocks || '[]');
-        setBlocks(initialBlocks);
+        const loadedBlocks = JSON.parse(builderElement.dataset.blocks);
+        setBlocks(loadedBlocks);
       } catch (e) {
-        console.error('Error parsing initial blocks:', e);
+        console.error("Error parsing blocks:", e);
+        setError("Failed to load blocks");
       }
     }
   }, []);
 
-  const addNewBlock = (blockType, blockName) => {
-    // Get CSRF token
-    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    
-    // Send request to create new block
-    fetch(`/stores/${window.storeSlug}/homepage/blocks/create/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': csrfToken
-      },
-      body: JSON.stringify({
-        block_type: blockType,
-        title: blockName
-      })
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.status === 'success') {
+  // Handle block reordering
+  const handleDragEnd = (result) => {
+    if (!result.destination) return;
+
+    const items = Array.from(blocks);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+
+    // Update order property
+    const updatedItems = items.map((item, index) => ({
+      ...item,
+      order: index,
+    }));
+
+    setBlocks(updatedItems);
+  };
+
+  // Add a new block
+  const handleAddBlock = async () => {
+    if (!newBlockType) return;
+
+    setLoading(true);
+    try {
+      const response = await fetch(`/stores/${window.storeSlug}/homepage/blocks/create/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrfToken,
+        },
+        body: JSON.stringify({
+          block_type: newBlockType,
+          title: `New ${blockTypes[newBlockType].name}`,
+        }),
+      });
+
+      if (!response.ok) throw new Error("Failed to create block");
+
+      const data = await response.json();
+      if (data.status === "success") {
         const newBlock = {
           id: data.block_id,
           block_type: data.block_type,
           title: data.title,
-          content: '',
+          content: "",
           order: data.order,
           is_active: true,
-          configuration: getDefaultConfiguration(data.block_type)
+          configuration: {},
         };
-        
+
         setBlocks([...blocks, newBlock]);
-        selectBlock(newBlock);
+        setSelectedBlock(newBlock);
+        setAddingBlock(false);
+        setNewBlockType("");
+      } else {
+        throw new Error(data.message || "Failed to create block");
       }
-    })
-    .catch(error => {
-      console.error('Error creating block:', error);
-    });
-  };
-
-  const selectBlock = (block) => {
-    setSelectedBlock(JSON.parse(JSON.stringify(block))); // Clone to avoid direct reference
-    setSelectedBlockId(block.id);
-  };
-
-  const updateBlock = (updatedBlock) => {
-    // Update local state
-    const updatedBlocks = blocks.map(block => 
-      block.id === updatedBlock.id ? updatedBlock : block
-    );
-    setBlocks(updatedBlocks);
-    setSelectedBlock(updatedBlock);
-    
-    // Send update to server
-    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    
-    fetch(`/stores/${window.storeSlug}/homepage/blocks/${updatedBlock.id}/update/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': csrfToken
-      },
-      body: JSON.stringify(updatedBlock)
-    })
-    .catch(error => {
-      console.error('Error updating block:', error);
-    });
-  };
-
-  const deleteBlock = (block) => {
-    if (!confirm('Are you sure you want to delete this block?')) return;
-    
-    // Remove from local state
-    setBlocks(blocks.filter(b => b.id !== block.id));
-    
-    // Clear selection if needed
-    if (selectedBlockId === block.id) {
-      setSelectedBlock(null);
-      setSelectedBlockId(null);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-    
-    // Send delete request to server
-    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    
-    fetch(`/stores/${window.storeSlug}/homepage/blocks/${block.id}/delete/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': csrfToken
-      }
-    })
-    .catch(error => {
-      console.error('Error deleting block:', error);
-    });
   };
 
-  const toggleBlockActive = (block) => {
-    const updatedBlock = {
-      ...block,
-      is_active: !block.is_active
+  // Update a block
+  const handleUpdateBlock = async (blockId, updates) => {
+    setLoading(true);
+    try {
+      const response = await fetch(`/stores/${window.storeSlug}/homepage/blocks/${blockId}/update/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrfToken,
+        },
+        body: JSON.stringify(updates),
+      });
+
+      if (!response.ok) throw new Error("Failed to update block");
+
+      const data = await response.json();
+      if (data.status === "success") {
+        setBlocks(
+          blocks.map((block) =>
+            block.id === blockId ? { ...block, ...updates } : block
+          )
+        );
+
+        if (selectedBlock && selectedBlock.id === blockId) {
+          setSelectedBlock({ ...selectedBlock, ...updates });
+        }
+      } else {
+        throw new Error(data.message || "Failed to update block");
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Delete a block
+  const handleDeleteBlock = async (blockId) => {
+    if (!confirm("Are you sure you want to delete this block?")) return;
+
+    setLoading(true);
+    try {
+      const response = await fetch(`/stores/${window.storeSlug}/homepage/blocks/${blockId}/delete/`, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": csrfToken,
+        },
+      });
+
+      if (!response.ok) throw new Error("Failed to delete block");
+
+      const data = await response.json();
+      if (data.status === "success") {
+        setBlocks(blocks.filter((block) => block.id !== blockId));
+        if (selectedBlock && selectedBlock.id === blockId) {
+          setSelectedBlock(null);
+        }
+      } else {
+        throw new Error(data.message || "Failed to delete block");
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Save block order
+  const handleSaveOrder = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`/stores/${window.storeSlug}/homepage/blocks/reorder/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrfToken,
+        },
+        body: JSON.stringify({
+          block_order: blocks.map((block) => block.id),
+        }),
+      });
+
+      if (!response.ok) throw new Error("Failed to save block order");
+
+      const data = await response.json();
+      if (data.status === "success") {
+        alert("Homepage layout saved successfully!");
+      } else {
+        throw new Error(data.message || "Failed to save block order");
+      }
+    } catch (err) {
+      setError(err.message);
+      alert("Failed to save layout: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Connect save button
+  useEffect(() => {
+    const saveButton = document.getElementById("save-changes-btn");
+    if (saveButton) {
+      saveButton.addEventListener("click", handleSaveOrder);
+      return () => saveButton.removeEventListener("click", handleSaveOrder);
+    }
+  }, [blocks]);
+
+  // Block editor component
+  const BlockEditor = ({ block }) => {
+    const [title, setTitle] = useState(block.title || "");
+    const [content, setContent] = useState(block.content || "");
+    const [config, setConfig] = useState(block.configuration || {});
+
+    const handleSave = () => {
+      handleUpdateBlock(block.id, {
+        title,
+        content,
+        configuration: config,
+      });
     };
-    
-    // Update local state
-    const updatedBlocks = blocks.map(b => 
-      b.id === block.id ? updatedBlock : b
-    );
-    setBlocks(updatedBlocks);
-    
-    // If this is the selected block, update selection
-    if (selectedBlockId === block.id) {
-      setSelectedBlock(updatedBlock);
-    }
-    
-    // Send update to server
-    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    
-    fetch(`/stores/${window.storeSlug}/homepage/blocks/${block.id}/update/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': csrfToken
-      },
-      body: JSON.stringify({
-        is_active: updatedBlock.is_active
-      })
-    })
-    .catch(error => {
-      console.error('Error updating block:', error);
-    });
-  };
 
-  const getDefaultConfiguration = (blockType) => {
-    switch(blockType) {
-      case 'hero_banner':
-        return {
-          image_url: '',
-          button_text: 'Shop Now',
-          button_url: '/products/',
-          height: 'lg',
-          overlay_opacity: 50,
-          text_color: 'white'
-        };
-      case 'product_grid':
-        return {
-          products_count: 6,
-          columns: 3,
-          show_price: true,
-          show_description: false,
-          show_view_all: true,
-          sort_by: 'newest'
-        };
-      case 'testimonials':
-        return {
-          style: 'cards',
-          testimonials: [
-            {
-              name: 'Customer Name',
-              role: 'Customer',
-              content: 'This is a great product!',
-              image_url: ''
-            }
-          ]
-        };
-      case 'text_block':
-        return {
-          alignment: 'left',
-          max_width: 'lg',
-          background_color: '',
-          text_color: ''
-        };
-      default:
-        return {};
-    }
+    // Render different configuration options based on block type
+    const renderConfigOptions = () => {
+      switch (block.block_type) {
+        case "hero_banner":
+          return (
+            <>
+              <div className="mb-4">
+                <label className="block text-theme-secondary mb-2">Image URL</label>
+                <input
+                  type="text"
+                  value={config.image_url || ""}
+                  onChange={(e) => setConfig({ ...config, image_url: e.target.value })}
+                  className="w-full px-3 py-2 border border-theme-secondary rounded"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-theme-secondary mb-2">Button Text</label>
+                <input
+                  type="text"
+                  value={config.button_text || ""}
+                  onChange={(e) => setConfig({ ...config, button_text: e.target.value })}
+                  className="w-full px-3 py-2 border border-theme-secondary rounded"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-theme-secondary mb-2">Button URL</label>
+                <input
+                  type="text"
+                  value={config.button_url || ""}
+                  onChange={(e) => setConfig({ ...config, button_url: e.target.value })}
+                  className="w-full px-3 py-2 border border-theme-secondary rounded"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-theme-secondary mb-2">Text Color</label>
+                <input
+                  type="text"
+                  value={config.text_color || "white"}
+                  onChange={(e) => setConfig({ ...config, text_color: e.target.value })}
+                  className="w-full px-3 py-2 border border-theme-secondary rounded"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-theme-secondary mb-2">Height</label>
+                <select
+                  value={config.height || "lg"}
+                  onChange={(e) => setConfig({ ...config, height: e.target.value })}
+                  className="w-full px-3 py-2 border border-theme-secondary rounded"
+                >
+                  <option value="sm">Small</option>
+                  <option value="md">Medium</option>
+                  <option value="lg">Large</option>
+                  <option value="xl">Extra Large</option>
+                </select>
+              </div>
+            </>
+          );
+        case "contact_form":
+          return (
+            <>
+              <div className="mb-4">
+                <label className="block text-theme-secondary mb-2">Background Color</label>
+                <input
+                  type="text"
+                  value={config.background_color || ""}
+                  onChange={(e) => setConfig({ ...config, background_color: e.target.value })}
+                  className="w-full px-3 py-2 border border-theme-secondary rounded"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-theme-secondary mb-2">Text Color</label>
+                <input
+                  type="text"
+                  value={config.text_color || ""}
+                  onChange={(e) => setConfig({ ...config, text_color: e.target.value })}
+                  className="w-full px-3 py-2 border border-theme-secondary rounded"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-theme-secondary mb-2">Contact Form ID</label>
+                <input
+                  type="number"
+                  value={config.contact_form_id || ""}
+                  onChange={(e) => setConfig({ ...config, contact_form_id: e.target.value })}
+                  className="w-full px-3 py-2 border border-theme-secondary rounded"
+                />
+              </div>
+            </>
+          );
+        default:
+          return <p className="text-theme-secondary">Configure block settings here.</p>;
+      }
+    };
+
+    return (
+      <div className="bg-card p-4 rounded-lg shadow">
+        <h3 className="text-xl font-bold mb-4 text-theme">Edit {blockTypes[block.block_type]?.name || "Block"}</h3>
+        
+        <div className="mb-4">
+          <label className="block text-theme-secondary mb-2">Title</label>
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="w-full px-3 py-2 border border-theme-secondary rounded"
+          />
+        </div>
+        
+        <div className="mb-4">
+          <label className="block text-theme-secondary mb-2">Content</label>
+          <textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            className="w-full px-3 py-2 border border-theme-secondary rounded"
+            rows="4"
+          ></textarea>
+        </div>
+        
+        <h4 className="font-bold mb-2 text-theme">Configuration</h4>
+        {renderConfigOptions()}
+        
+        <div className="flex justify-between mt-6">
+          <button
+            onClick={() => setSelectedBlock(null)}
+            className="bg-card text-theme px-4 py-2 rounded border border-theme"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSave}
+            className="bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded"
+          >
+            Save Block
+          </button>
+        </div>
+      </div>
+    );
   };
 
   return (
-    <div className="homepage-builder">
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Block Library */}
-        <div className="lg:col-span-1 bg-card p-4 rounded-lg shadow editor-panel">
-          <BlockTypeLibrary blockTypes={blockTypes} onAddBlock={addNewBlock} />
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Block List */}
+      <div className="md:col-span-2">
+        <div className="bg-card p-4 rounded-lg shadow editor-panel">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-bold text-theme">Homepage Blocks</h2>
+            <button
+              onClick={() => setAddingBlock(!addingBlock)}
+              className="bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded"
+            >
+              {addingBlock ? "Cancel" : "Add Block"}
+            </button>
+          </div>
+
+          {/* Add Block Form */}
+          {addingBlock && (
+            <div className="mb-6 p-4 border border-theme-secondary rounded">
+              <h3 className="text-lg font-bold mb-3 text-theme">Add New Block</h3>
+              <div className="mb-4">
+                <label className="block text-theme-secondary mb-2">Block Type</label>
+                <select
+                  value={newBlockType}
+                  onChange={(e) => setNewBlockType(e.target.value)}
+                  className="w-full px-3 py-2 border border-theme-secondary rounded"
+                >
+                  <option value="">Select a block type</option>
+                  {Object.entries(blockTypes).map(([key, { name, icon }]) => (
+                    <option key={key} value={key}>
+                      {icon} {name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <button
+                onClick={handleAddBlock}
+                disabled={!newBlockType || loading}
+                className="bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded disabled:opacity-50"
+              >
+                {loading ? "Adding..." : "Add Block"}
+              </button>
+            </div>
+          )}
+
+          {/* Error Message */}
+          {error && (
+            <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
+              {error}
+            </div>
+          )}
+
+          {/* Block List */}
+          {blocks.length === 0 ? (
+            <div className="text-center py-8 text-theme-secondary">
+              No blocks added yet. Click "Add Block" to create your homepage.
+            </div>
+          ) : (
+            <DragDropContext onDragEnd={handleDragEnd}>
+              <Droppable droppableId="blocks">
+                {(provided) => (
+                  <div
+                    {...provided.droppableProps}
+                    ref={provided.innerRef}
+                    className="space-y-3"
+                  >
+                    {blocks.map((block, index) => (
+                      <Draggable
+                        key={block.id.toString()}
+                        draggableId={block.id.toString()}
+                        index={index}
+                      >
+                        {(provided) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            className="bg-theme border border-theme-secondary rounded p-3 flex items-center justify-between"
+                          >
+                            <div className="flex items-center">
+                              <span className="mr-3 text-xl">
+                                {blockTypes[block.block_type]?.icon || "📦"}
+                              </span>
+                              <div>
+                                <h3 className="font-medium text-theme">
+                                  {block.title || blockTypes[block.block_type]?.name || "Block"}
+                                </h3>
+                                <p className="text-sm text-theme-secondary">
+                                  {blockTypes[block.block_type]?.name || block.block_type}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <label className="inline-flex items-center cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={block.is_active}
+                                  onChange={() =>
+                                    handleUpdateBlock(block.id, {
+                                      is_active: !block.is_active,
+                                    })
+                                  }
+                                  className="form-checkbox h-5 w-5 text-primary"
+                                />
+                                <span className="ml-2 text-sm text-theme-secondary">
+                                  Active
+                                </span>
+                              </label>
+                              <button
+                                onClick={() => setSelectedBlock(block)}
+                                className="text-primary hover:text-primary-hover"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDeleteBlock(block.id)}
+                                className="text-red-500 hover:text-red-700"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </DragDropContext>
+          )}
         </div>
-        
-        {/* Block Editor */}
-        <div className="lg:col-span-2 bg-card p-4 rounded-lg shadow editor-panel">
-          <h2 className="text-xl font-bold text-theme mb-4">Homepage Layout</h2>
-          <BlockList
-            blocks={blocks}
-            onSelectBlock={selectBlock}
-            onToggleActive={toggleBlockActive}
-            onDeleteBlock={deleteBlock}
-            selectedBlockId={selectedBlockId}
-          />
-        </div>
-        
-        {/* Block Configuration */}
-        <div className="lg:col-span-1 bg-card p-4 rounded-lg shadow editor-panel">
-          <h2 className="text-xl font-bold text-theme mb-4">Block Configuration</h2>
-          <BlockConfiguration
-            selectedBlock={selectedBlock}
-            onUpdateBlock={updateBlock}
-          />
+      </div>
+
+      {/* Block Editor */}
+      <div className="md:col-span-1">
+        <div className="bg-card p-4 rounded-lg shadow editor-panel">
+          {selectedBlock ? (
+            <BlockEditor block={selectedBlock} />
+          ) : (
+            <div className="text-center py-8 text-theme-secondary">
+              <p className="mb-4">Select a block to edit its content and settings.</p>
+              <p>Or add a new block to get started.</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
-};
+}
 
-// Initialize React app when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-  const container = document.getElementById('homepage-builder');
-  if (container) {
-    ReactDOM.render(<HomepageBuilder />, container);
-  }
-});
+// Render the component
+ReactDOM.render(<HomepageBuilder />, document.getElementById("homepage-builder"));

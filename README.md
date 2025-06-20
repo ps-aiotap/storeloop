@@ -166,9 +166,45 @@ StoreLoop is a Django-based e-commerce platform with multi-seller support, custo
 
 ## Development
 
-- The application follows a modular architecture with separate apps for products, orders, and stores
-- Templates use a component-based approach for reusability
-- Theme system uses CSS variables and Tailwind's dark mode
-- React is used for interactive components like the homepage builder
-- Alpine.js is used for lightweight interactions like menus and dropdowns
-- Form validation combines HTML5 validation with JavaScript for enhanced user experience
+### Architecture
+- Modular Django apps: products, orders, stores
+- Component-based templates for reusability
+- CSS variables + Tailwind for theming
+- React for interactive UI (homepage builder)
+- Alpine.js for lightweight interactions
+
+### Testing & Quality
+```bash
+# Run comprehensive tests
+pytest stores/tests/test_comprehensive.py -v
+
+# Run all tests with coverage
+pytest --cov=./ --cov-report=html
+
+# Code formatting
+black . && isort . && flake8 .
+```
+
+### Sample Data
+```bash
+# Seed development data
+python manage.py seed_sample_data --users 3 --stores 2 --products 10
+```
+
+### New Features
+- **Product Variants**: Size, color, material variants with individual QR codes
+- **Enhanced Homepage Builder**: Improved drag-and-drop with state isolation
+- **Security**: Razorpay signature verification, rate limiting, webhook validation
+- **SEO**: Multi-store sitemaps, structured data, comprehensive robots.txt
+- **Extensible Blocks**: Plugin system for third-party homepage blocks
+
+### CI/CD
+GitHub Actions workflow includes:
+- Parallel testing (unit, integration, security)
+- Code quality checks (Black, isort, Flake8, MyPy)
+- Security scanning (Bandit, Safety)
+- Performance testing
+
+## Admin Guide
+
+For detailed instructions on using the admin features (Bundles, Homepage Blocks, Trust Badges, etc.), please refer to the [Admin Guide](ADMIN_GUIDE.md).

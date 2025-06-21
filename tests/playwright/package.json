@@ -1,0 +1,40 @@
+{
+  "name": "storeloop-playwright-tests",
+  "version": "1.0.0",
+  "description": "Playwright tests for StoreLoop forms",
+  "scripts": {
+    "check-setup": "node setup_check.js",
+    "verify": "node verification_checklist.js",
+    "verify-and-test": "node verification_checklist.js && npm run advanced-pipeline",
+    "demo": "node demo_test.js",
+    "one-step": "node one_step_pipeline.js",
+    "advanced-pipeline": "node advanced_pipeline.js",
+    "manual-test": "node manual_test.js",
+    "start-and-test": "node start_and_test.js",
+    "simple-discover": "node simple_discovery.js",
+    "nav-discover": "node navigation_discovery.js",
+    "enhanced-discover": "node enhanced_discovery.js",
+    "complete-discover": "node complete_discovery.js",
+    "complete-generate": "node complete_test_generator.js",
+    "complete-pipeline": "node run_complete.js",
+    "test-shopping": "playwright test shopping_flow_tests.spec.js",
+    "test-security": "playwright test advanced_tests.spec.js --grep='Security|XSS|SQL|CSRF'",
+    "test-performance": "playwright test advanced_tests.spec.js --grep='Performance'",
+    "test-accessibility": "playwright test advanced_tests.spec.js --grep='Accessibility'",
+    "test-all": "playwright test",
+    "discover-urls": "node url_discovery.js",
+    "discover": "node form_discovery.js",
+    "generate": "node test_generator.js",
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "setup": "npm install && playwright install",
+    "full-pipeline": "node run_all.js"
+  },
+  "dependencies": {
+    "@playwright/test": "^1.40.0"
+  },
+  "devDependencies": {
+    "playwright": "^1.40.0"
+  }
+}

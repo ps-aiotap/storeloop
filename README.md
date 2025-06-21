@@ -185,6 +185,43 @@ pytest --cov=./ --cov-report=html
 black . && isort . && flake8 .
 ```
 
+### Automated Form Testing
+```bash
+# Complete form testing pipeline (Discovery → Generation → Execution)
+cd tests/playwright
+npm install && playwright install
+
+# Basic pipeline
+npm run one-step
+
+# Advanced pipeline (includes security, performance, accessibility)
+npm run advanced-pipeline
+
+# Specialized testing
+npm run test-security      # Security tests (XSS, SQL injection, CSRF)
+npm run test-performance   # Performance and load testing
+npm run test-accessibility # Keyboard navigation and a11y
+
+# Individual steps
+npm run nav-discover    # Discover forms via navigation
+npm run generate        # Generate tests from discovered forms  
+npm test               # Run generated tests
+```
+
+**Features:**
+- 🔍 **Zero-assumption discovery** - Crawls actual navigation links
+- 🧪 **Comprehensive testing** - Happy path, validation, security, edge cases
+- 🛡️ **Security testing** - XSS, SQL injection, CSRF protection
+- ⚡ **Performance monitoring** - Form submission timing and rate limiting
+- ♿ **Accessibility testing** - Keyboard navigation and ARIA compliance
+- 📊 **Enhanced reporting** - Custom dashboard with metrics and coverage
+- 🚀 **CI/CD integration** - GitHub Actions workflow included
+- 🔄 **Parallel execution** - Multi-worker test execution
+
+**Generated files are automatically excluded from Git tracking.**
+
+**For other projects:** See [FORM_TESTING_PROMPTS.md](FORM_TESTING_PROMPTS.md) for implementation prompts.
+
 ### Sample Data
 ```bash
 # Seed development data

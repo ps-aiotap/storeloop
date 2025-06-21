@@ -46,3 +46,25 @@ npm-debug.log
 
 # Tailwind generated files
 staticcss/output.css
+
+# Playwright test files
+tests/playwright/discovered_*.json
+tests/playwright/complete_*.json
+tests/playwright/enhanced_*.json
+tests/playwright/navigation_*.json
+tests/playwright/simple_*.json
+tests/playwright/generated_*.spec.js
+tests/playwright/advanced_*.spec.js
+tests/playwright/generated_*.json
+tests/playwright/test-results/
+tests/playwright/playwright-report/
+tests/playwright/test-results.json
+tests/playwright/test-results.xml
+tests/playwright/pipeline_report.json
+tests/playwright/report.html
+tests/playwright/dashboard.html
+tests/playwright/performance.json
+tests/playwright/.auth/
+tests/playwright/screenshots/
+tests/playwright/videos/
+tests/playwright/traces/

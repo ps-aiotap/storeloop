@@ -1,0 +1,140 @@
+name: Automated Form Testing
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 2 * * *'  # Daily at 2 AM
+
+jobs:
+  form-testing:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: storeloop_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Cache Python dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        
+    - name: Cache Node dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Install Playwright
+      run: |
+        cd tests/playwright
+        npm install
+        npx playwright install --with-deps
+        
+    - name: Set up environment
+      run: |
+        cp .env.example .env
+        echo "DB_NAME=storeloop_test" >> .env
+        echo "DB_USER=postgres" >> .env
+        echo "DB_PASSWORD=postgres" >> .env
+        echo "DB_HOST=localhost" >> .env
+        echo "DB_PORT=5432" >> .env
+        
+    - name: Run Django migrations
+      run: |
+        python manage.py migrate
+        python manage.py collectstatic --noinput
+        
+    - name: Create test data
+      run: |
+        python manage.py seed_sample_data --users 2 --stores 1 --products 5
+        
+    - name: Start Django server
+      run: |
+        python manage.py runserver &
+        sleep 10
+        
+    - name: Run form testing pipeline
+      run: |
+        cd tests/playwright
+        npm run one-step
+        
+    - name: Upload test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: form-test-results
+        path: |
+          tests/playwright/playwright-report/
+          tests/playwright/dashboard.html
+          tests/playwright/performance.json
+          tests/playwright/navigation_discovery.json
+          
+    - name: Upload screenshots
+      uses: actions/upload-artifact@v3
+      if: failure()
+      with:
+        name: screenshots
+        path: tests/playwright/test-results/
+        
+    - name: Comment PR with results
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const path = './tests/playwright/navigation_discovery.json';
+          
+          if (fs.existsSync(path)) {
+            const data = JSON.parse(fs.readFileSync(path, 'utf8'));
+            const totalForms = Object.values(data).reduce((sum, page) => sum + (page.forms?.length || 0), 0);
+            const totalFields = Object.values(data).reduce((sum, page) => 
+              sum + (page.forms?.reduce((fieldSum, form) => fieldSum + form.fields.length, 0) || 0), 0);
+            
+            const comment = `## 🧪 Form Testing Results
+            
+            - **Forms Discovered:** ${totalForms}
+            - **Fields Tested:** ${totalFields}
+            - **Pages Scanned:** ${Object.keys(data).length}
+            
+            📊 [View detailed report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+          }

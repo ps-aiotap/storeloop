@@ -1,19 +1,450 @@
-# StoreLoop Admin Guide
+# StoreLoop Admin Guide - Multi-language E-commerce Platform
 
-This guide explains how to use the various admin features in StoreLoop, including Bundles, Homepage Blocks, Trust Badges, and more.
+This guide explains how to use StoreLoop's features including seller onboarding, AI description assistance, notification systems, multi-language UI, and multi-store management.
 
 ## Table of Contents
-- [Tag Management](#tag-management)
-- [Product Bundles](#product-bundles)
-- [Homepage Builder](#homepage-builder)
-- [Trust Badges](#trust-badges)
-- [Static Pages](#static-pages)
-- [Contact Forms](#contact-forms)
+- [Seller Onboarding Wizard](#seller-onboarding-wizard)
+- [Mobile-First Seller Dashboard](#mobile-first-seller-dashboard)
+- [NGO Partner Admin](#ngo-partner-admin)
+- [Excel/CSV Product Upload](#excelcsv-product-upload)
+- [AI Product Descriptions](#ai-product-descriptions)
+- [WhatsApp Notifications](#whatsapp-notifications)
+- [Hindi Language Support](#hindi-language-support)
+- [Subdomain Management](#subdomain-management)
+- [GST Invoice Generation](#gst-invoice-generation)
 - [Analytics Dashboard](#analytics-dashboard)
+- [Legacy Features](#legacy-features)
 
-## Tag Management
+## Seller Onboarding Wizard
 
-Tags provide a flexible way to categorize products across different dimensions.
+The 4-step onboarding wizard helps artisans set up their stores quickly without technical expertise.
+
+### Starting the Onboarding Process
+
+1. Create a user account and SellerProfile in Django admin
+2. Navigate to `/stores/onboarding/`
+3. Follow the 4-step wizard:
+
+### Step 1: Logo & Basic Information
+- **Store Name**: Enter in Hindi or English (e.g., "कलाकार शिल्प")
+- **Description**: Brief description of products/services
+- **Logo Upload**: Store logo (automatically resized)
+- Click "Next" to proceed
+
+### Step 2: Theme Selection
+- **Theme**: Choose from Minimal, Warm, or Dark
+- **Primary Color**: Brand color for buttons and accents
+- **Secondary Color**: Supporting color for highlights
+- **Font Family**: Sans-serif, Serif, or Monospace
+- Preview changes in real-time
+- Click "Next" to proceed
+
+### Step 3: Sample Products
+- System automatically creates 2 sample products
+- Helps artisans understand product structure
+- Can be edited or deleted later
+- Click "Next" to proceed
+
+### Step 4: Payment & GST Setup
+- **Razorpay Key ID**: For payment processing
+- **Razorpay Key Secret**: Secure payment key
+- **GST Number**: For invoice generation (format: 27AAPFU0939F1ZV)
+- **Business Address**: For GST invoices
+- Click "Complete Setup" to finish
+
+### Post-Onboarding
+- Store is automatically published
+- Subdomain created: `storename.storeloop.in`
+- Seller can access dashboard at `/stores/dashboard/`
+
+## Mobile-First Seller Dashboard
+
+The dashboard is optimized for mobile devices, especially low-end Android phones commonly used by artisans.
+
+### Dashboard Features
+
+1. **Quick Stats Cards**
+   - Total Orders
+   - Total Sales (in ₹)
+   - Pending Orders
+   - Active Products
+
+2. **Language Toggle**
+   - Switch between Hindi and English
+   - Preference saved in user profile
+   - All UI elements translated
+
+3. **Quick Actions**
+   - Add Product (single product form)
+   - Bulk Upload (Excel/CSV import)
+
+4. **Recent Orders**
+   - Last 5 orders with status
+   - Click to view order details
+   - Update order status
+
+5. **Low Stock Alerts**
+   - Products with stock ≤ 5
+   - Helps prevent stockouts
+
+6. **Sales Analytics**
+   - Chart.js graphs
+   - Monthly sales trends
+   - Mobile-optimized charts
+
+### PWA Installation
+- Dashboard supports Progressive Web App installation
+- "Install App" button appears on mobile browsers
+- Works offline for basic functionality
+- Perfect for artisans with limited internet
+
+## NGO Partner Admin
+
+NGOs can manage multiple artisan stores from a single dashboard.
+
+### Setting Up Partner Admin
+
+1. Create user account for NGO manager
+2. In Django admin, create SellerProfile:
+   - Set `is_partner_admin = True`
+   - Add managed stores to `managed_stores` field
+
+### Partner Dashboard Features
+
+1. **Access**: `/stores/partner-dashboard/`
+2. **Store Switching**: Dropdown to switch between managed stores
+3. **Aggregate Metrics**:
+   - Total stores managed
+   - Total artisans
+   - Combined revenue
+4. **Individual Store Management**:
+   - View store-specific metrics
+   - Help artisans with orders
+   - Monitor performance
+
+### NGO Use Cases
+- **Craft Cooperatives**: Manage multiple artisan members
+- **Women's Self-Help Groups**: Support group members' stores
+- **Rural Development NGOs**: Enable village artisans
+- **Fair Trade Organizations**: Oversee certified producers
+
+## Excel/CSV Product Upload
+
+Bulk product import saves time for artisans with large catalogs.
+
+### Preparing Upload File
+
+**Required Columns**:
+- `name`: Product name (Hindi/English)
+- `description`: Detailed description
+- `price`: Price in INR (numbers only)
+- `stock`: Available quantity
+- `category`: Product category
+- `image_url`: URL to product image (optional)
+- `material`: Material used (for AI descriptions)
+- `region`: Origin region (for AI descriptions)
+- `style`: Style/type (for AI descriptions)
+
+**Sample CSV**:
+```csv
+name,description,price,stock,category,material,region,style
+"बनारसी सिल्क साड़ी","Beautiful handwoven saree",15000,5,"Clothing","Silk","Varanasi","Traditional"
+"कशीदाकारी शाल","Embroidered woolen shawl",3500,10,"Accessories","Wool","Kashmir","Kashmiri"
+```
+
+### Upload Process
+
+1. Navigate to `/stores/products/upload/`
+2. Select CSV or Excel file
+3. Click "Upload"
+4. System validates each row:
+   - Checks required fields
+   - Validates data types
+   - Reports errors with row numbers
+5. Successful products are imported
+6. Error summary provided for failed rows
+
+### Validation Features
+- **Row-level validation**: Each row processed independently
+- **Error reporting**: Specific error messages with row numbers
+- **Partial success**: Valid rows imported even if some fail
+- **Upload history**: Track previous uploads and results
+
+## AI Product Descriptions
+
+**Important**: AI provides editable draft suggestions only - never auto-publishes content. All AI-generated content requires manual review and approval.
+
+### How It Works
+
+1. **Input Fields**:
+   - Product name
+   - Material (e.g., "Silk", "Clay", "Wood")
+   - Region (e.g., "Varanasi", "Kashmir", "Rajasthan")
+   - Style (e.g., "Traditional", "Contemporary", "Handwoven")
+
+2. **AI Processing**:
+   - Uses OpenRouter or Groq API
+   - Generates both Hindi and English descriptions
+   - Creates short (50 words) and long (150 words) versions
+
+3. **Human Review**:
+   - Descriptions appear as editable draft suggestions in text areas
+   - User must review, edit, and approve before saving
+   - AI provides assistance only - human creativity and approval required
+
+### Using AI Descriptions
+
+1. In product form, fill basic details
+2. Click "Generate English Description" or "Generate Hindi Description"
+3. Wait for AI processing (shows loading indicator)
+4. Review generated text in form fields
+5. Edit descriptions as needed
+6. Save product with human-approved content
+
+### API Configuration
+
+**OpenRouter Setup**:
+```env
+OPENROUTER_API_KEY=your_api_key
+```
+
+**Groq Setup**:
+```env
+GROQ_API_KEY=your_api_key
+```
+
+**Fallback**: If no API configured, system uses template-based descriptions.
+
+## WhatsApp Notifications
+
+Automatic WhatsApp messages keep buyers and sellers informed.
+
+### Notification Types
+
+1. **Order Confirmation** (to buyer):
+   ```
+   🛍️ Order Confirmation - Store Name
+   
+   Order ID: ORD-12345678
+   Product: Product Name
+   Quantity: 1
+   Total: ₹1,500
+   
+   Thank you for your purchase!
+   ```
+
+2. **New Order Alert** (to seller):
+   ```
+   🔔 New Order Received!
+   
+   Order ID: ORD-12345678
+   Customer: Customer Name
+   Product: Product Name
+   Amount: ₹1,500
+   
+   Please process this order.
+   ```
+
+3. **Status Updates** (to buyer):
+   ```
+   📦 Order Update - Store Name
+   
+   Order ID: ORD-12345678
+   Status: Shipped
+   
+   Track your order for updates.
+   ```
+
+### WhatsApp API Options
+
+**Option 1: Twilio WhatsApp**
+```env
+TWILIO_ACCOUNT_SID=your_sid
+TWILIO_AUTH_TOKEN=your_token
+TWILIO_WHATSAPP_NUMBER=whatsapp:+14155238886
+TWILIO_WHATSAPP_ENABLED=true
+```
+
+**Option 2: Gupshup WhatsApp**
+```env
+GUPSHUP_API_KEY=your_api_key
+GUPSHUP_SOURCE_NUMBER=your_number
+```
+
+**Development**: Uses stub implementation that logs messages to console.
+
+### Setting Up WhatsApp Numbers
+
+1. **For Sellers**: Add WhatsApp number in SellerProfile
+2. **For Buyers**: Collected during checkout process
+3. **Format**: Include country code (+91 for India)
+
+## Hindi Language Support
+
+Complete Hindi UI support for artisans who prefer local language.
+
+### Language Features
+
+1. **Manual Toggle**: Users choose Hindi/English (no auto-detection)
+2. **Complete Translation**: All UI elements, forms, messages
+3. **Persistent Preference**: Choice saved in user profile
+4. **Mixed Content**: Supports Hindi product names with English interface
+
+### Setting Up Hindi
+
+1. **Django i18n Configuration**:
+   ```python
+   LANGUAGES = [
+       ('en', 'English'),
+       ('hi', 'हिंदी'),
+   ]
+   ```
+
+2. **Compile Translation Files**:
+   ```bash
+   python manage.py compilemessages
+   ```
+
+3. **Language Toggle**: Available in dashboard header
+
+### Translation Coverage
+
+- ✅ Seller dashboard
+- ✅ Product forms
+- ✅ Order management
+- ✅ Analytics labels
+- ✅ Error messages
+- ✅ Email notifications
+- ✅ WhatsApp messages
+
+## Subdomain Management
+
+Each store gets its own subdomain for professional appearance.
+
+### Subdomain Features
+
+1. **Automatic Creation**: `storename.storeloop.in`
+2. **Custom Domains**: Map `customdomain.com` (optional)
+3. **SSL Support**: Automatic HTTPS for subdomains
+4. **SEO Friendly**: Each store has unique URL
+
+### DNS Configuration
+
+**For Subdomains**:
+- Wildcard DNS: `*.storeloop.in` → Server IP
+- Automatic SSL via Let's Encrypt
+
+**For Custom Domains**:
+1. Customer adds CNAME: `www.customdomain.com` → `storeloop.in`
+2. Add domain in store settings
+3. SSL certificate auto-generated
+
+### Middleware Routing
+
+```python
+# stores/middleware.py
+class SubdomainMiddleware:
+    def process_request(self, request):
+        store = get_store_from_domain(request)
+        if store:
+            request.store = store
+            return render_store_frontend(request, store)
+```
+
+## GST Invoice Generation
+
+Automatic GST-compliant invoices for Indian tax requirements.
+
+### GST Features
+
+1. **Automatic Calculation**: 18% GST rate (configurable)
+2. **PDF Generation**: WeasyPrint for professional invoices
+3. **Compliance**: Follows Indian GST invoice format
+4. **Download**: Per-order PDF download
+
+### Invoice Components
+
+- **Seller Details**: Name, GST number, address
+- **Buyer Details**: Name, address, phone
+- **Product Details**: Name, quantity, rate, amount
+- **Tax Calculation**: Base amount, GST amount, total
+- **Invoice Number**: Auto-generated unique number
+
+### Setting Up GST
+
+1. **Seller GST Profile**:
+   - GST Number (format: 27AAPFU0939F1ZV)
+   - Business Address
+   - Legal Business Name
+
+2. **Invoice Generation**:
+   - Automatic on order completion
+   - Manual download from order detail page
+   - Email attachment (optional)
+
+### Sample Invoice Format
+
+```
+TAX INVOICE
+
+From: Store Name
+GST No: 27AAPFU0939F1ZV
+Address: Business Address
+
+To: Customer Name
+Address: Customer Address
+
+Invoice No: INV-ORD-12345678
+Date: 15/01/2024
+
+Product: Banarasi Silk Saree
+Quantity: 1
+Rate: ₹12,711.86
+Amount: ₹12,711.86
+
+Taxable Amount: ₹12,711.86
+GST @ 18%: ₹2,288.14
+Total Amount: ₹15,000.00
+```
+
+## Analytics Dashboard
+
+Mobile-optimized analytics for artisan business insights.
+
+### Analytics Features
+
+1. **Sales Trends**: Monthly revenue charts
+2. **Top Products**: Best-selling items
+3. **Customer Analytics**: Demographics and behavior
+4. **Mobile Charts**: Chart.js optimized for small screens
+5. **Hindi Labels**: Analytics in local language
+
+### API Endpoints
+
+```javascript
+// /stores/api/analytics/
+{
+  "monthly_sales": {
+    "2024-01": 45000,
+    "2024-02": 52000
+  },
+  "top_products": {
+    "Banarasi Saree": 15,
+    "Kashmir Shawl": 12
+  },
+  "total_orders": 127,
+  "total_revenue": 234000
+}
+```
+
+### Using Analytics
+
+1. **Identify Trends**: Which months are best for sales
+2. **Popular Products**: Focus marketing on top sellers
+3. **Inventory Planning**: Stock popular items
+4. **Pricing Strategy**: Analyze price vs. sales volume
+
+## Legacy Features
 
 ### Creating Tag Types
 

@@ -1,6 +1,8 @@
-# StoreLoop - E-commerce Platform for Indian Artisans & NGOs
+# StoreLoop - Django E-commerce Platform
 
-StoreLoop is a Django-based, multi-seller e-commerce platform specifically designed for Indian artisans and NGOs. It features Hindi/English UI, GST compliance, WhatsApp notifications, AI-powered product descriptions, and NGO partner management capabilities.
+StoreLoop is a Django-based multi-seller e-commerce platform with features for small businesses and artisans. It includes multi-language support, payment integration, and automated testing capabilities.
+
+Built to empower India's creative sellers — from NGOs and cooperatives to individual artisans.
 
 ## Features
 
@@ -221,9 +223,10 @@ StoreLoop is a Django-based, multi-seller e-commerce platform specifically desig
 
 ### 🧙‍♂️ AI-Powered Product Descriptions
 - Generate Hindi and English descriptions using OpenRouter/Groq API
-- **Editable drafts only** - AI assists, never auto-publishes
+- **Editable draft suggestions only** - AI provides suggestions that users must review and edit
 - Input: product name, material, region, style
-- Output: short + long descriptions for review
+- Output: draft descriptions for manual review and editing
+- **No auto-publishing** - all AI content requires human approval
 
 ### 📱 Mobile-First Seller Dashboard
 - PWA-ready for low-end Android devices
@@ -320,21 +323,20 @@ npm test               # Run generated tests
 
 **For other projects:** See [FORM_TESTING_PROMPTS.md](FORM_TESTING_PROMPTS.md) for implementation prompts.
 
-## Why StoreLoop is Better than Wix/Shopify for Indian Artisans
+## Key Features
 
-**StoreLoop vs Competitors:**
-- **Zero transaction fees** (Wix charges 2.9%, Shopify has monthly fees)
-- **Hindi UI support** (Wix/Shopify are English-only)
-- **Built-in GST compliance** (Others require manual/third-party solutions)
-- **WhatsApp integration** (Native vs no support)
-- **Excel bulk upload with validation** (Better than basic CSV)
-- **AI descriptions in Hindi + English** (Unique feature)
-- **NGO multi-store management** (Not available elsewhere)
-- **PWA for low-end Android devices** (Mobile-first for Indian market)
-- **Free subdomains** (Others charge for custom domains)
-- **4-step onboarding wizard** (No technical expertise needed)
+**Technical Capabilities:**
+- Multi-language UI support (Hindi/English)
+- GST invoice generation for Indian market
+- WhatsApp notification integration
+- Excel/CSV bulk product upload
+- AI-powered product description suggestions (editable drafts)
+- Multi-store management dashboard
+- Progressive Web App (PWA) support
+- Subdomain routing for individual stores
+- Comprehensive automated testing suite
 
-**Perfect for Indian artisans, NGOs, and small businesses who need local language support, compliance features, and zero fees.**
+**Suitable for small businesses, artisans, and organizations needing localized e-commerce solutions.**
 
 ### Sample Data
 ```bash

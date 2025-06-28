@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Store Setup - Step 2</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+    <div style="max-width: 600px; margin: 50px auto; padding: 20px; font-family: Arial, sans-serif;">
+        <h1>Store Setup - Step 2 of 5</h1>
+        <h2>Theme Selection</h2>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div style="margin-bottom: 20px;">
+                <label>Theme:</label><br>
+                <select name="theme" style="width: 100%; padding: 10px; margin-top: 5px;">
+                    <option value="minimal">Minimal</option>
+                    <option value="warm" selected>Warm</option>
+                    <option value="dark">Dark</option>
+                </select>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label for="primary_color">Primary Color:</label><br>
+                <input type="color" id="primary_color" name="primary_color" value="#8B4513" style="width: 100px; height: 40px; margin-top: 5px;">
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label for="secondary_color">Secondary Color:</label><br>
+                <input type="color" id="secondary_color" name="secondary_color" value="#DEB887" style="width: 100px; height: 40px; margin-top: 5px;">
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label>Font Family:</label><br>
+                <select name="font_family" style="width: 100%; padding: 10px; margin-top: 5px;">
+                    <option value="sans-serif">Sans Serif</option>
+                    <option value="serif" selected>Serif</option>
+                    <option value="monospace">Monospace</option>
+                </select>
+            </div>
+            
+            <button type="submit" style="background: #3B82F6; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer;">
+                Next →
+            </button>
+        </form>
+    </div>
+</body>
+</html>

@@ -1,6 +1,10 @@
 from django.http import HttpResponse
 from django.template.loader import render_to_string
-from weasyprint import HTML, CSS
+# from weasyprint import HTML, CSS  # Windows compatibility issue
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import inch
+from io import BytesIO
 from django.conf import settings
 import os
 

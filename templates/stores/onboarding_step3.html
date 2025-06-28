@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Store Setup - Step 3</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+    <div style="max-width: 600px; margin: 50px auto; padding: 20px; font-family: Arial, sans-serif;">
+        <h1>Store Setup - Step 3 of 5</h1>
+        <h2>Homepage Layout</h2>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div style="margin-bottom: 20px;">
+                <label for="hero_title">Hero Banner Title:</label><br>
+                <input type="text" id="hero_title" name="hero_title" value="Welcome to Our Store" style="width: 100%; padding: 10px; margin-top: 5px;">
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label for="hero_content">Hero Banner Content:</label><br>
+                <textarea id="hero_content" name="hero_content" rows="3" style="width: 100%; padding: 10px; margin-top: 5px;">Discover unique handcrafted items</textarea>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label for="about_title">About Section Title:</label><br>
+                <input type="text" id="about_title" name="about_title" value="About Our Craft" style="width: 100%; padding: 10px; margin-top: 5px;">
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label for="about_content">About Section Content:</label><br>
+                <textarea id="about_content" name="about_content" rows="3" style="width: 100%; padding: 10px; margin-top: 5px;">We create beautiful handmade items</textarea>
+            </div>
+            
+            <button type="submit" style="background: #3B82F6; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer;">
+                Next →
+            </button>
+        </form>
+    </div>
+</body>
+</html>

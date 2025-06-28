@@ -45,7 +45,7 @@ class Product(models.Model):
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     image = models.ImageField(upload_to='product_images/', blank=True, null=True)
-    store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name='products')
+    store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name='product_catalog')
     tags = models.ManyToManyField(Tag, blank=True, related_name='products')
     stock_quantity = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)

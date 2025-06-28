@@ -26,7 +26,17 @@ class Store(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            base_slug = slugify(self.name) or 'store'
+            slug = base_slug
+            counter = 1
+            
+            # Ensure unique slug
+            while Store.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            
+            self.slug = slug
+            
         if not self.subdomain:
             self.subdomain = self.slug
         super().save(*args, **kwargs)
@@ -47,7 +57,7 @@ class SellerProfile(models.Model):
         return f"{self.user.username} - {self.user.get_full_name()}"
 
 class Product(models.Model):
-    store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name='products')
+    store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name='store_products')
     name = models.CharField(max_length=200)
     slug = models.SlugField(blank=True)
     description = models.TextField(blank=True)
@@ -123,3 +133,30 @@ class ProductUploadBatch(models.Model):
 
     def __str__(self):
         return f"Upload {self.id} - {self.store.name}"
+
+class StoreHomepageBlock(models.Model):
+    BLOCK_TYPES = [
+        ('hero_banner', 'Hero Banner'),
+        ('featured_products', 'Featured Products'),
+        ('text_block', 'Text Block'),
+        ('testimonials', 'Testimonials'),
+        ('contact_form', 'Contact Form'),
+        ('image_gallery', 'Image Gallery'),
+    ]
+    
+    store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name='homepage_blocks')
+    block_type = models.CharField(max_length=20, choices=BLOCK_TYPES)
+    title = models.CharField(max_length=200, blank=True)
+    content = models.TextField(blank=True)
+    configuration = models.JSONField(default=dict)
+    order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['order']
+        unique_together = ['store', 'block_type', 'order']
+    
+    def __str__(self):
+        return f"{self.store.name} - {self.get_block_type_display()}"

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Store Setup - Step 1</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+    <div style="max-width: 600px; margin: 50px auto; padding: 20px; font-family: Arial, sans-serif;">
+        <h1>Store Setup - Step 1 of 5</h1>
+        <h2>Basic Information</h2>
+        
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div style="margin-bottom: 20px;">
+                <label for="name">Store Name:</label><br>
+                <input type="text" id="name" name="name" style="width: 100%; padding: 10px; margin-top: 5px;" placeholder="कलाकार शिल्प" required>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label for="description">Description:</label><br>
+                <textarea id="description" name="description" rows="4" style="width: 100%; padding: 10px; margin-top: 5px;" placeholder="Handmade crafts by Indian artisans"></textarea>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label for="logo">Store Logo:</label><br>
+                <input type="file" id="logo" name="logo" accept="image/*" style="margin-top: 5px;">
+            </div>
+            
+            <button type="submit" style="background: #3B82F6; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer;">
+                Next →
+            </button>
+        </form>
+    </div>
+</body>
+</html>

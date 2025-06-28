@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload Products - {{ store.name }}</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+    <div style="max-width: 800px; margin: 50px auto; padding: 20px; font-family: Arial, sans-serif;">
+        <h1>Bulk Product Upload</h1>
+        <p>Upload multiple products to {{ store.name }} using Excel or CSV file</p>
+        
+        <!-- Upload Form -->
+        <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+            <h2>Upload File</h2>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div style="margin-bottom: 20px;">
+                    <label for="file">Choose Excel or CSV file:</label><br>
+                    <input type="file" id="file" name="file" accept=".csv,.xlsx,.xls" style="margin-top: 10px;" required>
+                </div>
+                
+                <button type="submit" style="background: #10B981; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer;">
+                    Upload Products
+                </button>
+            </form>
+        </div>
+        
+        <!-- Sample CSV Format -->
+        <div style="background: #EBF8FF; border: 1px solid #3B82F6; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+            <h2>Required CSV Format</h2>
+            <p>Your CSV file should have these columns:</p>
+            <pre style="background: white; padding: 15px; border-radius: 5px; overflow-x: auto;">name,description,price,stock,category,material,region,style
+"बनारसी सिल्क साड़ी","Beautiful handwoven saree",15000,5,"Clothing","Silk","Varanasi","Traditional"
+"कशीदाकारी शाल","Embroidered woolen shawl",3500,10,"Accessories","Wool","Kashmir","Kashmiri"</pre>
+        </div>
+        
+        <!-- Recent Uploads -->
+        {% if recent_uploads %}
+        <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px;">
+            <h2>Recent Uploads</h2>
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid #e5e7eb;">
+                            <th style="text-align: left; padding: 10px;">File</th>
+                            <th style="text-align: left; padding: 10px;">Total Rows</th>
+                            <th style="text-align: left; padding: 10px;">Success</th>
+                            <th style="text-align: left; padding: 10px;">Failed</th>
+                            <th style="text-align: left; padding: 10px;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for upload in recent_uploads %}
+                        <tr style="border-bottom: 1px solid #f3f4f6;">
+                            <td style="padding: 10px;">{{ upload.file.name }}</td>
+                            <td style="padding: 10px;">{{ upload.total_rows }}</td>
+                            <td style="padding: 10px; color: #10B981;">{{ upload.successful_imports }}</td>
+                            <td style="padding: 10px; color: #EF4444;">{{ upload.failed_imports }}</td>
+                            <td style="padding: 10px;">
+                                <span style="background: #10B981; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8em;">
+                                    {{ upload.status|title }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+        
+        <div style="margin-top: 30px;">
+            <a href="/stores/dashboard/" style="background: #6B7280; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px;">
+                Back to Dashboard
+            </a>
+        </div>
+    </div>
+</body>
+</html>

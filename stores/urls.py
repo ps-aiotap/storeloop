@@ -25,4 +25,10 @@ urlpatterns = [
     
     # Language
     path('set-language/', views.set_language, name='set_language'),
+    
+    # Store listing page
+    path('', views.store_listing, name='store_listing'),
+    
+    # Store homepage (subdomain access)
+    path('<slug:store_slug>/', views.store_homepage, name='store_homepage'),
 ]

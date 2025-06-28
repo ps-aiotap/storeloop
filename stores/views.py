@@ -21,24 +21,35 @@ def seller_onboarding(request):
     
     if step == '1':  # Logo & Basic Info
         if request.method == 'POST':
-            form = StoreOnboardingForm(request.POST, request.FILES, instance=store)
-            if form.is_valid():
-                store = form.save(commit=False)
-                store.owner = request.user
+            # Create store with basic info
+            store_name = request.POST.get('name', '')
+            store_description = request.POST.get('description', '')
+            
+            if not store:
+                store = Store.objects.create(
+                    name=store_name,
+                    description=store_description,
+                    owner=request.user
+                )
+            else:
+                store.name = store_name
+                store.description = store_description
                 store.save()
-                return redirect(f'?step=2')
+            
+            return redirect('/stores/onboarding/?step=2')
         else:
             form = StoreOnboardingForm(instance=store)
         return render(request, 'stores/onboarding_step1.html', {'form': form, 'step': 1})
     
     elif step == '2':  # Theme Selection
         if request.method == 'POST':
-            store.theme = request.POST.get('theme', 'minimal')
-            store.primary_color = request.POST.get('primary_color', '#3B82F6')
-            store.secondary_color = request.POST.get('secondary_color', '#10B981')
-            store.font_family = request.POST.get('font_family', 'sans-serif')
-            store.save()
-            return redirect(f'?step=3')
+            if store:
+                store.theme = request.POST.get('theme', 'minimal')
+                store.primary_color = request.POST.get('primary_color', '#3B82F6')
+                store.secondary_color = request.POST.get('secondary_color', '#10B981')
+                store.font_family = request.POST.get('font_family', 'sans-serif')
+                store.save()
+            return redirect('/stores/onboarding/?step=3')
         return render(request, 'stores/onboarding_step2.html', {'store': store, 'step': 2})
     
     elif step == '3':  # Sample Products
@@ -54,10 +65,26 @@ def seller_onboarding(request):
                     name=product_data['name'],
                     defaults=product_data
                 )
-            return redirect(f'?step=4')
+            return redirect('/stores/onboarding/?step=4')
         return render(request, 'stores/onboarding_step3.html', {'store': store, 'step': 3})
     
-    elif step == '4':  # Razorpay Configuration
+    elif step == '4':  # Sample Products
+        if request.method == 'POST':
+            # Create sample products
+            sample_products = [
+                {'name': 'Sample Product 1', 'price': 999, 'stock': 10},
+                {'name': 'Sample Product 2', 'price': 1499, 'stock': 5},
+            ]
+            for product_data in sample_products:
+                Product.objects.get_or_create(
+                    store=store,
+                    name=product_data['name'],
+                    defaults=product_data
+                )
+            return redirect('/stores/onboarding/?step=5')
+        return render(request, 'stores/onboarding_step4.html', {'store': store, 'step': 4})
+    
+    elif step == '5':  # Razorpay Configuration
         if request.method == 'POST':
             store.razorpay_key_id = request.POST.get('razorpay_key_id', '')
             store.razorpay_key_secret = request.POST.get('razorpay_key_secret', '')
@@ -68,12 +95,16 @@ def seller_onboarding(request):
             store.save()
             messages.success(request, _('Store setup completed successfully!'))
             return redirect('seller_dashboard')
-        return render(request, 'stores/onboarding_step4.html', {'store': store, 'step': 4})
+        return render(request, 'stores/onboarding_step5.html', {'store': store, 'step': 5})
 
 @login_required
 def seller_dashboard(request):
     """Mobile-first seller dashboard"""
-    store = get_object_or_404(Store, owner=request.user)
+    try:
+        store = Store.objects.get(owner=request.user)
+    except Store.DoesNotExist:
+        # Redirect to onboarding if no store exists
+        return redirect('seller_onboarding')
     
     # Basic analytics
     total_orders = Order.objects.filter(store=store).count()
@@ -195,6 +226,41 @@ def product_upload(request):
     recent_uploads = ProductUploadBatch.objects.filter(store=store).order_by('-created_at')[:5]
     return render(request, 'stores/product_upload.html', {'form': form, 'recent_uploads': recent_uploads})
 
+@login_required
+def product_add(request):
+    """Add single product with AI description support"""
+    store = get_object_or_404(Store, owner=request.user)
+    
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES)
+        if form.is_valid():
+            product = form.save(commit=False)
+            product.store = store
+            product.save()
+            messages.success(request, _('Product added successfully!'))
+            return redirect('seller_dashboard')
+    else:
+        form = ProductForm()
+    
+    return render(request, 'stores/product_add.html', {'form': form, 'store': store})
+
+@login_required
+def product_edit(request, product_id):
+    """Edit existing product"""
+    store = get_object_or_404(Store, owner=request.user)
+    product = get_object_or_404(Product, id=product_id, store=store)
+    
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES, instance=product)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _('Product updated successfully!'))
+            return redirect('seller_dashboard')
+    else:
+        form = ProductForm(instance=product)
+    
+    return render(request, 'stores/product_edit.html', {'form': form, 'product': product, 'store': store})
+
 @csrf_exempt
 def generate_product_description(request):
     """AI product description generator"""
@@ -312,3 +378,43 @@ def set_language(request):
         request.session['django_language'] = language
         
     return redirect(request.META.get('HTTP_REFERER', '/'))
+
+def store_listing(request):
+    """List all published stores"""
+    # For demo purposes, show all stores with slugs (published or not)
+    stores = Store.objects.exclude(slug='').order_by('-created_at')
+    return render(request, 'stores/store_listing.html', {'stores': stores})
+
+def store_homepage(request, store_slug):
+    """Store homepage with homepage blocks"""
+    from django.http import HttpResponse
+    
+    # Try to find store by slug
+    try:
+        store = Store.objects.get(slug=store_slug)
+    except Store.DoesNotExist:
+        return HttpResponse("<h1>Store not found</h1><p><a href='/stores/'>Browse all stores</a></p>")
+    
+    # Check if store is published (unless user is admin/owner)
+    if not store.is_published:
+        if not request.user.is_authenticated or (request.user != store.owner and not request.user.is_superuser):
+            return HttpResponse("<h1>Store not available</h1><p>This store is not published yet.</p><p><a href='/stores/'>Browse all stores</a></p>")
+    
+    # Get homepage blocks
+    homepage_blocks = store.homepage_blocks.filter(is_active=True).order_by('order')
+    
+    # Get featured products
+    featured_products = store.store_products.filter(is_active=True)[:6]
+    
+    # Simple HTML response for now
+    blocks_html = "<br>".join([f"<div><h3>{block.title}</h3><p>{block.content}</p></div>" for block in homepage_blocks])
+    products_html = "<br>".join([f"<div>{product.name} - ${product.price}</div>" for product in featured_products])
+    
+    return HttpResponse(f"""
+    <h1>{store.name}</h1>
+    <p>{store.description}</p>
+    <h2>Homepage Blocks:</h2>
+    {blocks_html}
+    <h2>Featured Products:</h2>
+    {products_html}
+    """)

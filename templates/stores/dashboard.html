@@ -1,208 +1,123 @@
-{% load i18n %}
 <!DOCTYPE html>
-<html lang="{{ LANGUAGE_CODE }}">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% trans "Seller Dashboard" %} - {{ store.name }}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <meta name="theme-color" content="{{ store.primary_color }}">
-    <link rel="manifest" href="{% url 'pwa_manifest' %}">
+    <title>Seller Dashboard - {{ store.name }}</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
-<body class="bg-gray-50 font-sans">
-    <!-- Mobile-first header -->
-    <header class="bg-white shadow-sm border-b">
-        <div class="px-4 py-3">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                    {% if store.logo %}
-                        <img src="{{ store.logo.url }}" alt="{{ store.name }}" class="w-8 h-8 rounded">
-                    {% endif %}
-                    <h1 class="text-lg font-semibold text-gray-900">{{ store.name }}</h1>
+<body>
+    <div style="max-width: 1200px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
+        <header style="margin-bottom: 30px;">
+            <h1>{{ store.name }} Dashboard</h1>
+            <p>Welcome back! Here's your store overview.</p>
+        </header>
+        
+        <!-- Analytics Cards -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px;">
+            <div style="background: #f3f4f6; padding: 20px; border-radius: 8px;">
+                <h3>Total Orders</h3>
+                <p style="font-size: 2em; margin: 0; color: #3B82F6;">{{ total_orders }}</p>
+            </div>
+            
+            <div style="background: #f3f4f6; padding: 20px; border-radius: 8px;">
+                <h3>Total Sales</h3>
+                <p style="font-size: 2em; margin: 0; color: #10B981;">₹{{ total_sales }}</p>
+            </div>
+            
+            <div style="background: #f3f4f6; padding: 20px; border-radius: 8px;">
+                <h3>Pending Orders</h3>
+                <p style="font-size: 2em; margin: 0; color: #F59E0B;">{{ pending_orders }}</p>
+            </div>
+            
+            <div style="background: #f3f4f6; padding: 20px; border-radius: 8px;">
+                <h3>Products</h3>
+                <p style="font-size: 2em; margin: 0; color: #8B5CF6;">{{ products_count }}</p>
+            </div>
+        </div>
+        
+        <!-- Recent Orders -->
+        <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+            <h2>Recent Orders</h2>
+            {% if recent_orders %}
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid #e5e7eb;">
+                                <th style="text-align: left; padding: 10px;">Order ID</th>
+                                <th style="text-align: left; padding: 10px;">Customer</th>
+                                <th style="text-align: left; padding: 10px;">Amount</th>
+                                <th style="text-align: left; padding: 10px;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in recent_orders %}
+                            <tr style="border-bottom: 1px solid #f3f4f6;">
+                                <td style="padding: 10px;">{{ order.order_id }}</td>
+                                <td style="padding: 10px;">{{ order.customer_name }}</td>
+                                <td style="padding: 10px;">₹{{ order.total_amount }}</td>
+                                <td style="padding: 10px;">
+                                    <span style="background: #10B981; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8em;">
+                                        {{ order.status|title }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
-                
-                <!-- Language toggle -->
-                <div class="flex items-center space-x-2">
-                    <form method="post" action="{% url 'set_language' %}" class="inline">
-                        {% csrf_token %}
-                        <select name="language" onchange="this.form.submit()" class="text-sm border rounded px-2 py-1">
-                            <option value="en" {% if LANGUAGE_CODE == 'en' %}selected{% endif %}>English</option>
-                            <option value="hi" {% if LANGUAGE_CODE == 'hi' %}selected{% endif %}>हिंदी</option>
-                        </select>
-                    </form>
-                    
-                    <button class="p-2 text-gray-600" onclick="toggleMenu()">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                        </svg>
-                    </button>
-                </div>
-            </div>
+            {% else %}
+                <p>No orders yet. Start promoting your store!</p>
+            {% endif %}
         </div>
-    </header>
-
-    <!-- Stats cards -->
-    <div class="px-4 py-6">
-        <div class="grid grid-cols-2 gap-4 mb-6">
-            <div class="bg-white rounded-lg p-4 shadow-sm">
-                <div class="text-2xl font-bold text-blue-600">{{ total_orders }}</div>
-                <div class="text-sm text-gray-600">{% trans "Total Orders" %}</div>
-            </div>
-            <div class="bg-white rounded-lg p-4 shadow-sm">
-                <div class="text-2xl font-bold text-green-600">₹{{ total_sales|floatformat:0 }}</div>
-                <div class="text-sm text-gray-600">{% trans "Total Sales" %}</div>
-            </div>
-            <div class="bg-white rounded-lg p-4 shadow-sm">
-                <div class="text-2xl font-bold text-orange-600">{{ pending_orders }}</div>
-                <div class="text-sm text-gray-600">{% trans "Pending Orders" %}</div>
-            </div>
-            <div class="bg-white rounded-lg p-4 shadow-sm">
-                <div class="text-2xl font-bold text-purple-600">{{ products_count }}</div>
-                <div class="text-sm text-gray-600">{% trans "Active Products" %}</div>
-            </div>
-        </div>
-
-        <!-- Quick actions -->
-        <div class="bg-white rounded-lg p-4 shadow-sm mb-6">
-            <h2 class="text-lg font-semibold mb-4">{% trans "Quick Actions" %}</h2>
-            <div class="grid grid-cols-2 gap-3">
-                <a href="{% url 'product_add' %}" class="bg-blue-500 text-white text-center py-3 rounded-lg font-medium">
-                    {% trans "Add Product" %}
-                </a>
-                <a href="{% url 'product_upload' %}" class="bg-green-500 text-white text-center py-3 rounded-lg font-medium">
-                    {% trans "Bulk Upload" %}
-                </a>
-            </div>
-        </div>
-
-        <!-- Recent orders -->
-        <div class="bg-white rounded-lg p-4 shadow-sm mb-6">
-            <h2 class="text-lg font-semibold mb-4">{% trans "Recent Orders" %}</h2>
-            {% for order in recent_orders %}
-                <div class="flex items-center justify-between py-3 border-b last:border-b-0">
-                    <div>
-                        <div class="font-medium">{{ order.order_id }}</div>
-                        <div class="text-sm text-gray-600">{{ order.customer_name }}</div>
-                    </div>
-                    <div class="text-right">
-                        <div class="font-medium">₹{{ order.total_amount }}</div>
-                        <div class="text-sm px-2 py-1 rounded-full 
-                            {% if order.status == 'pending' %}bg-yellow-100 text-yellow-800
-                            {% elif order.status == 'confirmed' %}bg-blue-100 text-blue-800
-                            {% elif order.status == 'delivered' %}bg-green-100 text-green-800
-                            {% else %}bg-gray-100 text-gray-800{% endif %}">
-                            {{ order.get_status_display }}
-                        </div>
-                    </div>
-                </div>
-            {% empty %}
-                <p class="text-gray-500 text-center py-4">{% trans "No orders yet" %}</p>
-            {% endfor %}
-        </div>
-
-        <!-- Low stock alerts -->
+        
+        <!-- Low Stock Alert -->
         {% if low_stock_products %}
-        <div class="bg-white rounded-lg p-4 shadow-sm mb-6">
-            <h2 class="text-lg font-semibold mb-4 text-red-600">{% trans "Low Stock Alert" %}</h2>
-            {% for product in low_stock_products %}
-                <div class="flex items-center justify-between py-2">
-                    <div class="font-medium">{{ product.name }}</div>
-                    <div class="text-red-600 font-medium">{{ product.stock }} {% trans "left" %}</div>
-                </div>
-            {% endfor %}
+        <div style="background: #FEF3C7; border: 1px solid #F59E0B; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+            <h2 style="color: #92400E;">Low Stock Alert</h2>
+            <p>The following products are running low on stock:</p>
+            <ul>
+                {% for product in low_stock_products %}
+                <li>{{ product.name }} - Only {{ product.stock }} left</li>
+                {% endfor %}
+            </ul>
         </div>
         {% endif %}
-
-        <!-- Sales chart -->
-        <div class="bg-white rounded-lg p-4 shadow-sm">
-            <h2 class="text-lg font-semibold mb-4">{% trans "Sales Analytics" %}</h2>
-            <canvas id="salesChart" width="400" height="200"></canvas>
-        </div>
-    </div>
-
-    <!-- Mobile navigation menu -->
-    <div id="mobileMenu" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
-        <div class="bg-white w-64 h-full shadow-lg">
-            <div class="p-4 border-b">
-                <h3 class="font-semibold">{% trans "Menu" %}</h3>
+        
+        <!-- Quick Actions -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+            <a href="/stores/products/add/" style="background: #3B82F6; color: white; padding: 15px; text-decoration: none; border-radius: 8px; text-align: center;">
+                Add Product
+            </a>
+            <a href="/stores/products/upload/" style="background: #10B981; color: white; padding: 15px; text-decoration: none; border-radius: 8px; text-align: center;">
+                Upload CSV
+            </a>
+            <!-- Debug Info -->
+            <div style="background: #FEF3C7; padding: 10px; border-radius: 5px; margin-bottom: 10px; font-size: 0.8em;">
+                <strong>Debug:</strong><br>
+                Slug: "{{ store.slug }}" ({{ store.slug|length }} chars)<br>
+                Published: {{ store.is_published }}<br>
+                Condition 1: {% if store.slug %}TRUE{% else %}FALSE{% endif %}<br>
+                Condition 2: {% if store.is_published %}TRUE{% else %}FALSE{% endif %}<br>
+                Both: {% if store.slug and store.is_published %}TRUE{% else %}FALSE{% endif %}
             </div>
-            <nav class="p-4">
-                <a href="{% url 'seller_dashboard' %}" class="block py-2 text-gray-700">{% trans "Dashboard" %}</a>
-                <a href="{% url 'product_upload' %}" class="block py-2 text-gray-700">{% trans "Products" %}</a>
-                <a href="#" class="block py-2 text-gray-700">{% trans "Orders" %}</a>
-                <a href="#" class="block py-2 text-gray-700">{% trans "Settings" %}</a>
-                <a href="{% url 'admin:logout' %}" class="block py-2 text-red-600">{% trans "Logout" %}</a>
-            </nav>
+            
+            {% if store.slug and store.is_published %}
+            <a href="/stores/{{ store.slug }}/" style="background: #8B5CF6; color: white; padding: 15px; text-decoration: none; border-radius: 8px; text-align: center;">
+                View Store
+            </a>
+            {% elif store.slug %}
+            <span style="background: #F59E0B; color: white; padding: 15px; border-radius: 8px; text-align: center;">
+                Complete Setup First (has slug but not published)
+            </span>
+            {% else %}
+            <span style="background: #9CA3AF; color: white; padding: 15px; border-radius: 8px; text-align: center;">
+                Store Not Published (no slug)
+            </span>
+            {% endif %}
+            <a href="/accounts/logout/" style="background: #EF4444; color: white; padding: 15px; text-decoration: none; border-radius: 8px; text-align: center;">
+                Logout
+            </a>
         </div>
     </div>
-
-    <script>
-        // Mobile menu toggle
-        function toggleMenu() {
-            document.getElementById('mobileMenu').classList.toggle('hidden');
-        }
-
-        // Close menu when clicking outside
-        document.getElementById('mobileMenu').addEventListener('click', function(e) {
-            if (e.target === this) {
-                this.classList.add('hidden');
-            }
-        });
-
-        // Load analytics data and render chart
-        fetch('{% url "analytics_api" %}')
-            .then(response => response.json())
-            .then(data => {
-                const ctx = document.getElementById('salesChart').getContext('2d');
-                new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: Object.keys(data.monthly_sales),
-                        datasets: [{
-                            label: '{% trans "Monthly Sales" %}',
-                            data: Object.values(data.monthly_sales),
-                            borderColor: '{{ store.primary_color }}',
-                            backgroundColor: '{{ store.primary_color }}20',
-                            tension: 0.1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: {
-                                display: false
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            }
-                        }
-                    }
-                });
-            });
-
-        // PWA install prompt
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            
-            // Show install button
-            const installBtn = document.createElement('button');
-            installBtn.textContent = '{% trans "Install App" %}';
-            installBtn.className = 'fixed bottom-4 right-4 bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg';
-            installBtn.onclick = () => {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((choiceResult) => {
-                    if (choiceResult.outcome === 'accepted') {
-                        installBtn.remove();
-                    }
-                });
-            };
-            document.body.appendChild(installBtn);
-        });
-    </script>
 </body>
 </html>

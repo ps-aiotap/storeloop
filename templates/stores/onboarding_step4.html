@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Store Setup - Step 4</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+    <div style="max-width: 600px; margin: 50px auto; padding: 20px; font-family: Arial, sans-serif;">
+        <h1>Store Setup - Step 4 of 5</h1>
+        <h2>Sample Products</h2>
+        
+        <p>We'll create 2 sample products to get you started. You can edit or delete these later.</p>
+        
+        <div style="background: #f3f4f6; padding: 20px; border-radius: 5px; margin: 20px 0;">
+            <h3>Sample Products to be created:</h3>
+            <ul>
+                <li><strong>Sample Product 1</strong> - ₹999 (Stock: 10)</li>
+                <li><strong>Sample Product 2</strong> - ₹1,499 (Stock: 5)</li>
+            </ul>
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" style="background: #3B82F6; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer;">
+                Create Sample Products & Continue →
+            </button>
+        </form>
+    </div>
+</body>
+</html>

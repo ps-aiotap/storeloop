@@ -120,13 +120,12 @@ class Command(BaseCommand):
                     owner=user,
                     defaults={
                         'description': f'Welcome to {store_name}! We offer unique, handcrafted items.',
-                        'theme_name': random.choice(themes),
+                        'theme': random.choice(themes),
                         'primary_color': random.choice(colors),
                         'secondary_color': random.choice(colors),
-                        'font_choice': random.choice(fonts),
-                        'contact_email': user.email,
-                        'contact_phone': f'+91 9876543{random.randint(100, 999)}',
-                        'whatsapp_number': f'+91 9876543{random.randint(100, 999)}'
+                        'font_family': random.choice(fonts),
+                        'is_published': True,
+                        'onboarding_completed': True
                     }
                 )
                 stores.append(store)
@@ -173,18 +172,24 @@ class Command(BaseCommand):
             for i in range(products_per_store):
                 template = random.choice(product_templates)
                 
-                product = Product.objects.create(
-                    title=f"{template['title']} #{i+1}",
-                    description=template['description'],
-                    price=Decimal(random.randint(*template['price_range'])),
+                import uuid
+                # Keep title short to fit database constraint
+                unique_title = f"{template['title'][:30]} #{store.id}-{i+1}"
+                product, created = Product.objects.get_or_create(
+                    title=unique_title,
                     store=store,
-                    stock_quantity=random.randint(1, 20),
-                    views=random.randint(0, 100)
+                    defaults={
+                        'description': template['description'],
+                        'price': Decimal(random.randint(*template['price_range'])),
+                        'stock_quantity': random.randint(1, 20),
+                        'views': random.randint(0, 100)
+                    }
                 )
                 
-                # Add random tags
-                product_tags = random.sample(all_tags, random.randint(2, 5))
-                product.tags.set(product_tags)
+                # Add random tags (only if product was created)
+                if created and all_tags:
+                    product_tags = random.sample(all_tags, min(len(all_tags), random.randint(2, 5)))
+                    product.tags.set(product_tags)
 
     def create_homepage_blocks(self, stores):
         """Create sample homepage blocks"""
@@ -217,35 +222,6 @@ class Command(BaseCommand):
                     'text_align': 'center',
                     'background_color': '#f9fafb'
                 }
-            },
-            {
-                'block_type': 'testimonials',
-                'title': 'What Our Customers Say',
-                'content': '',
-                'configuration': {
-                    'testimonials': [
-                        {
-                            'text': 'Amazing quality and beautiful designs!',
-                            'author': 'Sarah M.',
-                            'rating': 5
-                        },
-                        {
-                            'text': 'Love the eco-friendly approach.',
-                            'author': 'John D.',
-                            'rating': 5
-                        }
-                    ]
-                }
-            },
-            {
-                'block_type': 'contact_form',
-                'title': 'Get in Touch',
-                'content': 'Have questions? We\'d love to hear from you!',
-                'configuration': {
-                    'background_color': '#f3f4f6',
-                    'show_phone': True,
-                    'show_subject': True
-                }
             }
         ]
         
@@ -254,11 +230,11 @@ class Command(BaseCommand):
                 StoreHomepageBlock.objects.get_or_create(
                     store=store,
                     block_type=template['block_type'],
+                    order=i,
                     defaults={
                         'title': template['title'],
                         'content': template['content'],
                         'configuration': template['configuration'],
-                        'order': i,
                         'is_active': True
                     }
                 )

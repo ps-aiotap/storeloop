@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Store Setup - Step 5</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+    <div style="max-width: 600px; margin: 50px auto; padding: 20px; font-family: Arial, sans-serif;">
+        <h1>Store Setup - Step 5 of 5</h1>
+        <h2>Payment & GST Setup</h2>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div style="margin-bottom: 20px;">
+                <label for="razorpay_key_id">Razorpay Key ID:</label><br>
+                <input type="text" id="razorpay_key_id" name="razorpay_key_id" placeholder="rzp_test_..." style="width: 100%; padding: 10px; margin-top: 5px;">
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label for="razorpay_key_secret">Razorpay Key Secret:</label><br>
+                <input type="password" id="razorpay_key_secret" name="razorpay_key_secret" placeholder="Your secret key" style="width: 100%; padding: 10px; margin-top: 5px;">
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label for="gst_number">GST Number:</label><br>
+                <input type="text" id="gst_number" name="gst_number" placeholder="27AAPFU0939F1ZV" style="width: 100%; padding: 10px; margin-top: 5px;">
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label for="business_address">Business Address:</label><br>
+                <textarea id="business_address" name="business_address" rows="4" style="width: 100%; padding: 10px; margin-top: 5px;" placeholder="Your complete business address"></textarea>
+            </div>
+            
+            <button type="submit" style="background: #10B981; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer;">
+                Complete Setup ✓
+            </button>
+        </form>
+    </div>
+</body>
+</html>

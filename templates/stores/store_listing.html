@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Browse Stores - StoreLoop</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+    <div style="font-family: Arial, sans-serif;">
+        <!-- Header -->
+        <header style="background: #3B82F6; color: white; padding: 20px 0;">
+            <div style="max-width: 1200px; margin: 0 auto; padding: 0 20px; display: flex; justify-content: space-between; align-items: center;">
+                <h1 style="margin: 0;"><a href="/" style="color: white; text-decoration: none;">StoreLoop</a></h1>
+                <a href="/accounts/login/" style="background: white; color: #3B82F6; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+                    Login
+                </a>
+            </div>
+        </header>
+        
+        <!-- Main Content -->
+        <div style="max-width: 1200px; margin: 0 auto; padding: 40px 20px;">
+            <h1>Browse Indian Artisan Stores</h1>
+            <p style="color: #6B7280; margin-bottom: 40px;">Discover unique handcrafted products from talented Indian artisans</p>
+            
+            {% if stores %}
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
+                {% for store in stores %}
+                <div style="border: 1px solid #e5e7eb; border-radius: 10px; padding: 20px; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    {% if store.logo %}
+                    <img src="{{ store.logo.url }}" alt="{{ store.name }}" style="width: 60px; height: 60px; border-radius: 50%; margin-bottom: 15px;">
+                    {% endif %}
+                    
+                    <h3 style="margin: 0 0 10px 0; color: #1F2937;">{{ store.name }}</h3>
+                    <p style="color: #6B7280; margin-bottom: 15px;">{{ store.description|truncatewords:20 }}</p>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <span style="background: #EBF8FF; color: #1E40AF; padding: 4px 8px; border-radius: 4px; font-size: 0.8em; margin-right: 5px;">
+                            {{ store.theme|title }}
+                        </span>
+                        <span style="background: #F0FDF4; color: #166534; padding: 4px 8px; border-radius: 4px; font-size: 0.8em;">
+                            {{ store.store_products.count }} Products
+                        </span>
+                    </div>
+                    
+                    <a href="/stores/{{ store.slug }}/" style="background: #3B82F6; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
+                        Visit Store
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div style="text-align: center; padding: 60px 20px; color: #6B7280;">
+                <h2>No stores available yet</h2>
+                <p>Be the first to create a store on StoreLoop!</p>
+                <a href="/accounts/login/" style="background: #3B82F6; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; margin-top: 20px; display: inline-block;">
+                    Create Your Store
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Footer -->
+        <footer style="background: #1F2937; color: #9CA3AF; padding: 40px 0; text-align: center; margin-top: 60px;">
+            <div style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
+                <p>&copy; 2024 StoreLoop. Empowering Indian Artisans.</p>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>

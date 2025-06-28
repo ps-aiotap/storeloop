@@ -1,65 +1,28 @@
-from django.shortcuts import redirect, render
-from django.urls import reverse
-from django.utils.deprecation import MiddlewareMixin
-from .utils import get_store_from_domain
+from django.shortcuts import get_object_or_404
+from django.http import Http404
+from .models import Store
 
-class SubdomainMiddleware(MiddlewareMixin):
-    """Handle subdomain and custom domain routing"""
+class StoreMiddleware:
+    """Middleware to handle subdomain routing for stores"""
     
-    def process_request(self, request):
-        # Skip for admin and API URLs
-        if request.path.startswith('/admin/') or request.path.startswith('/api/'):
-            return None
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        # Extract subdomain from host
+        host = request.get_host().split(':')[0]  # Remove port if present
+        host_parts = host.split('.')
         
-        store = get_store_from_domain(request)
-        
-        if store:
-            # Set store in request for use in views
-            request.store = store
-            
-            # If accessing store-specific URL, render store frontend
-            if not request.path.startswith('/seller/'):
-                return self.render_store_frontend(request, store)
-        
-        return None
-    
-    def render_store_frontend(self, request, store):
-        """Render store frontend for customers"""
-        from .models import Product
-        
-        if request.path == '/':
-            # Store homepage
-            products = Product.objects.filter(store=store, is_active=True)[:12]
-            context = {
-                'store': store,
-                'products': products,
-            }
-            return render(request, 'stores/store_frontend.html', context)
-        
-        elif request.path.startswith('/product/'):
-            # Product detail page
-            product_slug = request.path.split('/')[-2]
+        # Check if this is a subdomain request
+        if len(host_parts) > 2 and host_parts[0] != 'www':
+            subdomain = host_parts[0]
             try:
-                product = Product.objects.get(store=store, slug=product_slug, is_active=True)
-                context = {
-                    'store': store,
-                    'product': product,
-                }
-                return render(request, 'stores/product_detail.html', context)
-            except Product.DoesNotExist:
-                return render(request, 'stores/404.html', {'store': store}, status=404)
+                store = Store.objects.get(subdomain=subdomain, is_published=True)
+                request.store = store
+            except Store.DoesNotExist:
+                request.store = None
+        else:
+            request.store = None
         
-        return None
-
-class LanguageMiddleware(MiddlewareMixin):
-    """Handle language preference for authenticated users"""
-    
-    def process_request(self, request):
-        if request.user.is_authenticated and hasattr(request.user, 'sellerprofile'):
-            language = request.user.sellerprofile.language_preference
-            if language:
-                from django.utils import translation
-                translation.activate(language)
-                request.LANGUAGE_CODE = language
-        
-        return None
+        response = self.get_response(request)
+        return response

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Product - {{ store.name }}</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+    <div style="max-width: 600px; margin: 50px auto; padding: 20px; font-family: Arial, sans-serif;">
+        <h1>Add New Product</h1>
+        <p>Add a new product to {{ store.name }}</p>
+        
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div style="margin-bottom: 20px;">
+                <label for="name">Product Name:</label><br>
+                <input type="text" id="name" name="name" style="width: 100%; padding: 10px; margin-top: 5px;" placeholder="मिट्टी का दीया" required>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label for="description">Description:</label><br>
+                <textarea id="description" name="description" rows="4" style="width: 100%; padding: 10px; margin-top: 5px;" placeholder="Beautiful handcrafted clay lamp"></textarea>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label for="price">Price (₹):</label><br>
+                <input type="number" id="price" name="price" style="width: 100%; padding: 10px; margin-top: 5px;" placeholder="299" required>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label for="stock">Stock Quantity:</label><br>
+                <input type="number" id="stock" name="stock" style="width: 100%; padding: 10px; margin-top: 5px;" placeholder="10" required>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label for="category">Category:</label><br>
+                <input type="text" id="category" name="category" style="width: 100%; padding: 10px; margin-top: 5px;" placeholder="Home Decor">
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label for="material">Material:</label><br>
+                <input type="text" id="material" name="material" style="width: 100%; padding: 10px; margin-top: 5px;" placeholder="Clay">
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label for="region">Region:</label><br>
+                <input type="text" id="region" name="region" style="width: 100%; padding: 10px; margin-top: 5px;" placeholder="Khurja">
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label for="image">Product Image:</label><br>
+                <input type="file" id="image" name="image" accept="image/*" style="margin-top: 5px;">
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <button type="button" onclick="generateDescription()" style="background: #8B5CF6; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+                    Generate Hindi Description with AI
+                </button>
+            </div>
+            
+            <button type="submit" style="background: #10B981; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer;">
+                Add Product
+            </button>
+            
+            <a href="/stores/dashboard/" style="background: #6B7280; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin-left: 10px;">
+                Cancel
+            </a>
+        </form>
+    </div>
+    
+    <script>
+        function generateDescription() {
+            alert('AI Description Generator - Feature coming soon!');
+        }
+    </script>
+</body>
+</html>

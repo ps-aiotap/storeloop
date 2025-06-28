@@ -4,12 +4,17 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 from django.contrib.sitemaps.views import sitemap
+from django.shortcuts import render
 from .sitemaps import sitemaps
 from .robots import robots_txt, security_txt
 
+def homepage(request):
+    return render(request, 'home.html')
+
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('products.urls')),
+    path('', homepage, name='homepage'),
+    path('products/', include('products.urls')),
     path('orders/', include('orders.urls')),
     path('stores/', include('stores.urls')),
     

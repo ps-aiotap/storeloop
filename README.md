@@ -114,20 +114,15 @@ Built to empower India's creative sellers — from NGOs and cooperatives to indi
    ```
    python -m venv storeloop-venv
    source storeloop-venv/bin/activate  # On Windows: storeloop-venv\Scripts\activate
+   
+   # Windows: Install numpy/pandas binaries first to avoid build issues
+   pip install numpy pandas --only-binary=all
    pip install -r requirements.txt
    ```
 3. Install and start Redis (for Celery):
    ```
-   # Ubuntu/Debian
-   sudo apt install redis-server
-   sudo systemctl start redis
-   
-   # macOS
-   brew install redis
-   brew services start redis
-   
-   # Windows
-   # Download from https://redis.io/download
+   # Docker (recommended - works on all platforms)
+   docker run -d --name storeloop-redis -p 6379:6379 redis:7-alpine
    ```
 3. Set up PostgreSQL:
    ```
@@ -175,7 +170,8 @@ Built to empower India's creative sellers — from NGOs and cooperatives to indi
    ```
 6. Start Celery worker (in separate terminal):
    ```
-   celery -A storeloop worker --loglevel=info
+   # Make sure you're in the project root directory
+   celery -A core worker --loglevel=info
    ```
 7. Run the development server:
    ```

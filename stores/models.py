@@ -1,192 +1,125 @@
 from django.db import models
+from django.contrib.auth.models import User
 from django.utils.text import slugify
-import json
-
-class BaseTheme(models.Model):
-    """Base theme model that can be extended by child themes"""
-    name = models.CharField(max_length=100)
-    slug = models.SlugField(unique=True)
-    description = models.TextField(blank=True)
-    
-    # Theme components
-    layout_template = models.CharField(max_length=100, default='base.html')
-    header_template = models.CharField(max_length=100, default='components/header.html')
-    footer_template = models.CharField(max_length=100, default='components/footer.html')
-    
-    # Default colors
-    primary_color = models.CharField(max_length=20, default='#3b82f6')
-    secondary_color = models.CharField(max_length=20, default='#1f2937')
-    background_color = models.CharField(max_length=20, default='#f3f4f6')
-    text_color = models.CharField(max_length=20, default='#1f2937')
-    
-    # Default fonts
-    font_choice = models.CharField(max_length=20, default='sans', choices=[
-        ('sans', 'Sans-serif'),
-        ('serif', 'Serif'),
-        ('mono', 'Monospace'),
-    ])
-    
-    # Default CSS/JS
-    base_css = models.TextField(blank=True)
-    base_js = models.TextField(blank=True)
-    
-    def __str__(self):
-        return self.name
-    
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)
-        super().save(*args, **kwargs)
+import uuid
 
 class Store(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=200)
     slug = models.SlugField(unique=True, blank=True)
-    owner = models.ForeignKey('auth.User', on_delete=models.CASCADE, related_name='stores')
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='owned_stores')
+    logo = models.ImageField(upload_to='store_logos/', blank=True, null=True)
     description = models.TextField(blank=True)
-    
-    # Theme settings
-    base_theme = models.ForeignKey(BaseTheme, on_delete=models.SET_NULL, null=True, blank=True)
-    theme_name = models.CharField(max_length=50, default='minimal', choices=[
-        ('minimal', 'Minimal'),
-        ('dark', 'Dark'),
-        ('warm', 'Warm'),
-    ])
-    theme_version = models.CharField(max_length=10, default='v1')
-    primary_color = models.CharField(max_length=20, default='#3b82f6')
-    secondary_color = models.CharField(max_length=20, default='#1f2937')
-    font_choice = models.CharField(max_length=20, default='sans', choices=[
-        ('sans', 'Sans-serif'),
-        ('serif', 'Serif'),
-        ('mono', 'Monospace'),
-    ])
-    logo_url = models.ImageField(upload_to='store_logos/', blank=True, null=True)
-    custom_css = models.TextField(blank=True, default='')
-    custom_js = models.TextField(blank=True, default='')
-    
-    # Theme overrides
-    override_header = models.BooleanField(default=False)
-    override_footer = models.BooleanField(default=False)
-    header_template = models.CharField(max_length=100, blank=True)
-    footer_template = models.CharField(max_length=100, blank=True)
-    
-    # Homepage layout configuration
-    homepage_layout = models.TextField(blank=True, default='[]')
-    
-    # Analytics settings
-    google_analytics_id = models.CharField(max_length=20, blank=True)
-    facebook_pixel_id = models.CharField(max_length=20, blank=True)
-    
-    # Contact information
-    contact_email = models.EmailField(blank=True)
-    contact_phone = models.CharField(max_length=20, blank=True)
-    whatsapp_number = models.CharField(max_length=20, blank=True)
-    
-    # Social media links
-    facebook_url = models.URLField(blank=True)
-    instagram_url = models.URLField(blank=True)
-    twitter_url = models.URLField(blank=True)
-    
+    theme = models.CharField(max_length=50, default='minimal')
+    primary_color = models.CharField(max_length=7, default='#3B82F6')
+    secondary_color = models.CharField(max_length=7, default='#10B981')
+    font_family = models.CharField(max_length=50, default='sans-serif')
+    custom_domain = models.CharField(max_length=200, blank=True, null=True)
+    subdomain = models.CharField(max_length=100, unique=True, blank=True)
+    razorpay_key_id = models.CharField(max_length=100, blank=True)
+    razorpay_key_secret = models.CharField(max_length=100, blank=True)
+    gst_number = models.CharField(max_length=15, blank=True)
+    business_address = models.TextField(blank=True)
+    onboarding_completed = models.BooleanField(default=False)
+    is_published = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        if not self.subdomain:
+            self.subdomain = self.slug
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
+
+class SellerProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    phone = models.CharField(max_length=15, blank=True)
+    language_preference = models.CharField(max_length=10, choices=[('en', 'English'), ('hi', 'Hindi')], default='en')
+    whatsapp_number = models.CharField(max_length=15, blank=True)
+    is_partner_admin = models.BooleanField(default=False)
+    managed_stores = models.ManyToManyField(Store, blank=True, related_name='partner_admins')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.user.get_full_name()}"
+
+class Product(models.Model):
+    store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name='products')
+    name = models.CharField(max_length=200)
+    slug = models.SlugField(blank=True)
+    description = models.TextField(blank=True)
+    short_description = models.CharField(max_length=500, blank=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    stock = models.PositiveIntegerField(default=0)
+    category = models.CharField(max_length=100, blank=True)
+    image = models.ImageField(upload_to='products/', blank=True, null=True)
+    image_url = models.URLField(blank=True)
+    material = models.CharField(max_length=100, blank=True)
+    region = models.CharField(max_length=100, blank=True)
+    style = models.CharField(max_length=100, blank=True)
+    ai_generated_description = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
-    
+
     def __str__(self):
-        return self.name
-    
-    def get_homepage_layout(self):
-        """Returns the homepage layout as a Python list"""
-        try:
-            return json.loads(self.homepage_layout)
-        except (json.JSONDecodeError, TypeError):
-            return []
-    
-    def set_homepage_layout(self, layout):
-        """Sets the homepage layout from a Python list"""
-        self.homepage_layout = json.dumps(layout)
-        self.save()
-    
-    def get_theme_settings(self):
-        """Get effective theme settings, inheriting from base theme if needed"""
-        settings = {
-            'name': self.name,
-            'theme_name': self.theme_name,
-            'theme_version': self.theme_version,
-            'primary_color': self.primary_color,
-            'secondary_color': self.secondary_color,
-            'font_choice': self.font_choice,
-            'logo_url': self.logo_url.url if self.logo_url else None,
-            'custom_css': self.custom_css,
-            'custom_js': self.custom_js,
-        }
-        
-        # Inherit from base theme if available
-        if self.base_theme:
-            # Layout templates
-            if not self.override_header:
-                settings['header_template'] = self.base_theme.header_template
-            else:
-                settings['header_template'] = self.header_template or self.base_theme.header_template
-                
-            if not self.override_footer:
-                settings['footer_template'] = self.base_theme.footer_template
-            else:
-                settings['footer_template'] = self.footer_template or self.base_theme.footer_template
-            
-            # Add base CSS/JS
-            settings['base_css'] = self.base_theme.base_css
-            settings['base_js'] = self.base_theme.base_js
-        
-        return settings
+        return f"{self.name} - {self.store.name}"
 
-
-class HomepageBlock(models.Model):
-    """Model to store predefined homepage blocks"""
-    name = models.CharField(max_length=100)
-    block_type = models.CharField(max_length=50, choices=[
-        ('hero_banner', 'Hero Banner'),
-        ('product_grid', 'Product Grid'),
-        ('featured_products', 'Featured Products'),
-        ('testimonials', 'Testimonials'),
-        ('text_block', 'Text Block'),
-        ('image_gallery', 'Image Gallery'),
-        ('newsletter_signup', 'Newsletter Signup'),
-        ('video_embed', 'Video Embed'),
-        ('trust_badges', 'Trust Badges'),
-        ('contact_form', 'Contact Form'),
-        ('tag_collection', 'Tag Collection'),
-    ])
-    template_name = models.CharField(max_length=100)
-    description = models.TextField(blank=True)
+class Order(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('confirmed', 'Confirmed'),
+        ('shipped', 'Shipped'),
+        ('delivered', 'Delivered'),
+        ('cancelled', 'Cancelled'),
+    ]
     
+    order_id = models.CharField(max_length=50, unique=True, blank=True)
+    store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name='orders')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    customer_name = models.CharField(max_length=200)
+    customer_email = models.EmailField()
+    customer_phone = models.CharField(max_length=15)
+    customer_address = models.TextField()
+    quantity = models.PositiveIntegerField(default=1)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    gst_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    razorpay_order_id = models.CharField(max_length=100, blank=True)
+    razorpay_payment_id = models.CharField(max_length=100, blank=True)
+    whatsapp_sent = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        if not self.order_id:
+            self.order_id = f"ORD-{uuid.uuid4().hex[:8].upper()}"
+        super().save(*args, **kwargs)
+
     def __str__(self):
-        return f"{self.name} ({self.block_type})"
+        return f"Order {self.order_id} - {self.store.name}"
 
+class ProductUploadBatch(models.Model):
+    store = models.ForeignKey(Store, on_delete=models.CASCADE)
+    file = models.FileField(upload_to='uploads/')
+    total_rows = models.PositiveIntegerField(default=0)
+    successful_imports = models.PositiveIntegerField(default=0)
+    failed_imports = models.PositiveIntegerField(default=0)
+    errors = models.JSONField(default=list)
+    status = models.CharField(max_length=20, choices=[
+        ('processing', 'Processing'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed')
+    ], default='processing')
+    created_at = models.DateTimeField(auto_now_add=True)
 
-class StoreHomepageBlock(models.Model):
-    """Model to store store-specific homepage block instances"""
-    store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name='homepage_blocks')
-    block_type = models.CharField(max_length=50, choices=[
-        ('hero_banner', 'Hero Banner'),
-        ('product_grid', 'Product Grid'),
-        ('featured_products', 'Featured Products'),
-        ('testimonials', 'Testimonials'),
-        ('text_block', 'Text Block'),
-        ('image_gallery', 'Image Gallery'),
-        ('newsletter_signup', 'Newsletter Signup'),
-        ('video_embed', 'Video Embed'),
-        ('trust_badges', 'Trust Badges'),
-        ('contact_form', 'Contact Form'),
-        ('tag_collection', 'Tag Collection'),
-    ])
-    order = models.PositiveIntegerField(default=0)
-    title = models.CharField(max_length=200, blank=True)
-    content = models.TextField(blank=True)
-    configuration = models.JSONField(default=dict)
-    is_active = models.BooleanField(default=True)
-    
-    class Meta:
-        ordering = ['order']
-    
     def __str__(self):
-        return f"{self.store.name} - {self.get_block_type_display()} ({self.order})"
+        return f"Upload {self.id} - {self.store.name}"

@@ -1,187 +1,314 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.views.generic import ListView
-from django.http import JsonResponse
-from .models import Store, StoreHomepageBlock, HomepageBlock
-from .forms import StoreThemeForm
-from products.models import Product, ContactForm, TrustBadge
+from django.http import JsonResponse, HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.translation import gettext as _
+from django.conf import settings
+import pandas as pd
 import json
+import requests
+from .models import Store, Product, Order, SellerProfile, ProductUploadBatch
+from .forms import StoreOnboardingForm, ProductForm, ProductUploadForm
+from .tasks import send_whatsapp_notification, generate_ai_description
+from .utils import generate_gst_invoice_pdf
 
 @login_required
-def store_theme_settings(request, store_id):
-    store = get_object_or_404(Store, id=store_id, owner=request.user)
+def seller_onboarding(request):
+    """4-step seller onboarding wizard"""
+    step = request.GET.get('step', '1')
+    store = getattr(request.user, 'owned_stores', Store.objects.none()).first()
+    
+    if step == '1':  # Logo & Basic Info
+        if request.method == 'POST':
+            form = StoreOnboardingForm(request.POST, request.FILES, instance=store)
+            if form.is_valid():
+                store = form.save(commit=False)
+                store.owner = request.user
+                store.save()
+                return redirect(f'?step=2')
+        else:
+            form = StoreOnboardingForm(instance=store)
+        return render(request, 'stores/onboarding_step1.html', {'form': form, 'step': 1})
+    
+    elif step == '2':  # Theme Selection
+        if request.method == 'POST':
+            store.theme = request.POST.get('theme', 'minimal')
+            store.primary_color = request.POST.get('primary_color', '#3B82F6')
+            store.secondary_color = request.POST.get('secondary_color', '#10B981')
+            store.font_family = request.POST.get('font_family', 'sans-serif')
+            store.save()
+            return redirect(f'?step=3')
+        return render(request, 'stores/onboarding_step2.html', {'store': store, 'step': 2})
+    
+    elif step == '3':  # Sample Products
+        if request.method == 'POST':
+            # Create sample products
+            sample_products = [
+                {'name': 'Sample Product 1', 'price': 999, 'stock': 10},
+                {'name': 'Sample Product 2', 'price': 1499, 'stock': 5},
+            ]
+            for product_data in sample_products:
+                Product.objects.get_or_create(
+                    store=store,
+                    name=product_data['name'],
+                    defaults=product_data
+                )
+            return redirect(f'?step=4')
+        return render(request, 'stores/onboarding_step3.html', {'store': store, 'step': 3})
+    
+    elif step == '4':  # Razorpay Configuration
+        if request.method == 'POST':
+            store.razorpay_key_id = request.POST.get('razorpay_key_id', '')
+            store.razorpay_key_secret = request.POST.get('razorpay_key_secret', '')
+            store.gst_number = request.POST.get('gst_number', '')
+            store.business_address = request.POST.get('business_address', '')
+            store.onboarding_completed = True
+            store.is_published = True
+            store.save()
+            messages.success(request, _('Store setup completed successfully!'))
+            return redirect('seller_dashboard')
+        return render(request, 'stores/onboarding_step4.html', {'store': store, 'step': 4})
+
+@login_required
+def seller_dashboard(request):
+    """Mobile-first seller dashboard"""
+    store = get_object_or_404(Store, owner=request.user)
+    
+    # Basic analytics
+    total_orders = Order.objects.filter(store=store).count()
+    total_sales = sum(order.total_amount for order in Order.objects.filter(store=store, status='delivered'))
+    pending_orders = Order.objects.filter(store=store, status='pending').count()
+    products_count = Product.objects.filter(store=store, is_active=True).count()
+    
+    # Recent orders
+    recent_orders = Order.objects.filter(store=store).order_by('-created_at')[:5]
+    
+    # Low stock products
+    low_stock_products = Product.objects.filter(store=store, stock__lte=5, is_active=True)
+    
+    context = {
+        'store': store,
+        'total_orders': total_orders,
+        'total_sales': total_sales,
+        'pending_orders': pending_orders,
+        'products_count': products_count,
+        'recent_orders': recent_orders,
+        'low_stock_products': low_stock_products,
+    }
+    return render(request, 'stores/dashboard.html', context)
+
+@login_required
+def partner_admin_dashboard(request):
+    """NGO partner admin dashboard"""
+    profile = get_object_or_404(SellerProfile, user=request.user, is_partner_admin=True)
+    
+    # Switch store view
+    selected_store_id = request.GET.get('store_id')
+    if selected_store_id:
+        selected_store = get_object_or_404(Store, id=selected_store_id, partner_admins=profile)
+    else:
+        selected_store = profile.managed_stores.first()
+    
+    # Aggregate metrics for all managed stores
+    managed_stores = profile.managed_stores.all()
+    total_stores = managed_stores.count()
+    total_artisans = sum(store.owner_set.count() for store in managed_stores)
+    total_revenue = sum(
+        sum(order.total_amount for order in store.orders.filter(status='delivered'))
+        for store in managed_stores
+    )
+    
+    context = {
+        'profile': profile,
+        'managed_stores': managed_stores,
+        'selected_store': selected_store,
+        'total_stores': total_stores,
+        'total_artisans': total_artisans,
+        'total_revenue': total_revenue,
+    }
+    return render(request, 'stores/partner_dashboard.html', context)
+
+@login_required
+def product_upload(request):
+    """Excel/CSV product upload"""
+    store = get_object_or_404(Store, owner=request.user)
     
     if request.method == 'POST':
-        form = StoreThemeForm(request.POST, request.FILES, instance=store)
+        form = ProductUploadForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Theme settings updated successfully!')
-            return redirect('store_theme_settings', store_id=store.id)
+            upload_batch = ProductUploadBatch.objects.create(
+                store=store,
+                file=form.cleaned_data['file']
+            )
+            
+            try:
+                # Process Excel/CSV file
+                file_path = upload_batch.file.path
+                if file_path.endswith('.xlsx'):
+                    df = pd.read_excel(file_path)
+                else:
+                    df = pd.read_csv(file_path)
+                
+                upload_batch.total_rows = len(df)
+                errors = []
+                successful = 0
+                
+                for index, row in df.iterrows():
+                    try:
+                        Product.objects.create(
+                            store=store,
+                            name=row.get('name', ''),
+                            description=row.get('description', ''),
+                            price=float(row.get('price', 0)),
+                            stock=int(row.get('stock', 0)),
+                            category=row.get('category', ''),
+                            image_url=row.get('image_url', ''),
+                            material=row.get('material', ''),
+                            region=row.get('region', ''),
+                            style=row.get('style', ''),
+                        )
+                        successful += 1
+                    except Exception as e:
+                        errors.append(f"Row {index + 1}: {str(e)}")
+                
+                upload_batch.successful_imports = successful
+                upload_batch.failed_imports = len(errors)
+                upload_batch.errors = errors
+                upload_batch.status = 'completed'
+                upload_batch.save()
+                
+                messages.success(request, f'Uploaded {successful} products successfully!')
+                if errors:
+                    messages.warning(request, f'{len(errors)} products failed to upload.')
+                
+            except Exception as e:
+                upload_batch.status = 'failed'
+                upload_batch.errors = [str(e)]
+                upload_batch.save()
+                messages.error(request, f'Upload failed: {str(e)}')
+            
+            return redirect('product_upload')
     else:
-        form = StoreThemeForm(instance=store)
+        form = ProductUploadForm()
     
-    return render(request, 'stores/theme_settings.html', {
-        'form': form,
-        'store': store
-    })
+    recent_uploads = ProductUploadBatch.objects.filter(store=store).order_by('-created_at')[:5]
+    return render(request, 'stores/product_upload.html', {'form': form, 'recent_uploads': recent_uploads})
 
-class StoreProductListView(ListView):
-    model = Product
-    template_name = 'products/product_list.html'
-    context_object_name = 'products'
-    paginate_by = 12
-    
-    def get_queryset(self):
-        self.store = get_object_or_404(Store, slug=self.kwargs['store_slug'])
-        return Product.objects.filter(store=self.store)
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['store'] = self.store
-        context['page_title'] = f"Products from {self.store.name}"
-        return context
-
-def store_homepage(request, store_slug):
-    store = get_object_or_404(Store, slug=store_slug)
-    homepage_blocks = StoreHomepageBlock.objects.filter(store=store, is_active=True).order_by('order')
-    
-    # Get contact forms and trust badges for this store
-    contact_forms = ContactForm.objects.filter(store=store)
-    trust_badges = TrustBadge.objects.filter(store=store)
-    
-    return render(request, 'stores/homepage.html', {
-        'store': store,
-        'homepage_blocks': homepage_blocks,
-        'contact_forms': contact_forms,
-        'trust_badges': trust_badges,
-    })
-
-@login_required
-def store_homepage_editor(request, store_slug):
-    store = get_object_or_404(Store, slug=store_slug, owner=request.user)
-    available_blocks = HomepageBlock.objects.all()
-    current_blocks = StoreHomepageBlock.objects.filter(store=store).order_by('order')
-    
-    # Create JSON representation of current blocks for React
-    current_blocks_json = []
-    for block in current_blocks:
-        current_blocks_json.append({
-            'id': block.id,
-            'block_type': block.block_type,
-            'title': block.title,
-            'content': block.content,
-            'order': block.order,
-            'is_active': block.is_active,
-            'configuration': block.configuration
-        })
-    
-    return render(request, 'stores/homepage_editor_react.html', {
-        'store': store,
-        'available_blocks': available_blocks,
-        'current_blocks': current_blocks,
-        'current_blocks_json': json.dumps(current_blocks_json)
-    })
-
-@login_required
-def store_homepage_block_create(request, store_slug):
-    if request.method != 'POST':
-        return JsonResponse({'status': 'error', 'message': 'Method not allowed'}, status=405)
-    
-    store = get_object_or_404(Store, slug=store_slug, owner=request.user)
-    
-    try:
+@csrf_exempt
+def generate_product_description(request):
+    """AI product description generator"""
+    if request.method == 'POST':
         data = json.loads(request.body)
-        block_type = data.get('block_type')
-        title = data.get('title', '')
         
-        # Get the highest order value and add 1
-        highest_order = StoreHomepageBlock.objects.filter(store=store).order_by('-order').first()
-        order = (highest_order.order + 1) if highest_order else 0
+        product_name = data.get('product_name', '')
+        material = data.get('material', '')
+        region = data.get('region', '')
+        style = data.get('style', '')
+        language = data.get('language', 'en')
         
-        block = StoreHomepageBlock.objects.create(
-            store=store,
-            block_type=block_type,
-            title=title,
-            order=order,
-            configuration={}
-        )
+        # Generate AI description (async task)
+        task = generate_ai_description.delay(product_name, material, region, style, language)
         
         return JsonResponse({
-            'status': 'success',
-            'block_id': block.id,
-            'block_type': block.block_type,
-            'title': block.title,
-            'order': block.order,
+            'task_id': task.id,
+            'status': 'processing'
         })
-    except Exception as e:
-        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+@csrf_exempt
+def check_ai_task(request, task_id):
+    """Check AI description generation status"""
+    from celery.result import AsyncResult
+    
+    task = AsyncResult(task_id)
+    
+    if task.ready():
+        if task.successful():
+            return JsonResponse({
+                'status': 'completed',
+                'result': task.result
+            })
+        else:
+            return JsonResponse({
+                'status': 'failed',
+                'error': str(task.info)
+            })
+    else:
+        return JsonResponse({'status': 'processing'})
 
 @login_required
-def store_homepage_block_update(request, store_slug, block_id):
-    if request.method != 'POST':
-        return JsonResponse({'status': 'error', 'message': 'Method not allowed'}, status=405)
+def order_detail(request, order_id):
+    """Order detail with status update"""
+    order = get_object_or_404(Order, order_id=order_id, store__owner=request.user)
     
-    store = get_object_or_404(Store, slug=store_slug, owner=request.user)
-    block = get_object_or_404(StoreHomepageBlock, id=block_id, store=store)
+    if request.method == 'POST':
+        new_status = request.POST.get('status')
+        if new_status in dict(Order.STATUS_CHOICES):
+            old_status = order.status
+            order.status = new_status
+            order.save()
+            
+            # Send WhatsApp notification on status change
+            if old_status != new_status:
+                send_whatsapp_notification.delay(order.id, 'status_update')
+            
+            messages.success(request, f'Order status updated to {new_status}')
+            return redirect('order_detail', order_id=order_id)
     
-    try:
-        data = json.loads(request.body)
-        
-        if 'title' in data:
-            block.title = data['title']
-        
-        if 'content' in data:
-            block.content = data['content']
-        
-        if 'configuration' in data:
-            block.configuration = data['configuration']
-        
-        if 'order' in data:
-            block.order = data['order']
-        
-        if 'is_active' in data:
-            block.is_active = data['is_active']
-        
-        block.save()
-        
-        return JsonResponse({
-            'status': 'success',
-            'block_id': block.id,
-        })
-    except Exception as e:
-        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return render(request, 'stores/order_detail.html', {'order': order})
 
 @login_required
-def store_homepage_block_delete(request, store_slug, block_id):
-    if request.method != 'POST':
-        return JsonResponse({'status': 'error', 'message': 'Method not allowed'}, status=405)
+def download_gst_invoice(request, order_id):
+    """Generate and download GST invoice PDF"""
+    order = get_object_or_404(Order, order_id=order_id, store__owner=request.user)
     
-    store = get_object_or_404(Store, slug=store_slug, owner=request.user)
-    block = get_object_or_404(StoreHomepageBlock, id=block_id, store=store)
+    pdf_content = generate_gst_invoice_pdf(order)
     
-    try:
-        block.delete()
-        return JsonResponse({'status': 'success'})
-    except Exception as e:
-        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    response = HttpResponse(pdf_content, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="invoice_{order.order_id}.pdf"'
+    return response
 
 @login_required
-def store_homepage_blocks_reorder(request, store_slug):
-    if request.method != 'POST':
-        return JsonResponse({'status': 'error', 'message': 'Method not allowed'}, status=405)
+def analytics_api(request):
+    """API endpoint for seller analytics"""
+    store = get_object_or_404(Store, owner=request.user)
     
-    store = get_object_or_404(Store, slug=store_slug, owner=request.user)
+    # Sales data for charts
+    orders = Order.objects.filter(store=store, status='delivered')
     
-    try:
-        data = json.loads(request.body)
-        block_order = data.get('block_order', [])
+    # Monthly sales
+    monthly_sales = {}
+    for order in orders:
+        month = order.created_at.strftime('%Y-%m')
+        monthly_sales[month] = monthly_sales.get(month, 0) + float(order.total_amount)
+    
+    # Top products
+    product_sales = {}
+    for order in orders:
+        product_name = order.product.name
+        product_sales[product_name] = product_sales.get(product_name, 0) + order.quantity
+    
+    top_products = sorted(product_sales.items(), key=lambda x: x[1], reverse=True)[:5]
+    
+    return JsonResponse({
+        'monthly_sales': monthly_sales,
+        'top_products': dict(top_products),
+        'total_orders': orders.count(),
+        'total_revenue': sum(float(order.total_amount) for order in orders)
+    })
+
+def set_language(request):
+    """Set user language preference"""
+    if request.method == 'POST':
+        language = request.POST.get('language', 'en')
+        if hasattr(request.user, 'sellerprofile'):
+            request.user.sellerprofile.language_preference = language
+            request.user.sellerprofile.save()
         
-        for i, block_id in enumerate(block_order):
-            block = StoreHomepageBlock.objects.get(id=block_id, store=store)
-            block.order = i
-            block.save()
+        from django.utils import translation
+        translation.activate(language)
+        request.session['django_language'] = language
         
-        return JsonResponse({'status': 'success'})
-    except Exception as e:
-        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return redirect(request.META.get('HTTP_REFERER', '/'))

@@ -2,17 +2,27 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    # Store theme settings
-    path('store/<int:store_id>/theme/', views.store_theme_settings, name='store_theme_settings'),
+    # Seller onboarding and dashboard
+    path('onboarding/', views.seller_onboarding, name='seller_onboarding'),
+    path('dashboard/', views.seller_dashboard, name='seller_dashboard'),
+    path('partner-dashboard/', views.partner_admin_dashboard, name='partner_admin_dashboard'),
     
-    # Store homepage
-    path('<slug:store_slug>/', views.store_homepage, name='store_homepage'),
-    path('<slug:store_slug>/products/', views.StoreProductListView.as_view(), name='store_products'),
+    # Product management
+    path('products/upload/', views.product_upload, name='product_upload'),
+    path('products/add/', views.product_add, name='product_add'),
+    path('products/<int:product_id>/edit/', views.product_edit, name='product_edit'),
     
-    # Homepage editor
-    path('<slug:store_slug>/homepage/editor/', views.store_homepage_editor, name='store_homepage_editor'),
-    path('<slug:store_slug>/homepage/blocks/create/', views.store_homepage_block_create, name='store_homepage_block_create'),
-    path('<slug:store_slug>/homepage/blocks/<int:block_id>/update/', views.store_homepage_block_update, name='store_homepage_block_update'),
-    path('<slug:store_slug>/homepage/blocks/<int:block_id>/delete/', views.store_homepage_block_delete, name='store_homepage_block_delete'),
-    path('<slug:store_slug>/homepage/blocks/reorder/', views.store_homepage_blocks_reorder, name='store_homepage_blocks_reorder'),
+    # AI features
+    path('api/generate-description/', views.generate_product_description, name='generate_product_description'),
+    path('api/ai-task/<str:task_id>/', views.check_ai_task, name='check_ai_task'),
+    
+    # Order management
+    path('orders/<str:order_id>/', views.order_detail, name='order_detail'),
+    path('orders/<str:order_id>/invoice/', views.download_gst_invoice, name='download_gst_invoice'),
+    
+    # Analytics
+    path('api/analytics/', views.analytics_api, name='analytics_api'),
+    
+    # Language
+    path('set-language/', views.set_language, name='set_language'),
 ]

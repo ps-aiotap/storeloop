@@ -68,3 +68,8 @@ tests/playwright/.auth/
 tests/playwright/screenshots/
 tests/playwright/videos/
 tests/playwright/traces/
+
+# Personal files (not for repo)
+INTERVIEW_PREP.md
+MANUAL_TEST_SCRIPT.md
+StoreLoop-LOOM_SCRIPT.md

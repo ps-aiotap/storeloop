@@ -1,67 +1,65 @@
-from .models import Store
+from django.shortcuts import redirect, render
+from django.urls import reverse
+from django.utils.deprecation import MiddlewareMixin
+from .utils import get_store_from_domain
 
-class StoreMiddleware:
-    def __init__(self, get_response):
-        self.get_response = get_response
-
-    def __call__(self, request):
-        request.current_store = None
+class SubdomainMiddleware(MiddlewareMixin):
+    """Handle subdomain and custom domain routing"""
+    
+    def process_request(self, request):
+        # Skip for admin and API URLs
+        if request.path.startswith('/admin/') or request.path.startswith('/api/'):
+            return None
         
-        # Try to get store from URL path
-        path_parts = request.path.strip('/').split('/')
-        store_slug = None
+        store = get_store_from_domain(request)
         
-        # Check if we're in a store-specific URL (e.g., /stores/store-slug/...)
-        if len(path_parts) >= 2 and path_parts[0] == 'stores':
-            store_slug = path_parts[1]
+        if store:
+            # Set store in request for use in views
+            request.store = store
+            
+            # If accessing store-specific URL, render store frontend
+            if not request.path.startswith('/seller/'):
+                return self.render_store_frontend(request, store)
         
-        # Check for store selection in query param
-        store_query = request.GET.get('store')
-        if store_query:
-            store_slug = store_query
+        return None
+    
+    def render_store_frontend(self, request, store):
+        """Render store frontend for customers"""
+        from .models import Product
         
-        # Try to get store by slug if we have one
-        if store_slug:
+        if request.path == '/':
+            # Store homepage
+            products = Product.objects.filter(store=store, is_active=True)[:12]
+            context = {
+                'store': store,
+                'products': products,
+            }
+            return render(request, 'stores/store_frontend.html', context)
+        
+        elif request.path.startswith('/product/'):
+            # Product detail page
+            product_slug = request.path.split('/')[-2]
             try:
-                request.current_store = Store.objects.get(slug=store_slug)
-            except Store.DoesNotExist:
-                pass
+                product = Product.objects.get(store=store, slug=product_slug, is_active=True)
+                context = {
+                    'store': store,
+                    'product': product,
+                }
+                return render(request, 'stores/product_detail.html', context)
+            except Product.DoesNotExist:
+                return render(request, 'stores/404.html', {'store': store}, status=404)
         
-        # For authenticated users, handle their stores
-        if request.user.is_authenticated:
-            # If no store found yet, check for store_id param (for store owners)
-            if not request.current_store:
-                selected_store_id = request.GET.get('store_id')
-                
-                if selected_store_id:
-                    try:
-                        # Try to get the selected store if user owns it
-                        request.current_store = Store.objects.get(
-                            id=selected_store_id, 
-                            owner=request.user
-                        )
-                        # Save to session for persistence
-                        request.session['selected_store_id'] = selected_store_id
-                    except Store.DoesNotExist:
-                        pass
-            
-            # If no store selected via query param, try session
-            if not request.current_store and 'selected_store_id' in request.session:
-                try:
-                    request.current_store = Store.objects.get(
-                        id=request.session['selected_store_id'],
-                        owner=request.user
-                    )
-                except Store.DoesNotExist:
-                    # Clear invalid store from session
-                    del request.session['selected_store_id']
-            
-            # Fall back to first store if no selection and user is a store owner
-            if not request.current_store:
-                request.current_store = Store.objects.filter(owner=request.user).first()
-                
-            # Add user's stores to request for UI
-            request.user_stores = Store.objects.filter(owner=request.user)
+        return None
+
+class LanguageMiddleware(MiddlewareMixin):
+    """Handle language preference for authenticated users"""
+    
+    def process_request(self, request):
+        if request.user.is_authenticated and hasattr(request.user, 'sellerprofile'):
+            language = request.user.sellerprofile.language_preference
+            if language:
+                from django.utils import translation
+                translation.activate(language)
+                request.LANGUAGE_CODE = language
         
-        response = self.get_response(request)
-        return response
+        return None

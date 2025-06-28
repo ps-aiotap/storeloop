@@ -1,23 +1,27 @@
-# StoreLoop
+# StoreLoop - E-commerce Platform for Indian Artisans & NGOs
 
-StoreLoop is a Django-based e-commerce platform with multi-seller support, customizable themes, and integrated payment processing.
+StoreLoop is a Django-based, multi-seller e-commerce platform specifically designed for Indian artisans and NGOs. It features Hindi/English UI, GST compliance, WhatsApp notifications, AI-powered product descriptions, and NGO partner management capabilities.
 
 ## Features
 
 ### Store Management
-- Multi-seller platform with individual store profiles
-- Store-specific product catalogs and branding
-- Custom domain support for each store
+- **Multi-seller platform** with individual store profiles
+- **4-step onboarding wizard** (Logo → Theme → Sample Products → Razorpay Key)
+- **Subdomain support** - artisanname.storeloop.in for each seller
+- **Custom domain mapping** for established businesses
+- **NGO partner admin role** - manage multiple artisan stores from one dashboard
 - Store analytics and performance metrics
 - JSON-driven homepage builder for each store
 
 ### Product Management
+- **Excel/CSV bulk upload** - Accept .xlsx or .csv files with validation
+- **AI product description generator** - Hindi and English descriptions (editable drafts, never auto-published)
 - Comprehensive product catalog with images, descriptions, and pricing
 - Dynamic tagging system with configurable tag types (Occasion, Lifestyle, Festival, etc.)
 - Product bundles/combos with shared inventory management
 - Product variants (size, color, etc.)
 - QR code generation for products (for easy sharing/scanning)
-- Stock management and inventory tracking
+- **Low stock alerts** and inventory tracking
 
 ### Theme System
 - Advanced theming engine with CSS variables and Tailwind integration
@@ -74,6 +78,10 @@ StoreLoop is a Django-based e-commerce platform with multi-seller support, custo
 - Email notifications for order status
 
 ### User Experience
+- **Mobile-first seller dashboard** - PWA ready for low-end Android devices
+- **Hindi/English UI toggle** - No auto-detection, manual language selection
+- **WhatsApp notifications** - Order confirmations and status updates
+- **GST invoice PDF generation** - Automatic tax compliance
 - Form validation with real-time feedback
 - Responsive design for all device sizes
 - Accessibility-focused UI components
@@ -82,11 +90,18 @@ StoreLoop is a Django-based e-commerce platform with multi-seller support, custo
 
 ### Technical Features
 - Built with Django 4.2 LTS
+- **Django REST Framework** for API endpoints
 - PostgreSQL database for robust data storage
+- **Celery + Redis** for background tasks (WhatsApp, AI processing)
+- **OpenRouter/Groq API integration** for AI descriptions
+- **Django i18n** for Hindi/English localization
+- **WeasyPrint** for GST invoice PDF generation
+- **Pandas/openpyxl** for Excel/CSV processing
 - Tailwind CSS for modern styling
 - React components for interactive UI elements
 - Alpine.js for lightweight interactions
 - CSS variables for theme customization
+- **Subdomain middleware** for multi-tenant routing
 - Modular architecture for easy extension
 - Optimized for performance and SEO
 
@@ -99,6 +114,19 @@ StoreLoop is a Django-based e-commerce platform with multi-seller support, custo
    source storeloop-venv/bin/activate  # On Windows: storeloop-venv\Scripts\activate
    pip install -r requirements.txt
    ```
+3. Install and start Redis (for Celery):
+   ```
+   # Ubuntu/Debian
+   sudo apt install redis-server
+   sudo systemctl start redis
+   
+   # macOS
+   brew install redis
+   brew services start redis
+   
+   # Windows
+   # Download from https://redis.io/download
+   ```
 3. Set up PostgreSQL:
    ```
    # Create a database
@@ -108,7 +136,7 @@ StoreLoop is a Django-based e-commerce platform with multi-seller support, custo
    psql -U postgres
    CREATE DATABASE storeloop;
    ```
-4. Create a `.env` file based on `.env.example` with your database and Razorpay API keys:
+4. Create a `.env` file with configuration:
    ```
    # Database settings
    DB_NAME=storeloop
@@ -117,19 +145,44 @@ StoreLoop is a Django-based e-commerce platform with multi-seller support, custo
    DB_HOST=localhost
    DB_PORT=5432
    
+   # Redis settings
+   REDIS_URL=redis://localhost:6379/0
+   
    # Razorpay settings
    RAZORPAY_KEY_ID=your_key_id
    RAZORPAY_KEY_SECRET=your_key_secret
+   
+   # AI API settings (optional)
+   OPENROUTER_API_KEY=your_openrouter_key
+   GROQ_API_KEY=your_groq_key
+   
+   # WhatsApp settings (optional)
+   TWILIO_ACCOUNT_SID=your_twilio_sid
+   TWILIO_AUTH_TOKEN=your_twilio_token
+   TWILIO_WHATSAPP_NUMBER=whatsapp:+14155238886
+   TWILIO_WHATSAPP_ENABLED=false
+   
+   # Alternative: Gupshup WhatsApp
+   GUPSHUP_API_KEY=your_gupshup_key
+   GUPSHUP_SOURCE_NUMBER=your_gupshup_number
    ```
 5. Run migrations and create a superuser:
    ```
    python manage.py migrate
    python manage.py createsuperuser
    ```
-6. Run the development server:
+6. Start Celery worker (in separate terminal):
+   ```
+   celery -A storeloop worker --loglevel=info
+   ```
+7. Run the development server:
    ```
    python manage.py runserver
    ```
+8. Create seller profile and start onboarding:
+   - Login to admin at `/admin/`
+   - Create a SellerProfile for your user
+   - Visit `/stores/onboarding/` to start the 4-step wizard
 
 ## Theme Configuration
 
@@ -164,10 +217,55 @@ StoreLoop is a Django-based e-commerce platform with multi-seller support, custo
 2. Add your Razorpay API keys to the `.env` file
 3. Test the payment flow using Razorpay test cards
 
+## New Features for Indian Market
+
+### 🧙‍♂️ AI-Powered Product Descriptions
+- Generate Hindi and English descriptions using OpenRouter/Groq API
+- **Editable drafts only** - AI assists, never auto-publishes
+- Input: product name, material, region, style
+- Output: short + long descriptions for review
+
+### 📱 Mobile-First Seller Dashboard
+- PWA-ready for low-end Android devices
+- Hindi/English UI toggle (manual selection)
+- Real-time analytics with Chart.js
+- Low stock alerts and inventory management
+
+### 🏢 NGO Partner Admin
+- `partner_admin` role for NGO managers
+- Manage multiple artisan stores from one dashboard
+- Switch between seller views
+- Aggregate metrics across all managed stores
+
+### 📊 Excel/CSV Product Upload
+- Bulk import with pandas/openpyxl
+- Row-level validation with error summary
+- Fields: name, description, price, stock, category, image_url, material, region, style
+
+### 📱 WhatsApp Integration
+- Order confirmations to buyers
+- New order alerts to sellers
+- Status update notifications
+- Supports Twilio and Gupshup APIs
+
+### 🌐 Subdomain & Custom Domains
+- `artisanname.storeloop.in` for each seller
+- Custom domain mapping support
+- Middleware-based routing
+
+### 🧾 GST Invoice Generation
+- Automatic GST calculation (18%)
+- PDF generation with WeasyPrint
+- Seller GST profile integration
+- Downloadable invoices per order
+
 ## Development
 
 ### Architecture
 - Modular Django apps: products, orders, stores
+- **Django REST Framework** for analytics APIs
+- **Celery + Redis** for background tasks
+- **Django i18n** for Hindi/English localization
 - Component-based templates for reusability
 - CSS variables + Tailwind for theming
 - React for interactive UI (homepage builder)
@@ -222,10 +320,34 @@ npm test               # Run generated tests
 
 **For other projects:** See [FORM_TESTING_PROMPTS.md](FORM_TESTING_PROMPTS.md) for implementation prompts.
 
+## Why StoreLoop is Better than Wix/Shopify for Indian Artisans
+
+**StoreLoop vs Competitors:**
+- **Zero transaction fees** (Wix charges 2.9%, Shopify has monthly fees)
+- **Hindi UI support** (Wix/Shopify are English-only)
+- **Built-in GST compliance** (Others require manual/third-party solutions)
+- **WhatsApp integration** (Native vs no support)
+- **Excel bulk upload with validation** (Better than basic CSV)
+- **AI descriptions in Hindi + English** (Unique feature)
+- **NGO multi-store management** (Not available elsewhere)
+- **PWA for low-end Android devices** (Mobile-first for Indian market)
+- **Free subdomains** (Others charge for custom domains)
+- **4-step onboarding wizard** (No technical expertise needed)
+
+**Perfect for Indian artisans, NGOs, and small businesses who need local language support, compliance features, and zero fees.**
+
 ### Sample Data
 ```bash
 # Seed development data
 python manage.py seed_sample_data --users 3 --stores 2 --products 10
+
+# Create NGO partner admin
+python manage.py shell
+>>> from django.contrib.auth.models import User
+>>> from stores.models import SellerProfile, Store
+>>> user = User.objects.create_user('ngo_admin', 'ngo@example.com', 'password')
+>>> profile = SellerProfile.objects.create(user=user, is_partner_admin=True)
+>>> profile.managed_stores.add(*Store.objects.all())
 ```
 
 ### New Features

@@ -1,0 +1,208 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% trans "Seller Dashboard" %} - {{ store.name }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta name="theme-color" content="{{ store.primary_color }}">
+    <link rel="manifest" href="{% url 'pwa_manifest' %}">
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Mobile-first header -->
+    <header class="bg-white shadow-sm border-b">
+        <div class="px-4 py-3">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    {% if store.logo %}
+                        <img src="{{ store.logo.url }}" alt="{{ store.name }}" class="w-8 h-8 rounded">
+                    {% endif %}
+                    <h1 class="text-lg font-semibold text-gray-900">{{ store.name }}</h1>
+                </div>
+                
+                <!-- Language toggle -->
+                <div class="flex items-center space-x-2">
+                    <form method="post" action="{% url 'set_language' %}" class="inline">
+                        {% csrf_token %}
+                        <select name="language" onchange="this.form.submit()" class="text-sm border rounded px-2 py-1">
+                            <option value="en" {% if LANGUAGE_CODE == 'en' %}selected{% endif %}>English</option>
+                            <option value="hi" {% if LANGUAGE_CODE == 'hi' %}selected{% endif %}>हिंदी</option>
+                        </select>
+                    </form>
+                    
+                    <button class="p-2 text-gray-600" onclick="toggleMenu()">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Stats cards -->
+    <div class="px-4 py-6">
+        <div class="grid grid-cols-2 gap-4 mb-6">
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <div class="text-2xl font-bold text-blue-600">{{ total_orders }}</div>
+                <div class="text-sm text-gray-600">{% trans "Total Orders" %}</div>
+            </div>
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <div class="text-2xl font-bold text-green-600">₹{{ total_sales|floatformat:0 }}</div>
+                <div class="text-sm text-gray-600">{% trans "Total Sales" %}</div>
+            </div>
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <div class="text-2xl font-bold text-orange-600">{{ pending_orders }}</div>
+                <div class="text-sm text-gray-600">{% trans "Pending Orders" %}</div>
+            </div>
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <div class="text-2xl font-bold text-purple-600">{{ products_count }}</div>
+                <div class="text-sm text-gray-600">{% trans "Active Products" %}</div>
+            </div>
+        </div>
+
+        <!-- Quick actions -->
+        <div class="bg-white rounded-lg p-4 shadow-sm mb-6">
+            <h2 class="text-lg font-semibold mb-4">{% trans "Quick Actions" %}</h2>
+            <div class="grid grid-cols-2 gap-3">
+                <a href="{% url 'product_add' %}" class="bg-blue-500 text-white text-center py-3 rounded-lg font-medium">
+                    {% trans "Add Product" %}
+                </a>
+                <a href="{% url 'product_upload' %}" class="bg-green-500 text-white text-center py-3 rounded-lg font-medium">
+                    {% trans "Bulk Upload" %}
+                </a>
+            </div>
+        </div>
+
+        <!-- Recent orders -->
+        <div class="bg-white rounded-lg p-4 shadow-sm mb-6">
+            <h2 class="text-lg font-semibold mb-4">{% trans "Recent Orders" %}</h2>
+            {% for order in recent_orders %}
+                <div class="flex items-center justify-between py-3 border-b last:border-b-0">
+                    <div>
+                        <div class="font-medium">{{ order.order_id }}</div>
+                        <div class="text-sm text-gray-600">{{ order.customer_name }}</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-medium">₹{{ order.total_amount }}</div>
+                        <div class="text-sm px-2 py-1 rounded-full 
+                            {% if order.status == 'pending' %}bg-yellow-100 text-yellow-800
+                            {% elif order.status == 'confirmed' %}bg-blue-100 text-blue-800
+                            {% elif order.status == 'delivered' %}bg-green-100 text-green-800
+                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ order.get_status_display }}
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <p class="text-gray-500 text-center py-4">{% trans "No orders yet" %}</p>
+            {% endfor %}
+        </div>
+
+        <!-- Low stock alerts -->
+        {% if low_stock_products %}
+        <div class="bg-white rounded-lg p-4 shadow-sm mb-6">
+            <h2 class="text-lg font-semibold mb-4 text-red-600">{% trans "Low Stock Alert" %}</h2>
+            {% for product in low_stock_products %}
+                <div class="flex items-center justify-between py-2">
+                    <div class="font-medium">{{ product.name }}</div>
+                    <div class="text-red-600 font-medium">{{ product.stock }} {% trans "left" %}</div>
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Sales chart -->
+        <div class="bg-white rounded-lg p-4 shadow-sm">
+            <h2 class="text-lg font-semibold mb-4">{% trans "Sales Analytics" %}</h2>
+            <canvas id="salesChart" width="400" height="200"></canvas>
+        </div>
+    </div>
+
+    <!-- Mobile navigation menu -->
+    <div id="mobileMenu" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+        <div class="bg-white w-64 h-full shadow-lg">
+            <div class="p-4 border-b">
+                <h3 class="font-semibold">{% trans "Menu" %}</h3>
+            </div>
+            <nav class="p-4">
+                <a href="{% url 'seller_dashboard' %}" class="block py-2 text-gray-700">{% trans "Dashboard" %}</a>
+                <a href="{% url 'product_upload' %}" class="block py-2 text-gray-700">{% trans "Products" %}</a>
+                <a href="#" class="block py-2 text-gray-700">{% trans "Orders" %}</a>
+                <a href="#" class="block py-2 text-gray-700">{% trans "Settings" %}</a>
+                <a href="{% url 'admin:logout' %}" class="block py-2 text-red-600">{% trans "Logout" %}</a>
+            </nav>
+        </div>
+    </div>
+
+    <script>
+        // Mobile menu toggle
+        function toggleMenu() {
+            document.getElementById('mobileMenu').classList.toggle('hidden');
+        }
+
+        // Close menu when clicking outside
+        document.getElementById('mobileMenu').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.add('hidden');
+            }
+        });
+
+        // Load analytics data and render chart
+        fetch('{% url "analytics_api" %}')
+            .then(response => response.json())
+            .then(data => {
+                const ctx = document.getElementById('salesChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: Object.keys(data.monthly_sales),
+                        datasets: [{
+                            label: '{% trans "Monthly Sales" %}',
+                            data: Object.values(data.monthly_sales),
+                            borderColor: '{{ store.primary_color }}',
+                            backgroundColor: '{{ store.primary_color }}20',
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            });
+
+        // PWA install prompt
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Show install button
+            const installBtn = document.createElement('button');
+            installBtn.textContent = '{% trans "Install App" %}';
+            installBtn.className = 'fixed bottom-4 right-4 bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg';
+            installBtn.onclick = () => {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        installBtn.remove();
+                    }
+                });
+            };
+            document.body.appendChild(installBtn);
+        });
+    </script>
+</body>
+</html>

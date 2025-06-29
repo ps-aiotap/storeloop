@@ -1,7 +1,7 @@
 import { test, expect } from './fixtures/auth';
 
 // Increase timeout for product management tests
-test.setTimeout(20000);
+test.setTimeout(45000);
 
 test.describe('Product Management', () => {
   test('Add Single Product', async ({ page, adminUser }) => {

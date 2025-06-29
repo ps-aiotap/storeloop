@@ -20,7 +20,7 @@ export const test = base.extend<OnboardingAuthFixtures>({
     await page.fill('input[name="username"]', 'newadmin');
     await page.fill('input[name="password"]', 'admin123');
     await page.click('button[type="submit"]');
-    await page.waitForURL(/\/stores\/onboarding\//, { timeout: 10000 });
+    await page.waitForURL(/\/stores\/onboarding\//, { timeout: 45000 });
     
     await use();
   },

@@ -1,5 +1,46 @@
 # Changelog
 
+## v2.1.0 (2024-06-29) - Production-Ready with Automated Testing
+
+### 🎆 Major Achievements
+
+- **📊 48 Automated Tests**: Complete Playwright test suite covering all major features
+- **🚀 1-Click Deployment**: deploy.bat/deploy.sh scripts for instant setup
+- **🌍 Multi-Browser Support**: Chrome, Firefox, Safari, Mobile Chrome, Mobile Safari
+- **🔧 Enhanced Robustness**: Fixed authentication, timeouts, and Unicode handling
+- **📝 Updated Documentation**: Comprehensive guides and deployment instructions
+
+### 🔍 Testing Infrastructure
+
+- **Playwright Integration**: 48 comprehensive test scenarios
+- **Cross-Browser Testing**: All major browsers and mobile devices
+- **Timeout Optimization**: 45-second timeouts for reliable execution
+- **Authentication Fixtures**: Robust login handling with retry logic
+- **Hindi Unicode Support**: Proper testing of Hindi product names and UI
+
+### 🚀 Deployment Improvements
+
+- **1-Click Scripts**: Automated setup for Windows (deploy.bat) and Linux/Mac (deploy.sh)
+- **Docker Integration**: Automatic PostgreSQL and Redis container setup
+- **Database Migration**: Automated schema setup and sample data seeding
+- **Environment Configuration**: Streamlined .env setup process
+
+### 🐛 Bug Fixes
+
+- **Authentication Timeouts**: Fixed login issues in test environment
+- **Hindi Text Rendering**: Proper Unicode support for Devanagari script
+- **CSS Selector Issues**: Resolved NGO admin test failures
+- **Test Robustness**: Enhanced error handling and fallback mechanisms
+
+### 📚 Documentation Updates
+
+- **README.md**: Complete project overview with deployment instructions
+- **ADMIN_GUIDE.md**: Updated with testing and deployment sections
+- **MANUAL_TEST_SCRIPT.md**: Enhanced with Playwright testing scenarios
+- **Deployment Scripts**: Automated setup documentation
+
+---
+
 ## v2.0.0 (2024-01-15) - Enhanced Multi-language Platform
 
 ### 🎯 Major Features Added

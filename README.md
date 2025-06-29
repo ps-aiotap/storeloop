@@ -1,367 +1,223 @@
-# StoreLoop - Django E-commerce Platform
+# 🛍️ StoreLoop - Indian Artisan E-commerce Platform
 
-StoreLoop is a Django-based multi-seller e-commerce platform with features for small businesses and artisans. It includes multi-language support, payment integration, and automated testing capabilities.
+**Zero transaction fees • Hindi UI • AI descriptions • WhatsApp integration • GST compliance**
 
-Built to empower India's creative sellers — from NGOs and cooperatives to individual artisans.
+StoreLoop is a specialized e-commerce platform designed for Indian artisans and NGOs, offering features that mainstream platforms like Wix, Shopify, and WooCommerce don't provide.
 
-## Features
+## 🚀 Quick Start (1-Click Deployment)
 
-### Store Management
-- **Multi-seller platform** with individual store profiles
-- **4-step onboarding wizard** (Logo → Theme → Sample Products → Razorpay Key)
-- **Subdomain support** - artisanname.storeloop.in for each seller
-- **Custom domain mapping** for established businesses
-- **NGO partner admin role** - manage multiple artisan stores from one dashboard
-- Store analytics and performance metrics
-- JSON-driven homepage builder for each store
-
-### Product Management
-- **Excel/CSV bulk upload** - Accept .xlsx or .csv files with validation
-- **AI product description generator** - Hindi and English descriptions (editable drafts, never auto-published)
-- Comprehensive product catalog with images, descriptions, and pricing
-- Dynamic tagging system with configurable tag types (Occasion, Lifestyle, Festival, etc.)
-- Product bundles/combos with shared inventory management
-- Product variants (size, color, etc.)
-- QR code generation for products (for easy sharing/scanning)
-- **Low stock alerts** and inventory tracking
-
-### Theme System
-- Advanced theming engine with CSS variables and Tailwind integration
-- Base themes with inheritance support for child themes
-- Three built-in themes: Minimal, Warm, and Dark
-- Theme customization options:
-  - Primary and secondary color selection
-  - Font family choice (sans-serif, serif, monospace)
-  - Custom logo upload
-  - Custom CSS/JS injection
-  - Overridable layout blocks
-- Responsive design across all themes
-- Dark mode support with automatic detection
-
-### Homepage Builder
-- Drag-and-drop interface for arranging content blocks
-- Multiple block types:
-  - Hero banners with customizable images and CTAs
-  - Product grids with filtering options
-  - Testimonial sections with different display styles
-  - Text blocks with rich formatting
-  - Image galleries and video embeds
-  - Trust badge displays
-  - Contact/inquiry forms
-  - Tag collection displays
-- Block-specific configuration options
-- Enable/disable blocks without deleting them
-- Real-time preview of changes
-
-### Content Management
-- Static pages with WYSIWYG or markdown editing
-- Trust badge management for displaying certifications and guarantees
-- SEO-friendly dynamic landing pages for tags and collections
-- Contact and inquiry form management
-
-### Shopping Experience
-- Responsive, mobile-friendly design
-- Product search and filtering
-- Related products recommendations
-- Interactive product cards with hover effects and animations
-- Streamlined checkout process
-- Form validation with real-time feedback
-
-### Analytics
-- Vendor-specific dashboard with performance metrics
-- Product view tracking and statistics
-- Tag performance analysis
-- Order conversion statistics
-
-### Payment Processing
-- Integrated Razorpay payment gateway
-- Secure payment processing
-- Order confirmation and tracking
-- Email notifications for order status
-
-### User Experience
-- **Mobile-first seller dashboard** - PWA ready for low-end Android devices
-- **Hindi/English UI toggle** - No auto-detection, manual language selection
-- **WhatsApp notifications** - Order confirmations and status updates
-- **GST invoice PDF generation** - Automatic tax compliance
-- Form validation with real-time feedback
-- Responsive design for all device sizes
-- Accessibility-focused UI components
-- Intuitive navigation and user flow
-- Store switcher for multi-store browsing
-
-### Technical Features
-- Built with Django 4.2 LTS
-- **Django REST Framework** for API endpoints
-- PostgreSQL database for robust data storage
-- **Celery + Redis** for background tasks (WhatsApp, AI processing)
-- **OpenRouter/Groq API integration** for AI descriptions
-- **Django i18n** for Hindi/English localization
-- **WeasyPrint** for GST invoice PDF generation
-- **Pandas/openpyxl** for Excel/CSV processing
-- Tailwind CSS for modern styling
-- React components for interactive UI elements
-- Alpine.js for lightweight interactions
-- CSS variables for theme customization
-- **Subdomain middleware** for multi-tenant routing
-- Modular architecture for easy extension
-- Optimized for performance and SEO
-
-## Setup
-
-1. Clone the repository
-2. Create a virtual environment and install dependencies:
-   ```
-   python -m venv storeloop-venv
-   source storeloop-venv/bin/activate  # On Windows: storeloop-venv\Scripts\activate
-   
-   # Windows: Install numpy/pandas binaries first to avoid build issues
-   pip install numpy pandas --only-binary=all
-   pip install -r requirements.txt
-   ```
-3. Install and start Redis (for Celery):
-   ```
-   # Docker (recommended - works on all platforms)
-   docker run -d --name storeloop-redis -p 6379:6379 redis:7-alpine
-   ```
-3. Set up PostgreSQL:
-   ```
-   # Create a database
-   createdb storeloop
-   
-   # Or using psql
-   psql -U postgres
-   CREATE DATABASE storeloop;
-   ```
-4. Create a `.env` file with configuration:
-   ```
-   # Database settings
-   DB_NAME=storeloop
-   DB_USER=postgres
-   DB_PASSWORD=your_password
-   DB_HOST=localhost
-   DB_PORT=5432
-   
-   # Redis settings
-   REDIS_URL=redis://localhost:6379/0
-   
-   # Razorpay settings
-   RAZORPAY_KEY_ID=your_key_id
-   RAZORPAY_KEY_SECRET=your_key_secret
-   
-   # AI API settings (optional)
-   OPENROUTER_API_KEY=your_openrouter_key
-   GROQ_API_KEY=your_groq_key
-   
-   # WhatsApp settings (optional)
-   TWILIO_ACCOUNT_SID=your_twilio_sid
-   TWILIO_AUTH_TOKEN=your_twilio_token
-   TWILIO_WHATSAPP_NUMBER=whatsapp:+14155238886
-   TWILIO_WHATSAPP_ENABLED=false
-   
-   # Alternative: Gupshup WhatsApp
-   GUPSHUP_API_KEY=your_gupshup_key
-   GUPSHUP_SOURCE_NUMBER=your_gupshup_number
-   ```
-5. Run migrations and create a superuser:
-   ```
-   python manage.py migrate
-   python manage.py createsuperuser
-   ```
-6. Start Celery worker (in separate terminal):
-   ```
-   # Make sure you're in the project root directory
-   celery -A core worker --loglevel=info
-   ```
-7. Run the development server:
-   ```
-   python manage.py runserver
-   ```
-8. Create seller profile and start onboarding:
-   - Login to admin at `/admin/`
-   - Create a SellerProfile for your user
-   - Visit `/stores/onboarding/` to start the 4-step wizard
-
-## Theme Configuration
-
-1. Create a Store in the admin interface
-2. Navigate to `/stores/store/{store_id}/theme/` to configure the theme
-3. Choose from Minimal, Warm, or Dark themes or create a custom theme
-4. Select primary and secondary colors
-5. Choose a font style (sans-serif, serif, monospace)
-6. Upload a store logo
-7. Add custom CSS/JS if needed
-8. Optionally override specific layout blocks
-
-## Homepage Builder
-
-1. Navigate to `/stores/{store_slug}/homepage/editor/` to access the homepage builder
-2. Add blocks from the library panel on the left
-3. Configure each block's settings in the right panel
-4. Drag and drop blocks to reorder them
-5. Toggle blocks on/off using the visibility control
-6. Preview your homepage with the "Preview Homepage" button
-
-## Content Management
-
-1. Create static pages like About, FAQ, or Workshops in the admin interface
-2. Upload and configure trust badges to display on product pages
-3. Set up contact forms with customizable fields and integrations
-4. Create tag collections for SEO-friendly landing pages
-
-## Payment Integration
-
-1. Sign up for a Razorpay account
-2. Add your Razorpay API keys to the `.env` file
-3. Test the payment flow using Razorpay test cards
-
-## New Features for Indian Market
-
-### 🧙‍♂️ AI-Powered Product Descriptions
-- Generate Hindi and English descriptions using OpenRouter/Groq API
-- **Editable draft suggestions only** - AI provides suggestions that users must review and edit
-- Input: product name, material, region, style
-- Output: draft descriptions for manual review and editing
-- **No auto-publishing** - all AI content requires human approval
-
-### 📱 Mobile-First Seller Dashboard
-- PWA-ready for low-end Android devices
-- Hindi/English UI toggle (manual selection)
-- Real-time analytics with Chart.js
-- Low stock alerts and inventory management
-
-### 🏢 NGO Partner Admin
-- `partner_admin` role for NGO managers
-- Manage multiple artisan stores from one dashboard
-- Switch between seller views
-- Aggregate metrics across all managed stores
-
-### 📊 Excel/CSV Product Upload
-- Bulk import with pandas/openpyxl
-- Row-level validation with error summary
-- Fields: name, description, price, stock, category, image_url, material, region, style
-
-### 📱 WhatsApp Integration
-- Order confirmations to buyers
-- New order alerts to sellers
-- Status update notifications
-- Supports Twilio and Gupshup APIs
-
-### 🌐 Subdomain & Custom Domains
-- `artisanname.storeloop.in` for each seller
-- Custom domain mapping support
-- Middleware-based routing
-
-### 🧾 GST Invoice Generation
-- Automatic GST calculation (18%)
-- PDF generation with WeasyPrint
-- Seller GST profile integration
-- Downloadable invoices per order
-
-## Development
-
-### Architecture
-- Modular Django apps: products, orders, stores
-- **Django REST Framework** for analytics APIs
-- **Celery + Redis** for background tasks
-- **Django i18n** for Hindi/English localization
-- Component-based templates for reusability
-- CSS variables + Tailwind for theming
-- React for interactive UI (homepage builder)
-- Alpine.js for lightweight interactions
-
-### Testing & Quality
+### Windows
 ```bash
-# Run comprehensive tests
-pytest stores/tests/test_comprehensive.py -v
-
-# Run all tests with coverage
-pytest --cov=./ --cov-report=html
-
-# Code formatting
-black . && isort . && flake8 .
+# Double-click or run:
+deploy.bat
 ```
 
-### Automated Form Testing
+### Linux/Mac
 ```bash
-# Complete form testing pipeline (Discovery → Generation → Execution)
-cd tests/playwright
-npm install && playwright install
-
-# Basic pipeline
-npm run one-step
-
-# Advanced pipeline (includes security, performance, accessibility)
-npm run advanced-pipeline
-
-# Specialized testing
-npm run test-security      # Security tests (XSS, SQL injection, CSRF)
-npm run test-performance   # Performance and load testing
-npm run test-accessibility # Keyboard navigation and a11y
-
-# Individual steps
-npm run nav-discover    # Discover forms via navigation
-npm run generate        # Generate tests from discovered forms  
-npm test               # Run generated tests
+chmod +x deploy.sh
+./deploy.sh
 ```
 
-**Features:**
-- 🔍 **Zero-assumption discovery** - Crawls actual navigation links
-- 🧪 **Comprehensive testing** - Happy path, validation, security, edge cases
-- 🛡️ **Security testing** - XSS, SQL injection, CSRF protection
-- ⚡ **Performance monitoring** - Form submission timing and rate limiting
-- ♿ **Accessibility testing** - Keyboard navigation and ARIA compliance
-- 📊 **Enhanced reporting** - Custom dashboard with metrics and coverage
-- 🚀 **CI/CD integration** - GitHub Actions workflow included
-- 🔄 **Parallel execution** - Multi-worker test execution
+**That's it!** Your StoreLoop instance will be running at `http://localhost:8000`
 
-**Generated files are automatically excluded from Git tracking.**
+- **Admin Login:** admin / admin123
+- **NGO Admin:** ngo_admin / password
 
-**For other projects:** See [FORM_TESTING_PROMPTS.md](FORM_TESTING_PROMPTS.md) for implementation prompts.
+## ✨ Key Features
 
-## Key Features
+### 🎯 **For Indian Artisans**
+- **5-step onboarding wizard** with Hindi support
+- **Zero transaction fees** (vs 2.9% on Wix/Shopify)
+- **AI-generated Hindi product descriptions** (editable drafts)
+- **GST compliance** with automatic invoice generation
+- **WhatsApp notifications** for orders and updates
+- **Mobile-first PWA** design for smartphone users
 
-**Technical Capabilities:**
-- Multi-language UI support (Hindi/English)
-- GST invoice generation for Indian market
-- WhatsApp notification integration
-- Excel/CSV bulk product upload
-- AI-powered product description suggestions (editable drafts)
-- Multi-store management dashboard
-- Progressive Web App (PWA) support
-- Subdomain routing for individual stores
-- Comprehensive automated testing suite
+### 🏢 **For NGO Partners**
+- **Multi-store management** dashboard
+- **Aggregate analytics** across all managed stores
+- **Artisan support tools** and training resources
+- **Hindi interface** for local NGO staff
+- **Store performance comparison** and insights
 
-**Suitable for small businesses, artisans, and organizations needing localized e-commerce solutions.**
+### 📱 **Technical Advantages**
+- **Mobile-first responsive design**
+- **Progressive Web App (PWA)** with offline support
+- **Automated testing** with Playwright (48 test scenarios)
+- **Excel/CSV bulk product upload** with validation
+- **Custom subdomain** for each store
+- **Real-time analytics** with Chart.js
 
-### Sample Data
+## 🛠️ Manual Setup (If needed)
+
+<details>
+<summary>Click to expand manual setup instructions</summary>
+
+### Prerequisites
+- Python 3.8+
+- Docker (for PostgreSQL and Redis)
+- Node.js 16+ (for Playwright tests)
+
+### 1. Clone and Setup
 ```bash
-# Seed development data
-python manage.py seed_sample_data --users 3 --stores 2 --products 10
-
-# Create NGO partner admin
-python manage.py shell
->>> from django.contrib.auth.models import User
->>> from stores.models import SellerProfile, Store
->>> user = User.objects.create_user('ngo_admin', 'ngo@example.com', 'password')
->>> profile = SellerProfile.objects.create(user=user, is_partner_admin=True)
->>> profile.managed_stores.add(*Store.objects.all())
+git clone <repository-url>
+cd storeloop
+python -m venv storeloop-venv
+source storeloop-venv/bin/activate  # Windows: storeloop-venv\Scripts\activate
+pip install -r requirements.txt
 ```
 
-### New Features
-- **Product Variants**: Size, color, material variants with individual QR codes
-- **Enhanced Homepage Builder**: Improved drag-and-drop with state isolation
-- **Security**: Razorpay signature verification, rate limiting, webhook validation
-- **SEO**: Multi-store sitemaps, structured data, comprehensive robots.txt
-- **Extensible Blocks**: Plugin system for third-party homepage blocks
+### 2. Start Services
+```bash
+# Start PostgreSQL and Redis
+docker run -d --name storeloop-postgres -e POSTGRES_DB=storeloop -e POSTGRES_PASSWORD=postgres -p 5434:5432 postgres:latest
+docker run -d --name storeloop-redis -p 6379:6379 redis:7-alpine
 
-### CI/CD
-GitHub Actions workflow includes:
-- Parallel testing (unit, integration, security)
-- Code quality checks (Black, isort, Flake8, MyPy)
-- Security scanning (Bandit, Safety)
-- Performance testing
+# Setup database
+python manage.py makemigrations
+python manage.py migrate
+python manage.py reset_admin
+python manage.py seed_sample_data --users 2 --stores 3 --products 8
+```
 
-## Admin Guide
+### 3. Start Application
+```bash
+# Terminal 1: Celery worker
+celery -A core worker --loglevel=info
 
-For detailed instructions on using the admin features (Bundles, Homepage Blocks, Trust Badges, etc.), please refer to the [Admin Guide](ADMIN_GUIDE.md).
+# Terminal 2: Django server
+python manage.py runserver
+```
+
+</details>
+
+## 🧪 Testing
+
+### Automated Testing (Playwright)
+```bash
+cd tests
+npm install
+npx playwright install
+npx playwright test --project=chromium
+npx playwright show-report
+```
+
+**Test Coverage:**
+- ✅ 48 automated test scenarios
+- ✅ Authentication and authorization
+- ✅ Seller onboarding wizard
+- ✅ Product management (CRUD)
+- ✅ Dashboard functionality
+- ✅ NGO admin features
+- ✅ Mobile responsiveness
+
+### Manual Testing
+See [MANUAL_TEST_SCRIPT.md](internal/MANUAL_TEST_SCRIPT.md) for comprehensive testing scenarios including:
+- 5-step seller onboarding
+- Excel/CSV product upload
+- Hindi UI testing
+- NGO partner dashboard
+- Complete purchase flow
+- WhatsApp notifications
+- GST invoice generation
+
+## 🏗️ Architecture
+
+```
+StoreLoop/
+├── core/                 # Django project settings
+├── stores/              # Store management app
+├── products/            # Product catalog app
+├── orders/              # Order processing app
+├── templates/           # HTML templates
+├── static/              # CSS, JS, images
+├── tests/               # Playwright test suite
+├── internal/            # Documentation
+├── deploy.bat           # Windows 1-click deployment
+├── deploy.sh            # Linux/Mac 1-click deployment
+└── requirements.txt     # Python dependencies
+```
+
+## 🌟 Competitive Advantages
+
+| Feature | StoreLoop | Wix | Shopify | WooCommerce |
+|---------|-----------|-----|---------|-------------|
+| Transaction Fees | **0%** | 2.9% | 2.9% | 2.9% |
+| Hindi UI | ✅ | ❌ | ❌ | ❌ |
+| AI Hindi Descriptions | ✅ | ❌ | ❌ | ❌ |
+| GST Compliance | ✅ | ❌ | ❌ | ❌ |
+| WhatsApp Integration | ✅ | ❌ | ❌ | ❌ |
+| NGO Multi-Store | ✅ | ❌ | ❌ | ❌ |
+| Mobile-First PWA | ✅ | Partial | Partial | Partial |
+| Automated Testing | ✅ | ❌ | ❌ | ❌ |
+
+## 📊 Sample Data
+
+The platform comes with pre-seeded sample data:
+
+**Artisan Stores:**
+- कलाकार शिल्प (Kalakar Shilp) - Traditional crafts
+- हस्तकला भंडार (Hastkala Bhandar) - Handmade goods
+- शिल्पी संग्रह (Shilpi Sangraha) - Artisan collection
+
+**Products:**
+- बनारसी सिल्क साड़ी (Banarasi Silk Saree)
+- कशीदाकारी शाल (Kashmiri Embroidered Shawl)
+- मिट्टी का दीया (Clay Diya)
+- हस्तनिर्मित गहने (Handmade Jewelry)
+
+## 🔧 Configuration
+
+### Environment Variables (.env)
+```bash
+DEBUG=True
+SECRET_KEY=your-secret-key
+USE_SQLITE=False
+DB_NAME=storeloop
+DB_USER=postgres
+DB_PASSWORD=postgres
+DB_HOST=localhost
+DB_PORT=5434
+
+# Razorpay (optional)
+RAZORPAY_KEY_ID=your-key-id
+RAZORPAY_KEY_SECRET=your-key-secret
+
+# AI API (optional)
+OPENROUTER_API_KEY=your-api-key
+```
+
+### Language Support
+- English (default)
+- हिंदी (Hindi) - Complete UI translation
+- Extensible for other Indian languages
+
+## 📱 Mobile PWA Features
+
+- **Offline support** for browsing products
+- **Add to home screen** functionality
+- **Push notifications** for order updates
+- **Touch-optimized** interface
+- **Fast loading** with service workers
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run tests: `npx playwright test`
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🆘 Support
+
+- **Documentation:** [internal/MANUAL_TEST_SCRIPT.md](internal/MANUAL_TEST_SCRIPT.md)
+- **Issues:** Create a GitHub issue
+- **Email:** support@storeloop.in
+
+---
+
+**🎯 Built specifically for Indian artisans and NGOs - features that global platforms don't offer!**

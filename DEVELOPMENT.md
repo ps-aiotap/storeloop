@@ -1,6 +1,19 @@
 # StoreLoop Development Guide
 
-StoreLoop is a Django-based e-commerce platform with multi-seller and theme support. This guide will help you set up a local development environment and understand the project structure.
+StoreLoop is a Django-based e-commerce platform with multi-seller and theme support, designed specifically for Indian artisans and NGOs. This guide will help you set up a local development environment and understand the project structure.
+
+## Quick Start
+
+**1-Click Deployment:**
+```bash
+# Windows
+deploy.bat
+
+# Linux/Mac
+chmod +x deploy.sh && ./deploy.sh
+```
+
+**Manual Setup:** Follow the detailed instructions below.
 
 ## Prerequisites
 
@@ -175,7 +188,23 @@ plugins/
 
 ## Testing
 
-Run tests with:
+### Automated Testing (Playwright)
+```bash
+cd tests
+npm install
+npx playwright install
+npx playwright test --project=chromium
+npx playwright show-report
+```
+
+**Test Coverage:**
+- 48 comprehensive test scenarios
+- Multi-browser support (Chrome, Firefox, Safari, Mobile)
+- Authentication, onboarding, product management, dashboard
+- Hindi UI and Unicode text handling
+- NGO admin multi-store management
+
+### Python Unit Tests
 ```bash
 pytest
 ```

@@ -1,8 +1,17 @@
 # StoreLoop Admin Guide - Multi-language E-commerce Platform
 
-This guide explains how to use StoreLoop's features including seller onboarding, AI description assistance, notification systems, multi-language UI, and multi-store management.
+This guide explains how to use StoreLoop's features including seller onboarding, AI description assistance, notification systems, multi-language UI, multi-store management, and automated testing.
+
+**Latest Updates:**
+- ✅ 48 automated Playwright tests with 45-second timeouts
+- ✅ 1-click deployment scripts (deploy.bat/deploy.sh)
+- ✅ Enhanced Hindi language support with proper Unicode handling
+- ✅ Fixed authentication fixtures and test robustness
+- ✅ All browser testing enabled (Chrome, Firefox, Safari, Mobile)
 
 ## Table of Contents
+- [Quick Start (1-Click Deployment)](#quick-start-1-click-deployment)
+- [Automated Testing](#automated-testing)
 - [Seller Onboarding Wizard](#seller-onboarding-wizard)
 - [Mobile-First Seller Dashboard](#mobile-first-seller-dashboard)
 - [NGO Partner Admin](#ngo-partner-admin)
@@ -14,6 +23,51 @@ This guide explains how to use StoreLoop's features including seller onboarding,
 - [GST Invoice Generation](#gst-invoice-generation)
 - [Analytics Dashboard](#analytics-dashboard)
 - [Legacy Features](#legacy-features)
+
+## Quick Start (1-Click Deployment)
+
+### Windows
+```bash
+# Double-click or run:
+deploy.bat
+```
+
+### Linux/Mac
+```bash
+chmod +x deploy.sh
+./deploy.sh
+```
+
+**That's it!** Your StoreLoop instance will be running at `http://localhost:8000`
+
+- **Admin Login:** admin / admin123
+- **NGO Admin:** ngo_admin / password
+
+## Automated Testing
+
+### Running Playwright Tests
+```bash
+cd tests
+npm install
+npx playwright install
+npx playwright test --project=chromium
+npx playwright show-report
+```
+
+### Test Coverage (48 Tests)
+- ✅ Authentication and authorization flows
+- ✅ 4-step seller onboarding wizard
+- ✅ Product management (CRUD operations)
+- ✅ Dashboard functionality with Hindi UI
+- ✅ NGO admin multi-store management
+- ✅ Mobile responsiveness testing
+- ✅ All browsers (Chrome, Firefox, Safari, Mobile)
+
+### Test Configuration
+- **Timeout:** 45 seconds per test
+- **Browsers:** Chrome, Firefox, Safari, Mobile Chrome, Mobile Safari
+- **Parallel Execution:** 6 workers
+- **Reports:** HTML, JSON, JUnit formats
 
 ## Seller Onboarding Wizard
 

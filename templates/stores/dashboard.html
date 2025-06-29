@@ -1,3 +1,4 @@
+{% load currency_filters %}
 <!DOCTYPE html>
 <html>
 <head>
@@ -21,7 +22,7 @@
             
             <div style="background: #f3f4f6; padding: 20px; border-radius: 8px;">
                 <h3>Total Sales</h3>
-                <p style="font-size: 2em; margin: 0; color: #10B981;">₹{{ total_sales }}</p>
+                <p style="font-size: 2em; margin: 0; color: #10B981;">{{ total_sales|currency }}</p>
             </div>
             
             <div style="background: #f3f4f6; padding: 20px; border-radius: 8px;">
@@ -54,7 +55,7 @@
                             <tr style="border-bottom: 1px solid #f3f4f6;">
                                 <td style="padding: 10px;">{{ order.order_id }}</td>
                                 <td style="padding: 10px;">{{ order.customer_name }}</td>
-                                <td style="padding: 10px;">₹{{ order.total_amount }}</td>
+                                <td style="padding: 10px;">{{ order.total_amount|currency }}</td>
                                 <td style="padding: 10px;">
                                     <span style="background: #10B981; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8em;">
                                         {{ order.status|title }}

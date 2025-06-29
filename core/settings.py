@@ -141,5 +141,11 @@ RAZORPAY_TEST_MODE = True
 LOGIN_REDIRECT_URL = '/stores/onboarding/'
 LOGIN_URL = '/accounts/login/'
 
+# Internationalization
+USE_I18N = True
+USE_L10N = True
+LANGUAGE_CODE = 'en-in'  # English (India)
+USE_THOUSAND_SEPARATOR = True
+
 # Custom error pages - Set to True for development
 DEBUG = True

@@ -412,7 +412,14 @@ def store_homepage(request, store_slug):
     
     # Simple HTML response for now
     blocks_html = "<br>".join([f"<div><h3>{block.title}</h3><p>{block.content}</p></div>" for block in homepage_blocks])
-    products_html = "<br>".join([f"<div>{product.name} - ${product.price}</div>" for product in featured_products])
+    # Format currency based on locale
+    import locale
+    try:
+        locale.setlocale(locale.LC_ALL, 'en_IN.UTF-8')
+        products_html = "<br>".join([f"<div>{product.name} - {locale.currency(float(product.price), grouping=True)}</div>" for product in featured_products])
+    except:
+        # Fallback to ₹ symbol if locale not available
+        products_html = "<br>".join([f"<div>{product.name} - ₹{product.price}</div>" for product in featured_products])
     
     return HttpResponse(f"""
     <h1>{store.name}</h1>

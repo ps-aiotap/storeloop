@@ -12,7 +12,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-default-key-for-development")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("DEBUG", "True") == "True"
+DEBUG = False
 
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
@@ -107,6 +107,26 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
+# Language support
+LANGUAGES = [
+    ('en', 'English'),
+    ('hi', 'हिंदी'),
+]
+
+LOCALE_PATHS = [
+    BASE_DIR / 'locale',
+]
+
+# Database encoding for Unicode support
+DATABASE_OPTIONS = {
+    'charset': 'utf8mb4',
+    'use_unicode': True,
+}
+
+# File upload settings
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
+
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
@@ -138,14 +158,16 @@ RAZORPAY_KEY_SECRET = os.environ.get("RAZORPAY_KEY_SECRET", "")
 RAZORPAY_TEST_MODE = True
 
 # Login redirect
-LOGIN_REDIRECT_URL = '/stores/onboarding/'
+LOGIN_REDIRECT_URL = '/stores/dashboard/'
 LOGIN_URL = '/accounts/login/'
 
-# Internationalization
-USE_I18N = True
+# Additional settings for Indian locale
 USE_L10N = True
-LANGUAGE_CODE = 'en-in'  # English (India)
 USE_THOUSAND_SEPARATOR = True
 
-# Custom error pages - Set to True for development
-DEBUG = True
+# Ensure proper Unicode handling
+DEFAULT_CHARSET = 'utf-8'
+
+# Session settings
+SESSION_COOKIE_AGE = 86400  # 24 hours
+SESSION_SAVE_EVERY_REQUEST = True

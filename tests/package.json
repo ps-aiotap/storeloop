@@ -1,0 +1,32 @@
+{
+  "name": "storeloop-playwright-tests",
+  "version": "1.0.0",
+  "description": "Playwright test suite for StoreLoop Indian Artisan Platform",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:ui": "playwright test --ui",
+    "test:report": "playwright show-report playwright-report",
+    "test:buyer": "playwright test buyer-flows.spec.ts",
+    "test:seller": "playwright test seller-*.spec.ts",
+    "test:ngo": "playwright test ngo-admin.spec.ts",
+    "test:auth": "playwright test authentication.spec.ts",
+    "test:mobile": "playwright test --project='Mobile Chrome'",
+    "test:cross-browser": "playwright test --project=chromium --project=firefox --project=webkit",
+    "install": "playwright install"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "keywords": [
+    "playwright",
+    "testing",
+    "e2e",
+    "storeloop",
+    "indian-artisan",
+    "ecommerce"
+  ]
+}

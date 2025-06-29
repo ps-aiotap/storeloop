@@ -1,6 +1,5 @@
 from django.http import HttpResponse
 from django.template.loader import render_to_string
-# from weasyprint import HTML, CSS  # Windows compatibility issue
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import inch
@@ -9,75 +8,34 @@ from django.conf import settings
 import os
 
 def generate_gst_invoice_pdf(order):
-    """Generate GST-compliant invoice PDF"""
+    """Generate GST-compliant invoice PDF using ReportLab"""
     
-    # Calculate GST (18% for most products)
-    gst_rate = 0.18
-    base_amount = float(order.total_amount) / (1 + gst_rate)
-    gst_amount = float(order.total_amount) - base_amount
+    buffer = BytesIO()
+    p = canvas.Canvas(buffer, pagesize=A4)
     
-    context = {
-        'order': order,
-        'store': order.store,
-        'base_amount': round(base_amount, 2),
-        'gst_amount': round(gst_amount, 2),
-        'gst_rate': int(gst_rate * 100),
-        'invoice_number': f"INV-{order.order_id}",
-    }
+    # Invoice header
+    p.drawString(100, 750, f"INVOICE - {order.order_id}")
+    p.drawString(100, 730, f"Store: {order.store.name}")
+    p.drawString(100, 710, f"Customer: {order.customer_name}")
+    p.drawString(100, 690, f"Product: {order.product.name}")
+    p.drawString(100, 670, f"Quantity: {order.quantity}")
+    p.drawString(100, 650, f"Amount: ₹{order.total_amount}")
     
-    # Render HTML template
-    html_string = render_to_string('stores/invoice_template.html', context)
+    p.showPage()
+    p.save()
     
-    # Generate PDF
-    html = HTML(string=html_string)
-    css = CSS(string="""
-        @page {
-            size: A4;
-            margin: 1cm;
-        }
-        body {
-            font-family: Arial, sans-serif;
-            font-size: 12px;
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .invoice-details {
-            margin-bottom: 20px;
-        }
-        .table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .table th, .table td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        .table th {
-            background-color: #f2f2f2;
-        }
-        .total-row {
-            font-weight: bold;
-        }
-    """)
-    
-    pdf = html.write_pdf(stylesheets=[css])
-    return pdf
+    buffer.seek(0)
+    return buffer.getvalue()
 
 def get_store_from_domain(request):
     """Get store based on subdomain or custom domain"""
     host = request.get_host().lower()
     
-    # Check for custom domain
     from .models import Store
     
-    # Remove port if present
     if ':' in host:
         host = host.split(':')[0]
     
-    # Check for subdomain (e.g., artisan.storeloop.in)
     if host.endswith('.storeloop.in'):
         subdomain = host.replace('.storeloop.in', '')
         try:
@@ -85,7 +43,6 @@ def get_store_from_domain(request):
         except Store.DoesNotExist:
             pass
     
-    # Check for custom domain
     try:
         return Store.objects.get(custom_domain=host, is_published=True)
     except Store.DoesNotExist:

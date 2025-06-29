@@ -7,7 +7,7 @@
 </head>
 <body>
     <div style="max-width: 600px; margin: 50px auto; padding: 20px; font-family: Arial, sans-serif;">
-        <h1>Store Setup - Step 1 of 5</h1>
+        <h1>Step 1 of 5</h1>
         <h2>Basic Information</h2>
         
         <form method="post" enctype="multipart/form-data">
@@ -15,12 +15,12 @@
             
             <div style="margin-bottom: 20px;">
                 <label for="name">Store Name:</label><br>
-                <input type="text" id="name" name="name" style="width: 100%; padding: 10px; margin-top: 5px;" placeholder="कलाकार शिल्प" required>
+                <input type="text" id="name" name="name" value="{% if store %}{{ store.name }}{% endif %}" style="width: 100%; padding: 10px; margin-top: 5px;" placeholder="कलाकार शिल्प" required>
             </div>
             
             <div style="margin-bottom: 20px;">
                 <label for="description">Description:</label><br>
-                <textarea id="description" name="description" rows="4" style="width: 100%; padding: 10px; margin-top: 5px;" placeholder="Handmade crafts by Indian artisans"></textarea>
+                <textarea id="description" name="description" rows="4" style="width: 100%; padding: 10px; margin-top: 5px;" placeholder="Handmade crafts by Indian artisans">{% if store %}{{ store.description }}{% endif %}</textarea>
             </div>
             
             <div style="margin-bottom: 20px;">

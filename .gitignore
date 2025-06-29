@@ -69,5 +69,29 @@ tests/playwright/screenshots/
 tests/playwright/videos/
 tests/playwright/traces/
 
+# New Playwright test results
+tests/playwright-report/
+tests/test-results/
+tests/test-results.json
+tests/test-results.xml
+tests/.auth/
+tests/screenshots/
+tests/videos/
+tests/traces/
+tests/node_modules/
+tests/package-lock.json
+
 # Internal documentation (not for public repo)
 internal/
+
+# New Playwright test results
+tests/playwright-report/
+tests/test-results/
+tests/test-results.json
+tests/test-results.xml
+tests/.auth/
+tests/screenshots/
+tests/videos/
+tests/traces/
+tests/node_modules/
+tests/package-lock.json

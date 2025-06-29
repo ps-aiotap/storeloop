@@ -15,65 +15,88 @@ from .utils import generate_gst_invoice_pdf
 
 @login_required
 def seller_onboarding(request):
-    """4-step seller onboarding wizard"""
+    """5-step seller onboarding wizard"""
     step = request.GET.get('step', '1')
-    store = getattr(request.user, 'owned_stores', Store.objects.none()).first()
+    try:
+        store = Store.objects.get(owner=request.user)
+    except Store.DoesNotExist:
+        store = None
     
     if step == '1':  # Logo & Basic Info
         if request.method == 'POST':
-            # Create store with basic info
             store_name = request.POST.get('name', '')
             store_description = request.POST.get('description', '')
+            logo = request.FILES.get('logo')
             
             if not store:
                 store = Store.objects.create(
                     name=store_name,
                     description=store_description,
-                    owner=request.user
+                    owner=request.user,
+                    logo=logo if logo else None
                 )
             else:
                 store.name = store_name
                 store.description = store_description
+                if logo:
+                    store.logo = logo
                 store.save()
             
             return redirect('/stores/onboarding/?step=2')
-        else:
-            form = StoreOnboardingForm(instance=store)
-        return render(request, 'stores/onboarding_step1.html', {'form': form, 'step': 1})
+        return render(request, 'stores/onboarding_step1.html', {'store': store, 'step': 1})
     
     elif step == '2':  # Theme Selection
+        if not store:
+            return redirect('/stores/onboarding/?step=1')
         if request.method == 'POST':
-            if store:
-                store.theme = request.POST.get('theme', 'minimal')
-                store.primary_color = request.POST.get('primary_color', '#3B82F6')
-                store.secondary_color = request.POST.get('secondary_color', '#10B981')
-                store.font_family = request.POST.get('font_family', 'sans-serif')
-                store.save()
+            store.theme = request.POST.get('theme', 'minimal')
+            store.primary_color = request.POST.get('primary_color', '#3B82F6')
+            store.secondary_color = request.POST.get('secondary_color', '#10B981')
+            store.font_family = request.POST.get('font_family', 'sans-serif')
+            store.save()
             return redirect('/stores/onboarding/?step=3')
         return render(request, 'stores/onboarding_step2.html', {'store': store, 'step': 2})
     
-    elif step == '3':  # Sample Products
+    elif step == '3':  # Homepage Layout
+        if not store:
+            return redirect('/stores/onboarding/?step=1')
         if request.method == 'POST':
-            # Create sample products
-            sample_products = [
-                {'name': 'Sample Product 1', 'price': 999, 'stock': 10},
-                {'name': 'Sample Product 2', 'price': 1499, 'stock': 5},
-            ]
-            for product_data in sample_products:
-                Product.objects.get_or_create(
-                    store=store,
-                    name=product_data['name'],
-                    defaults=product_data
-                )
+            from .models import StoreHomepageBlock
+            
+            hero_title = request.POST.get('hero_title', 'Welcome to Our Store')
+            hero_content = request.POST.get('hero_content', 'Discover unique handcrafted items')
+            StoreHomepageBlock.objects.get_or_create(
+                store=store,
+                block_type='hero_banner',
+                defaults={
+                    'title': hero_title,
+                    'content': hero_content,
+                    'order': 1
+                }
+            )
+            
+            about_title = request.POST.get('about_title', 'About Our Craft')
+            about_content = request.POST.get('about_content', 'We create beautiful handmade items')
+            StoreHomepageBlock.objects.get_or_create(
+                store=store,
+                block_type='text_block',
+                defaults={
+                    'title': about_title,
+                    'content': about_content,
+                    'order': 2
+                }
+            )
+            
             return redirect('/stores/onboarding/?step=4')
         return render(request, 'stores/onboarding_step3.html', {'store': store, 'step': 3})
     
     elif step == '4':  # Sample Products
+        if not store:
+            return redirect('/stores/onboarding/?step=1')
         if request.method == 'POST':
-            # Create sample products
             sample_products = [
-                {'name': 'Sample Product 1', 'price': 999, 'stock': 10},
-                {'name': 'Sample Product 2', 'price': 1499, 'stock': 5},
+                {'name': 'Sample Product 1', 'price': 999, 'stock': 10, 'description': 'Beautiful handcrafted item'},
+                {'name': 'Sample Product 2', 'price': 1499, 'stock': 5, 'description': 'Premium artisan creation'},
             ]
             for product_data in sample_products:
                 Product.objects.get_or_create(
@@ -85,6 +108,8 @@ def seller_onboarding(request):
         return render(request, 'stores/onboarding_step4.html', {'store': store, 'step': 4})
     
     elif step == '5':  # Razorpay Configuration
+        if not store:
+            return redirect('/stores/onboarding/?step=1')
         if request.method == 'POST':
             store.razorpay_key_id = request.POST.get('razorpay_key_id', '')
             store.razorpay_key_secret = request.POST.get('razorpay_key_secret', '')
@@ -96,26 +121,31 @@ def seller_onboarding(request):
             messages.success(request, _('Store setup completed successfully!'))
             return redirect('seller_dashboard')
         return render(request, 'stores/onboarding_step5.html', {'store': store, 'step': 5})
+    
+    return redirect('/stores/onboarding/?step=1')
 
 @login_required
 def seller_dashboard(request):
     """Mobile-first seller dashboard"""
     try:
+        profile = SellerProfile.objects.get(user=request.user)
+        if profile.is_partner_admin:
+            return redirect('/stores/partner-dashboard/')
+    except SellerProfile.DoesNotExist:
+        pass
+    
+    try:
         store = Store.objects.get(owner=request.user)
+        if not store.onboarding_completed:
+            return redirect('seller_onboarding')
     except Store.DoesNotExist:
-        # Redirect to onboarding if no store exists
         return redirect('seller_onboarding')
     
-    # Basic analytics
     total_orders = Order.objects.filter(store=store).count()
     total_sales = sum(order.total_amount for order in Order.objects.filter(store=store, status='delivered'))
     pending_orders = Order.objects.filter(store=store, status='pending').count()
     products_count = Product.objects.filter(store=store, is_active=True).count()
-    
-    # Recent orders
     recent_orders = Order.objects.filter(store=store).order_by('-created_at')[:5]
-    
-    # Low stock products
     low_stock_products = Product.objects.filter(store=store, stock__lte=5, is_active=True)
     
     context = {
@@ -132,23 +162,36 @@ def seller_dashboard(request):
 @login_required
 def partner_admin_dashboard(request):
     """NGO partner admin dashboard"""
-    profile = get_object_or_404(SellerProfile, user=request.user, is_partner_admin=True)
+    try:
+        profile = SellerProfile.objects.get(user=request.user, is_partner_admin=True)
+    except SellerProfile.DoesNotExist:
+        messages.error(request, 'Access denied. You are not a partner admin.')
+        return redirect('seller_dashboard')
     
-    # Switch store view
     selected_store_id = request.GET.get('store_id')
+    selected_store = None
     if selected_store_id:
-        selected_store = get_object_or_404(Store, id=selected_store_id, partner_admins=profile)
-    else:
+        try:
+            selected_store = Store.objects.get(id=selected_store_id, partner_admins=profile)
+        except Store.DoesNotExist:
+            pass
+    
+    if not selected_store:
         selected_store = profile.managed_stores.first()
     
-    # Aggregate metrics for all managed stores
     managed_stores = profile.managed_stores.all()
     total_stores = managed_stores.count()
-    total_artisans = sum(store.owner_set.count() for store in managed_stores)
-    total_revenue = sum(
-        sum(order.total_amount for order in store.orders.filter(status='delivered'))
-        for store in managed_stores
-    )
+    
+    total_artisans = 0
+    for store in managed_stores:
+        if store.owner:
+            total_artisans += 1
+    
+    total_revenue = 0
+    for store in managed_stores:
+        delivered_orders = store.orders.filter(status='delivered')
+        for order in delivered_orders:
+            total_revenue += float(order.total_amount)
     
     context = {
         'profile': profile,
@@ -163,7 +206,11 @@ def partner_admin_dashboard(request):
 @login_required
 def product_upload(request):
     """Excel/CSV product upload"""
-    store = get_object_or_404(Store, owner=request.user)
+    try:
+        store = Store.objects.get(owner=request.user)
+    except Store.DoesNotExist:
+        messages.error(request, 'Please complete store setup first.')
+        return redirect('seller_onboarding')
     
     if request.method == 'POST':
         form = ProductUploadForm(request.POST, request.FILES)
@@ -174,7 +221,6 @@ def product_upload(request):
             )
             
             try:
-                # Process Excel/CSV file
                 file_path = upload_batch.file.path
                 if file_path.endswith('.xlsx'):
                     df = pd.read_excel(file_path)
@@ -187,17 +233,28 @@ def product_upload(request):
                 
                 for index, row in df.iterrows():
                     try:
+                        name = str(row.get('name', '')).strip()
+                        price = row.get('price', 0)
+                        
+                        if not name:
+                            errors.append(f"Row {index + 1}: Product name is required")
+                            continue
+                            
+                        if not price or float(price) <= 0:
+                            errors.append(f"Row {index + 1}: Valid price is required")
+                            continue
+                        
                         Product.objects.create(
                             store=store,
-                            name=row.get('name', ''),
-                            description=row.get('description', ''),
-                            price=float(row.get('price', 0)),
+                            name=name,
+                            description=str(row.get('description', '')).strip(),
+                            price=float(price),
                             stock=int(row.get('stock', 0)),
-                            category=row.get('category', ''),
-                            image_url=row.get('image_url', ''),
-                            material=row.get('material', ''),
-                            region=row.get('region', ''),
-                            style=row.get('style', ''),
+                            category=str(row.get('category', '')).strip(),
+                            image_url=str(row.get('image_url', '')).strip(),
+                            material=str(row.get('material', '')).strip(),
+                            region=str(row.get('region', '')).strip(),
+                            style=str(row.get('style', '')).strip(),
                         )
                         successful += 1
                     except Exception as e:
@@ -224,12 +281,16 @@ def product_upload(request):
         form = ProductUploadForm()
     
     recent_uploads = ProductUploadBatch.objects.filter(store=store).order_by('-created_at')[:5]
-    return render(request, 'stores/product_upload.html', {'form': form, 'recent_uploads': recent_uploads})
+    return render(request, 'stores/product_upload.html', {'form': form, 'recent_uploads': recent_uploads, 'store': store})
 
 @login_required
 def product_add(request):
     """Add single product with AI description support"""
-    store = get_object_or_404(Store, owner=request.user)
+    try:
+        store = Store.objects.get(owner=request.user)
+    except Store.DoesNotExist:
+        messages.error(request, 'Please complete store setup first.')
+        return redirect('seller_onboarding')
     
     if request.method == 'POST':
         form = ProductForm(request.POST, request.FILES)
@@ -273,7 +334,6 @@ def generate_product_description(request):
         style = data.get('style', '')
         language = data.get('language', 'en')
         
-        # Generate AI description (async task)
         task = generate_ai_description.delay(product_name, material, region, style, language)
         
         return JsonResponse({
@@ -316,7 +376,6 @@ def order_detail(request, order_id):
             order.status = new_status
             order.save()
             
-            # Send WhatsApp notification on status change
             if old_status != new_status:
                 send_whatsapp_notification.delay(order.id, 'status_update')
             
@@ -337,20 +396,58 @@ def download_gst_invoice(request, order_id):
     return response
 
 @login_required
+@csrf_exempt
+def create_order(request):
+    """Create order and Razorpay payment"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            product_id = data.get('product_id')
+            quantity = data.get('quantity', 1)
+            
+            product = Product.objects.get(id=product_id)
+            store = product.store
+            
+            order = Order.objects.create(
+                store=store,
+                product=product,
+                customer_name='Guest Customer',
+                customer_email='guest@example.com',
+                customer_phone='1234567890',
+                customer_address='Guest Address',
+                quantity=quantity,
+                total_amount=product.price * quantity,
+                gst_amount=product.price * quantity * 0.18
+            )
+            
+            return JsonResponse({
+                'success': True,
+                'order_id': order.order_id,
+                'razorpay_order_id': f'order_{order.id}'
+            })
+            
+        except Product.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Product not found'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+@login_required
 def analytics_api(request):
     """API endpoint for seller analytics"""
-    store = get_object_or_404(Store, owner=request.user)
+    try:
+        store = Store.objects.get(owner=request.user)
+    except Store.DoesNotExist:
+        return JsonResponse({'error': 'Store not found'}, status=404)
     
-    # Sales data for charts
     orders = Order.objects.filter(store=store, status='delivered')
     
-    # Monthly sales
     monthly_sales = {}
     for order in orders:
         month = order.created_at.strftime('%Y-%m')
         monthly_sales[month] = monthly_sales.get(month, 0) + float(order.total_amount)
     
-    # Top products
     product_sales = {}
     for order in orders:
         product_name = order.product.name
@@ -358,11 +455,20 @@ def analytics_api(request):
     
     top_products = sorted(product_sales.items(), key=lambda x: x[1], reverse=True)[:5]
     
+    debug_info = {
+        'store_name': store.name,
+        'store_published': store.is_published,
+        'onboarding_completed': store.onboarding_completed,
+        'total_products': store.store_products.count(),
+        'active_products': store.store_products.filter(is_active=True).count()
+    }
+    
     return JsonResponse({
         'monthly_sales': monthly_sales,
         'top_products': dict(top_products),
         'total_orders': orders.count(),
-        'total_revenue': sum(float(order.total_amount) for order in orders)
+        'total_revenue': sum(float(order.total_amount) for order in orders),
+        'debug': debug_info if request.user.is_superuser else None
     })
 
 def set_language(request):
@@ -379,53 +485,43 @@ def set_language(request):
         
     return redirect(request.META.get('HTTP_REFERER', '/'))
 
+def hindi_test_page(request):
+    """Hindi test page to verify Unicode support"""
+    return render(request, 'stores/hindi_test.html')
+
 def store_listing(request):
     """List all published stores"""
-    # Show only published stores to regular visitors
-    # Admins can see all stores
     if request.user.is_authenticated and request.user.is_superuser:
-        stores = Store.objects.exclude(slug='').order_by('-created_at')
+        stores = Store.objects.exclude(slug='').exclude(name='').order_by('-created_at')
     else:
-        stores = Store.objects.filter(is_published=True).exclude(slug='').order_by('-created_at')
+        stores = Store.objects.filter(
+            is_published=True, 
+            onboarding_completed=True
+        ).exclude(slug='').exclude(name='').order_by('-created_at')
+    
     return render(request, 'stores/store_listing.html', {'stores': stores})
 
 def store_homepage(request, store_slug):
     """Store homepage with homepage blocks"""
-    from django.http import HttpResponse
-    
-    # Try to find store by slug
     try:
         store = Store.objects.get(slug=store_slug)
     except Store.DoesNotExist:
         return HttpResponse("<h1>Store not found</h1><p><a href='/stores/'>Browse all stores</a></p>")
     
-    # Check if store is published (unless user is admin/owner)
     if not store.is_published:
         if not request.user.is_authenticated or (request.user != store.owner and not request.user.is_superuser):
             return HttpResponse("<h1>Store not available</h1><p>This store is not published yet.</p><p><a href='/stores/'>Browse all stores</a></p>")
     
-    # Get homepage blocks
     homepage_blocks = store.homepage_blocks.filter(is_active=True).order_by('order')
-    
-    # Get featured products
     featured_products = store.store_products.filter(is_active=True)[:6]
     
-    # Simple HTML response for now
-    blocks_html = "<br>".join([f"<div><h3>{block.title}</h3><p>{block.content}</p></div>" for block in homepage_blocks])
-    # Format currency based on locale
-    import locale
-    try:
-        locale.setlocale(locale.LC_ALL, 'en_IN.UTF-8')
-        products_html = "<br>".join([f"<div>{product.name} - {locale.currency(float(product.price), grouping=True)}</div>" for product in featured_products])
-    except:
-        # Fallback to ₹ symbol if locale not available
-        products_html = "<br>".join([f"<div>{product.name} - ₹{product.price}</div>" for product in featured_products])
-    
-    return HttpResponse(f"""
-    <h1>{store.name}</h1>
-    <p>{store.description}</p>
-    <h2>Homepage Blocks:</h2>
-    {blocks_html}
-    <h2>Featured Products:</h2>
-    {products_html}
-    """)
+    context = {
+        'store': store,
+        'homepage_blocks': homepage_blocks,
+        'featured_products': featured_products,
+    }
+    return render(request, 'stores/store_homepage.html', context)
+
+def hindi_test_page(request):
+    """Hindi test page to verify Unicode support"""
+    return render(request, 'stores/hindi_test.html')

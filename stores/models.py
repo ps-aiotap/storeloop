@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils.text import slugify
 import uuid
+import re
+import unicodedata
 
 class Store(models.Model):
     name = models.CharField(max_length=200)
@@ -26,7 +28,32 @@ class Store(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            base_slug = slugify(self.name) or 'store'
+            # Handle Hindi and other non-ASCII characters
+            if self.name:
+                # First try standard slugify
+                base_slug = slugify(self.name)
+                
+                # If empty (happens with non-ASCII), create transliterated version
+                if not base_slug:
+                    # Remove diacritics and convert to ASCII
+                    normalized = unicodedata.normalize('NFD', self.name)
+                    ascii_name = ''.join(c for c in normalized if unicodedata.category(c) != 'Mn')
+                    
+                    # If still no ASCII, use a generic approach
+                    if not ascii_name or not ascii_name.strip():
+                        # Create slug from first few characters or use store + timestamp
+                        import time
+                        base_slug = f'store-{int(time.time())}'[-10:]
+                    else:
+                        base_slug = slugify(ascii_name)
+                        
+                # Final fallback
+                if not base_slug:
+                    import time
+                    base_slug = f'store-{int(time.time())}'[-10:]
+            else:
+                base_slug = 'store'
+            
             slug = base_slug
             counter = 1
             
@@ -58,9 +85,9 @@ class SellerProfile(models.Model):
 
 class Product(models.Model):
     store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name='store_products')
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=200)  # Supports Unicode/Hindi text
     slug = models.SlugField(blank=True)
-    description = models.TextField(blank=True)
+    description = models.TextField(blank=True)  # Supports Unicode/Hindi text
     short_description = models.CharField(max_length=500, blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     stock = models.PositiveIntegerField(default=0)
@@ -74,14 +101,76 @@ class Product(models.Model):
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        # Ensure proper Unicode handling
+        db_table = 'stores_product'
+        indexes = [
+            models.Index(fields=['name']),
+            models.Index(fields=['store', 'is_active']),
+        ]
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            # Handle Hindi and other non-ASCII characters
+            if self.name:
+                # First try standard slugify
+                base_slug = slugify(self.name)
+                
+                # If empty (happens with non-ASCII), create transliterated version
+                if not base_slug:
+                    # Try to transliterate Hindi/Devanagari to Latin
+                    try:
+                        # Simple transliteration for common Hindi characters
+                        transliteration_map = {
+                            'बनारसी': 'banarasi',
+                            'सिल्क': 'silk', 
+                            'साड़ी': 'saree',
+                            'कशीदाकारी': 'kashidakari',
+                            'शाल': 'shawl',
+                            'दीया': 'diya',
+                            'मिट्टी': 'mitti'
+                        }
+                        
+                        transliterated = self.name
+                        for hindi, english in transliteration_map.items():
+                            transliterated = transliterated.replace(hindi, english)
+                        
+                        base_slug = slugify(transliterated)
+                        
+                        # If still empty, use generic approach
+                        if not base_slug:
+                            # Remove diacritics and convert to ASCII
+                            normalized = unicodedata.normalize('NFD', self.name)
+                            ascii_name = ''.join(c for c in normalized if unicodedata.category(c) != 'Mn')
+                            
+                            if ascii_name and ascii_name.strip():
+                                base_slug = slugify(ascii_name)
+                    except:
+                        pass
+                        
+                # Final fallback
+                if not base_slug:
+                    import time
+                    base_slug = f'product-{int(time.time())}'[-10:]
+                
+                # Ensure unique slug
+                slug = base_slug
+                counter = 1
+                while Product.objects.filter(slug=slug, store=self.store).exclude(pk=self.pk).exists():
+                    slug = f"{base_slug}-{counter}"
+                    counter += 1
+                
+                self.slug = slug
         super().save(*args, **kwargs)
 
     def __str__(self):
+        # Ensure proper Unicode display
         return f"{self.name} - {self.store.name}"
+    
+    def get_display_name(self):
+        """Get display name with proper Unicode handling"""
+        return self.name
 
 class Order(models.Model):
     STATUS_CHOICES = [

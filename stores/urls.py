@@ -17,6 +17,7 @@ urlpatterns = [
     path('api/ai-task/<str:task_id>/', views.check_ai_task, name='check_ai_task'),
     
     # Order management
+    path('orders/create/', views.create_order, name='create_order'),
     path('orders/<str:order_id>/', views.order_detail, name='order_detail'),
     path('orders/<str:order_id>/invoice/', views.download_gst_invoice, name='download_gst_invoice'),
     
@@ -25,6 +26,9 @@ urlpatterns = [
     
     # Language
     path('set-language/', views.set_language, name='set_language'),
+    
+    # Hindi test page
+    path('hindi-test/', views.hindi_test_page, name='hindi_test_page'),
     
     # Store listing page
     path('', views.store_listing, name='store_listing'),

@@ -11,6 +11,9 @@ from .robots import robots_txt, security_txt
 def homepage(request):
     return render(request, 'home.html')
 
+def custom_404(request, exception):
+    return render(request, '404.html', status=404)
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', homepage, name='homepage'),
@@ -35,3 +38,6 @@ urlpatterns = [
 # Serve media files in development
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# Custom error handlers
+handler404 = custom_404

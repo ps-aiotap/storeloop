@@ -1,10 +1,25 @@
 {% load currency_filters %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <title>Seller Dashboard - {{ store.name }}</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        /* Ensure proper font rendering for Hindi text */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .hindi-text {
+            font-family: 'Noto Sans Devanagari', 'Mangal', 'Devanagari Sangam MN', sans-serif;
+            font-size: 1.1em;
+        }
+        .product-name {
+            font-weight: bold;
+            color: #1f2937;
+        }
+    </style>
 </head>
 <body>
     <div style="max-width: 1200px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
@@ -75,14 +90,45 @@
         {% if low_stock_products %}
         <div style="background: #FEF3C7; border: 1px solid #F59E0B; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
             <h2 style="color: #92400E;">Low Stock Alert</h2>
-            <p>The following products are running low on stock:</p>
+            <p>The following items are running low on stock:</p>
             <ul>
                 {% for product in low_stock_products %}
-                <li>{{ product.name }} - Only {{ product.stock }} left</li>
+                <li><span class="product-name hindi-text">{{ product.name }}</span> - Only {{ product.stock }} left</li>
                 {% endfor %}
             </ul>
         </div>
         {% endif %}
+        
+        <!-- Products List -->
+        {% if store.store_products.all %}
+        <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+            <h2>Your Products</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px;">
+                {% for product in store.store_products.all %}
+                <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 15px;">
+                    <h3 class="product-name hindi-text">{{ product.name }}</h3>
+                    <p style="color: #6b7280; margin: 5px 0;">{{ product.price|currency }}</p>
+                    <p style="color: #6b7280; margin: 5px 0;">Stock: {{ product.stock }}</p>
+                    {% if product.description %}
+                    <p style="font-size: 0.9em; color: #4b5563;">{{ product.description|truncatewords:10 }}</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Debug Info -->
+        <div style="background: #FEF3C7; padding: 10px; border-radius: 5px; margin-bottom: 10px; font-size: 0.8em;">
+            <strong>Debug:</strong><br>
+            Slug: "{{ store.slug }}" ({{ store.slug|length }} chars)<br>
+            Published: {{ store.is_published }}<br>
+            Onboarding: {{ store.onboarding_completed }}<br>
+            Products Count: {{ store.store_products.count }}<br>
+            Condition 1: {% if store.slug %}TRUE{% else %}FALSE{% endif %}<br>
+            Condition 2: {% if store.is_published %}TRUE{% else %}FALSE{% endif %}<br>
+            Both: {% if store.slug and store.is_published %}TRUE{% else %}FALSE{% endif %}
+        </div>
         
         <!-- Quick Actions -->
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
@@ -92,15 +138,6 @@
             <a href="/stores/products/upload/" style="background: #10B981; color: white; padding: 15px; text-decoration: none; border-radius: 8px; text-align: center;">
                 Upload CSV
             </a>
-            <!-- Debug Info -->
-            <div style="background: #FEF3C7; padding: 10px; border-radius: 5px; margin-bottom: 10px; font-size: 0.8em;">
-                <strong>Debug:</strong><br>
-                Slug: "{{ store.slug }}" ({{ store.slug|length }} chars)<br>
-                Published: {{ store.is_published }}<br>
-                Condition 1: {% if store.slug %}TRUE{% else %}FALSE{% endif %}<br>
-                Condition 2: {% if store.is_published %}TRUE{% else %}FALSE{% endif %}<br>
-                Both: {% if store.slug and store.is_published %}TRUE{% else %}FALSE{% endif %}
-            </div>
             
             {% if store.slug and store.is_published %}
             <a href="/stores/{{ store.slug }}/" style="background: #8B5CF6; color: white; padding: 15px; text-decoration: none; border-radius: 8px; text-align: center;">

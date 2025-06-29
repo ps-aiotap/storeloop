@@ -381,8 +381,12 @@ def set_language(request):
 
 def store_listing(request):
     """List all published stores"""
-    # For demo purposes, show all stores with slugs (published or not)
-    stores = Store.objects.exclude(slug='').order_by('-created_at')
+    # Show only published stores to regular visitors
+    # Admins can see all stores
+    if request.user.is_authenticated and request.user.is_superuser:
+        stores = Store.objects.exclude(slug='').order_by('-created_at')
+    else:
+        stores = Store.objects.filter(is_published=True).exclude(slug='').order_by('-created_at')
     return render(request, 'stores/store_listing.html', {'stores': stores})
 
 def store_homepage(request, store_slug):

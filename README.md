@@ -32,6 +32,8 @@ chmod +x deploy.sh
 - **GST compliance** with automatic invoice generation
 - **WhatsApp notifications** for orders and updates
 - **Mobile-first PWA** design for smartphone users
+- **Customer management** with multi-address support
+- **Smart checkout** with saved address selection
 
 ### 🏢 **For NGO Partners**
 - **Multi-store management** dashboard
@@ -40,6 +42,14 @@ chmod +x deploy.sh
 - **Hindi interface** for local NGO staff
 - **Store performance comparison** and insights
 
+### 🛒 **For Customers**
+- **User registration** with address management
+- **Multiple delivery addresses** per customer
+- **Smart address selection** during checkout
+- **Order history** and tracking
+- **Guest checkout** option available
+- **Auto-fill** customer details for returning users
+
 ### 📱 **Technical Advantages**
 - **Mobile-first responsive design**
 - **Progressive Web App (PWA)** with offline support
@@ -47,6 +57,9 @@ chmod +x deploy.sh
 - **Excel/CSV bulk product upload** with validation
 - **Custom subdomain** for each store
 - **Real-time analytics** with Chart.js
+- **Advanced database schema** with proper foreign key relationships
+- **User authentication** with session management
+- **Data migration tools** for address management
 
 ## 🛠️ Manual Setup (If needed)
 
@@ -105,19 +118,25 @@ npx playwright show-report
 **Test Coverage:**
 - ✅ 48 automated test scenarios
 - ✅ Authentication and authorization
+- ✅ Customer registration and login
+- ✅ Multi-address management
 - ✅ Seller onboarding wizard
 - ✅ Product management (CRUD)
+- ✅ Smart checkout process
 - ✅ Dashboard functionality
 - ✅ NGO admin features
 - ✅ Mobile responsiveness
 
 ### Manual Testing
 See [MANUAL_TEST_SCRIPT.md](internal/MANUAL_TEST_SCRIPT.md) for comprehensive testing scenarios including:
+- Customer registration with address fields
+- Multi-address selection during checkout
 - 5-step seller onboarding
 - Excel/CSV product upload
 - Hindi UI testing
 - NGO partner dashboard
-- Complete purchase flow
+- Complete purchase flow with quantity selection
+- Address auto-fill for returning customers
 - WhatsApp notifications
 - GST invoice generation
 
@@ -125,11 +144,13 @@ See [MANUAL_TEST_SCRIPT.md](internal/MANUAL_TEST_SCRIPT.md) for comprehensive te
 
 ```
 StoreLoop/
-├── core/                 # Django project settings
-├── stores/              # Store management app
+├── core/                 # Django project settings & user management
+├── stores/              # Store management & customer addresses
 ├── products/            # Product catalog app
-├── orders/              # Order processing app
-├── templates/           # HTML templates
+├── orders/              # Order processing with address linking
+├── templates/           # HTML templates with smart checkout
+│   ├── accounts/        # Login/registration templates
+│   └── stores/          # Store and checkout templates
 ├── static/              # CSS, JS, images
 ├── tests/               # Playwright test suite
 ├── internal/            # Documentation
@@ -137,6 +158,12 @@ StoreLoop/
 ├── deploy.sh            # Linux/Mac 1-click deployment
 └── requirements.txt     # Python dependencies
 ```
+
+### Database Schema
+- **User** → **UserAddress** (One-to-Many)
+- **Order** → **UserAddress** (Many-to-One via foreign key)
+- **Store** → **Product** (One-to-Many)
+- **Store** → **Order** (One-to-Many)
 
 ## 🌟 Competitive Advantages
 
@@ -148,6 +175,8 @@ StoreLoop/
 | GST Compliance | ✅ | ❌ | ❌ | ❌ |
 | WhatsApp Integration | ✅ | ❌ | ❌ | ❌ |
 | NGO Multi-Store | ✅ | ❌ | ❌ | ❌ |
+| Multi-Address Management | ✅ | ❌ | ❌ | ❌ |
+| Smart Checkout | ✅ | ❌ | ❌ | ❌ |
 | Mobile-First PWA | ✅ | Partial | Partial | Partial |
 | Automated Testing | ✅ | ❌ | ❌ | ❌ |
 

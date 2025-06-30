@@ -23,12 +23,12 @@ urlpatterns = [
     
     # Analytics
     path('api/analytics/', views.analytics_api, name='analytics_api'),
+    path('api/customer-info/', views.get_customer_info, name='get_customer_info'),
+    path('api/customer-addresses/', views.get_customer_addresses, name='get_customer_addresses'),
     
     # Language
     path('set-language/', views.set_language, name='set_language'),
     
-    # Hindi test page
-    path('hindi-test/', views.hindi_test_page, name='hindi_test_page'),
     
     # Store listing page
     path('', views.store_listing, name='store_listing'),

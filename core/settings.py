@@ -12,7 +12,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-default-key-for-development")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = os.environ.get("DEBUG", "True").lower() == "true"
 
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
@@ -158,7 +158,7 @@ RAZORPAY_KEY_SECRET = os.environ.get("RAZORPAY_KEY_SECRET", "")
 RAZORPAY_TEST_MODE = True
 
 # Login redirect
-LOGIN_REDIRECT_URL = '/stores/dashboard/'
+LOGIN_REDIRECT_URL = '/stores/'
 LOGIN_URL = '/accounts/login/'
 
 # Additional settings for Indian locale

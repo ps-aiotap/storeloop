@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register - StoreLoop</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+    <div style="max-width: 400px; margin: 100px auto; padding: 20px; font-family: Arial, sans-serif; border: 1px solid #e5e7eb; border-radius: 8px;">
+        <h1 style="text-align: center; color: #3B82F6;">StoreLoop</h1>
+        <h2 style="text-align: center;">Register as Customer</h2>
+        
+        {% if form.errors %}
+        <div style="background: #FEE2E2; border: 1px solid #EF4444; color: #DC2626; padding: 10px; border-radius: 5px; margin-bottom: 20px;">
+            {% for field, errors in form.errors.items %}
+                {% for error in errors %}
+                    <div>{{ error }}</div>
+                {% endfor %}
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div style="margin-bottom: 20px;">
+                <label for="username">Username:</label><br>
+                <input type="text" id="username" name="username" value="{{ form.username.value|default:'' }}" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #d1d5db; border-radius: 5px;" required>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label for="email">Email:</label><br>
+                <input type="email" id="email" name="email" value="{{ form.email.value|default:'' }}" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #d1d5db; border-radius: 5px;" required>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label for="password1">Password:</label><br>
+                <input type="password" id="password1" name="password1" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #d1d5db; border-radius: 5px;" required>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label for="password2">Confirm Password:</label><br>
+                <input type="password" id="password2" name="password2" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #d1d5db; border-radius: 5px;" required>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label for="phone">Phone Number:</label><br>
+                <input type="tel" id="phone" name="phone" value="{{ request.POST.phone|default:'' }}" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #d1d5db; border-radius: 5px;" required>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label for="street">Street Address:</label><br>
+                <input type="text" id="street" name="street" value="{{ request.POST.street|default:'' }}" placeholder="House/Flat No, Street Name" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #d1d5db; border-radius: 5px;" required>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                <div>
+                    <label for="city">City:</label><br>
+                    <input type="text" id="city" name="city" value="{{ request.POST.city|default:'' }}" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #d1d5db; border-radius: 5px;" required>
+                </div>
+                <div>
+                    <label for="state">State:</label><br>
+                    <input type="text" id="state" name="state" value="{{ request.POST.state|default:'' }}" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #d1d5db; border-radius: 5px;" required>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label for="pincode">PIN Code:</label><br>
+                <input type="text" id="pincode" name="pincode" value="{{ request.POST.pincode|default:'' }}" pattern="[0-9]{6}" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #d1d5db; border-radius: 5px;" required>
+            </div>
+            
+            <button type="submit" style="width: 100%; background: #3B82F6; color: white; padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">
+                Register
+            </button>
+        </form>
+        
+        <div style="text-align: center; margin-top: 20px; color: #6B7280;">
+            <p>Already have an account? <a href="/accounts/login/" style="color: #3B82F6;">Login here</a></p>
+        </div>
+    </div>
+</body>
+</html>

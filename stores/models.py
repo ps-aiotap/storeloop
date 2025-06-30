@@ -188,6 +188,7 @@ class Order(models.Model):
     customer_email = models.EmailField()
     customer_phone = models.CharField(max_length=15)
     customer_address = models.TextField()
+    delivery_address = models.ForeignKey('UserAddress', on_delete=models.SET_NULL, null=True, blank=True)
     quantity = models.PositiveIntegerField(default=1)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     gst_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -222,6 +223,32 @@ class ProductUploadBatch(models.Model):
 
     def __str__(self):
         return f"Upload {self.id} - {self.store.name}"
+
+class Customer(models.Model):
+    phone = models.CharField(max_length=15, unique=True)
+    name = models.CharField(max_length=200)
+    email = models.EmailField()
+    street = models.CharField(max_length=200)
+    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=100)
+    pincode = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.name} - {self.phone}"
+
+class UserAddress(models.Model):
+    user = models.ForeignKey('auth.User', on_delete=models.CASCADE, related_name='addresses')
+    street = models.CharField(max_length=200)
+    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=100)
+    pincode = models.CharField(max_length=6)
+    landmark = models.CharField(max_length=200, blank=True)
+    is_default = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.street}, {self.city}"
 
 class StoreHomepageBlock(models.Model):
     BLOCK_TYPES = [

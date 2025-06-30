@@ -16,6 +16,12 @@ from .utils import generate_gst_invoice_pdf
 @login_required
 def seller_onboarding(request):
     """5-step seller onboarding wizard"""
+    # Check if user came from customer registration - redirect them away
+    from .models import Customer
+    if Customer.objects.filter(name=request.user.username).exists():
+        messages.info(request, 'You are registered as a customer. To create a store, please contact support.')
+        return redirect('/stores/')
+    
     step = request.GET.get('step', '1')
     try:
         store = Store.objects.get(owner=request.user)
@@ -395,7 +401,6 @@ def download_gst_invoice(request, order_id):
     response['Content-Disposition'] = f'attachment; filename="invoice_{order.order_id}.pdf"'
     return response
 
-@login_required
 @csrf_exempt
 def create_order(request):
     """Create order and Razorpay payment"""
@@ -403,31 +408,139 @@ def create_order(request):
         try:
             data = json.loads(request.body)
             product_id = data.get('product_id')
-            quantity = data.get('quantity', 1)
+            quantity = int(data.get('quantity', 1))
+            customer_name = data.get('customer_name', 'Guest Customer')
+            customer_email = data.get('customer_email', 'guest@example.com')
+            customer_phone = data.get('customer_phone', '1234567890')
+            customer_address = data.get('customer_address', 'Guest Address')
             
             product = Product.objects.get(id=product_id)
             store = product.store
             
+            # Check stock availability
+            if product.stock < quantity:
+                return JsonResponse({'success': False, 'error': 'Insufficient stock'})
+            
+            # Calculate amounts
+            from decimal import Decimal
+            subtotal = product.price * quantity
+            gst_amount = subtotal * Decimal('0.18')  # 18% GST
+            total_amount = subtotal + gst_amount
+            
             order = Order.objects.create(
                 store=store,
                 product=product,
-                customer_name='Guest Customer',
-                customer_email='guest@example.com',
-                customer_phone='1234567890',
-                customer_address='Guest Address',
+                customer_name=customer_name,
+                customer_email=customer_email,
+                customer_phone=customer_phone,
+                customer_address=customer_address,
                 quantity=quantity,
-                total_amount=product.price * quantity,
-                gst_amount=product.price * quantity * 0.18
+                total_amount=total_amount,
+                gst_amount=gst_amount
             )
+            
+            # Save address to UserAddress model if user is authenticated
+            if hasattr(request, 'user') and request.user.is_authenticated:
+                from .models import UserAddress
+                addr_parts = customer_address.split(',')
+                user_address = UserAddress.objects.create(
+                    user=request.user,
+                    street=addr_parts[0].strip() if len(addr_parts) > 0 else customer_address,
+                    city=addr_parts[1].strip() if len(addr_parts) > 1 else '',
+                    state=addr_parts[2].split('-')[0].strip() if len(addr_parts) > 2 else '',
+                    pincode=addr_parts[2].split('-')[1].strip() if len(addr_parts) > 2 and '-' in addr_parts[2] else ''
+                )
+                order.delivery_address = user_address
+                order.save()
+            
+            # Reduce stock
+            product.stock -= quantity
+            product.save()
             
             return JsonResponse({
                 'success': True,
                 'order_id': order.order_id,
-                'razorpay_order_id': f'order_{order.id}'
+                'total_amount': float(total_amount),
+                'razorpay_order_id': f'order_{order.id}',
+                'message': f'Order placed successfully! Total: ₹{total_amount:.2f}'
             })
             
         except Product.DoesNotExist:
             return JsonResponse({'success': False, 'error': 'Product not found'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+@csrf_exempt
+def get_customer_info(request):
+    """Get customer info by phone or username for auto-fill"""
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        phone = data.get('phone')
+        username = data.get('username')
+        
+        try:
+            from .models import Customer
+            if phone:
+                customer = Customer.objects.get(phone=phone)
+            elif username:
+                customer = Customer.objects.get(name=username)
+            else:
+                return JsonResponse({'success': False, 'error': 'Phone or username required'})
+                
+            return JsonResponse({
+                'success': True,
+                'customer': {
+                    'name': customer.name,
+                    'email': customer.email,
+                    'phone': customer.phone,
+                    'street': customer.street,
+                    'city': customer.city,
+                    'state': customer.state,
+                    'pincode': customer.pincode
+                }
+            })
+        except Customer.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Customer not found'})
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+@csrf_exempt
+def get_customer_addresses(request):
+    """Get all customer addresses for selection"""
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        username = data.get('username')
+        
+        try:
+            from django.contrib.auth.models import User
+            from .models import UserAddress
+            
+            user = User.objects.get(username=username)
+            addresses_qs = UserAddress.objects.filter(user=user).order_by('-created_at')
+            
+            addresses = []
+            for addr in addresses_qs:
+                addresses.append({
+                    'id': addr.id,
+                    'name': user.username,
+                    'email': user.email,
+                    'phone': '',  # Phone not stored in UserAddress
+                    'street': addr.street,
+                    'city': addr.city,
+                    'state': addr.state,
+                    'pincode': addr.pincode,
+                    'landmark': addr.landmark,
+                    'full_address': f"{addr.street}, {addr.city}, {addr.state} - {addr.pincode}"
+                })
+            
+            return JsonResponse({
+                'success': True,
+                'addresses': addresses
+            })
+        except User.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'User not found'})
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
     

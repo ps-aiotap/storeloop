@@ -1,83 +1,109 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Upload Products - {{ store.name }}</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
-<body>
-    <div style="max-width: 800px; margin: 50px auto; padding: 20px; font-family: Arial, sans-serif;">
-        <h1>Bulk Product Upload</h1>
-        <p>Upload multiple products to {{ store.name }} using Excel or CSV file</p>
-        
-        <!-- Upload Form -->
-        <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
-            <h2>Upload File</h2>
-            <form method="post" enctype="multipart/form-data">
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Bulk Product Upload" %}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-4xl mx-auto px-4">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h1 class="text-2xl font-bold text-gray-900 mb-6">{% trans "Bulk Product Upload" %}</h1>
+            
+            <div class="mb-8">
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">{% trans "Required CSV Format" %}</h2>
+                <div class="bg-gray-100 p-4 rounded-lg">
+                    <pre class="text-sm text-gray-700 overflow-x-auto">name,description,price,stock,category,material,region,style,image_url
+बनारसी सिल्क साड़ी,Beautiful handwoven saree from Varanasi,15000,3,Clothing,Silk,Varanasi,Traditional,
+कशीदाकारी शाल,Embroidered woolen shawl,2500,5,Accessories,Wool,Kashmir,Embroidered,
+मिट्टी का दीया,Handcrafted clay lamp,299,10,Home Decor,Clay,Khurja,Traditional,</pre>
+                </div>
+                <p class="mt-2 text-sm text-gray-600">
+                    {% trans "Required columns: name, description, price, stock. Optional: category, material, region, style, image_url" %}
+                </p>
+            </div>
+
+            <form method="post" enctype="multipart/form-data" class="space-y-6">
                 {% csrf_token %}
                 
-                <div style="margin-bottom: 20px;">
-                    <label for="file">Choose Excel or CSV file:</label><br>
-                    <input type="file" id="file" name="file" accept=".csv,.xlsx,.xls" style="margin-top: 10px;" required>
+                <div>
+                    <label for="{{ form.file.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {% trans "Upload CSV/Excel File" %}
+                    </label>
+                    {{ form.file }}
+                    {% if form.file.help_text %}
+                        <p class="mt-1 text-sm text-gray-500">{{ form.file.help_text }}</p>
+                    {% endif %}
+                    {% if form.file.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.file.errors.0 }}</p>
+                    {% endif %}
                 </div>
-                
-                <button type="submit" style="background: #10B981; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer;">
-                    Upload Products
-                </button>
+
+                <div class="flex justify-between">
+                    <a href="{% url 'seller_dashboard' %}" 
+                       class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        {% trans "Back to Dashboard" %}
+                    </a>
+                    
+                    <button type="submit" 
+                            class="inline-flex items-center px-6 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        {% trans "Upload Products" %}
+                    </button>
+                </div>
             </form>
-        </div>
-        
-        <!-- Sample CSV Format -->
-        <div style="background: #EBF8FF; border: 1px solid #3B82F6; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
-            <h2>Required CSV Format</h2>
-            <p>Your CSV file should have these columns:</p>
-            <pre style="background: white; padding: 15px; border-radius: 5px; overflow-x: auto;">name,description,price,stock,category,material,region,style
-"बनारसी सिल्क साड़ी","Beautiful handwoven saree",15000,5,"Clothing","Silk","Varanasi","Traditional"
-"कशीदाकारी शाल","Embroidered woolen shawl",3500,10,"Accessories","Wool","Kashmir","Kashmiri"</pre>
-        </div>
-        
-        <!-- Recent Uploads -->
-        <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px;">
-            <h2>Recent Uploads</h2>
+
             {% if recent_uploads %}
-                <div style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse;">
-                        <thead>
-                            <tr style="border-bottom: 1px solid #e5e7eb;">
-                                <th style="text-align: left; padding: 10px;">File</th>
-                                <th style="text-align: left; padding: 10px;">Total Rows</th>
-                                <th style="text-align: left; padding: 10px;">Success</th>
-                                <th style="text-align: left; padding: 10px;">Failed</th>
-                                <th style="text-align: left; padding: 10px;">Status</th>
+            <div class="mt-8">
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">{% trans "Recent Uploads" %}</h2>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    {% trans "File" %}
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    {% trans "Status" %}
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    {% trans "Results" %}
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    {% trans "Date" %}
+                                </th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody class="bg-white divide-y divide-gray-200">
                             {% for upload in recent_uploads %}
-                            <tr style="border-bottom: 1px solid #f3f4f6;">
-                                <td style="padding: 10px;">{{ upload.file.name }}</td>
-                                <td style="padding: 10px;">{{ upload.total_rows }}</td>
-                                <td style="padding: 10px; color: #10B981;">{{ upload.successful_imports }}</td>
-                                <td style="padding: 10px; color: #EF4444;">{{ upload.failed_imports }}</td>
-                                <td style="padding: 10px;">
-                                    <span style="background: #10B981; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8em;">
-                                        {{ upload.status|title }}
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {{ upload.file.name|default:"Unknown" }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
+                                        {% if upload.status == 'completed' %}bg-green-100 text-green-800
+                                        {% elif upload.status == 'failed' %}bg-red-100 text-red-800
+                                        {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                        {{ upload.get_status_display }}
                                     </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {% if upload.status == 'completed' %}
+                                        {{ upload.successful_imports }} success, {{ upload.failed_imports }} failed
+                                    {% else %}
+                                        {{ upload.total_rows }} rows
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ upload.created_at|date:"M d, Y H:i" }}
                                 </td>
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
-            {% else %}
-                <p style="color: #6B7280;">No uploads yet. Upload your first CSV file above.</p>
+            </div>
             {% endif %}
         </div>
-        
-        <div style="margin-top: 30px;">
-            <a href="/stores/dashboard/" style="background: #6B7280; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px;">
-                Back to Dashboard
-            </a>
-        </div>
     </div>
-</body>
-</html>
+</div>
+{% endblock %}

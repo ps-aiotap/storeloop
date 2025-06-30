@@ -1,73 +1,165 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Add New Product - {{ store.name }}</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Noto Sans Devanagari', Arial, sans-serif; }
-        input, textarea { font-family: 'Noto Sans Devanagari', Arial, sans-serif; }
-    </style>
-</head>
-<body>
-    <div style="max-width: 800px; margin: 50px auto; padding: 20px; font-family: Arial, sans-serif;">
-        <h1>Add New Product</h1>
-        
-        <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Add New Product" %}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-2xl mx-auto px-4">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h1 class="text-2xl font-bold text-gray-900 mb-6">{% trans "Add New Product" %}</h1>
             
-            <div style="margin-bottom: 20px;">
-                <label for="name">Product Name:</label><br>
-                <input type="text" id="name" name="name" style="width: 100%; padding: 10px; margin-top: 5px;" required>
-            </div>
-            
-            <div style="margin-bottom: 20px;">
-                <label for="description">Description:</label><br>
-                <textarea id="description" name="description" rows="4" style="width: 100%; padding: 10px; margin-top: 5px;"></textarea>
-                <button type="button" style="background: #8B5CF6; color: white; padding: 8px 16px; border: none; border-radius: 4px; margin-top: 5px;">Generate Hindi Description</button>
-            </div>
-            
-            <div style="margin-bottom: 20px;">
-                <label for="price">Price (₹):</label><br>
-                <input type="number" id="price" name="price" min="0" step="0.01" style="width: 100%; padding: 10px; margin-top: 5px;" required>
-            </div>
-            
-            <div style="margin-bottom: 20px;">
-                <label for="stock">Stock Quantity:</label><br>
-                <input type="number" id="stock" name="stock" min="0" style="width: 100%; padding: 10px; margin-top: 5px;" required>
-            </div>
-            
-            <div style="margin-bottom: 20px;">
-                <label for="category">Category:</label><br>
-                <input type="text" id="category" name="category" style="width: 100%; padding: 10px; margin-top: 5px;">
-            </div>
-            
-            <div style="margin-bottom: 20px;">
-                <label for="material">Material:</label><br>
-                <input type="text" id="material" name="material" style="width: 100%; padding: 10px; margin-top: 5px;">
-            </div>
-            
-            <div style="margin-bottom: 20px;">
-                <label for="region">Region:</label><br>
-                <input type="text" id="region" name="region" style="width: 100%; padding: 10px; margin-top: 5px;">
-            </div>
-            
-            <div style="margin-bottom: 20px;">
-                <label for="style">Style:</label><br>
-                <input type="text" id="style" name="style" style="width: 100%; padding: 10px; margin-top: 5px;">
-            </div>
-            
-            <div style="margin-bottom: 20px;">
-                <label for="image">Product Image:</label><br>
-                <input type="file" id="image" name="image" accept="image/*" style="margin-top: 5px;">
-            </div>
-            
-            <div style="margin-top: 30px;">
-                <button type="submit" style="background: #10B981; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer; margin-right: 10px;">Add Product</button>
-                <a href="/stores/dashboard/" style="background: #6B7280; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px;">Cancel</a>
-            </div>
-        </form>
+            <form method="post" enctype="multipart/form-data" class="space-y-6">
+                {% csrf_token %}
+                
+                <div>
+                    <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {% trans "Product Name" %} *
+                    </label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.name.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {% trans "Description" %}
+                    </label>
+                    {{ form.description }}
+                    
+                    <!-- AI Description Generator Button -->
+                    <div class="mt-2">
+                        <button type="button" id="ai-description-btn" 
+                                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                                style="background-color: #8B5CF6;">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                            {% trans "Generate Hindi Description" %}
+                        </button>
+                    </div>
+                    
+                    {% if form.description.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.description.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label for="{{ form.short_description.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {% trans "Short Description" %}
+                    </label>
+                    {{ form.short_description }}
+                    {% if form.short_description.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.short_description.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="{{ form.price.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            {% trans "Price (₹)" %} *
+                        </label>
+                        {{ form.price }}
+                        {% if form.price.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.price.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label for="{{ form.stock.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            {% trans "Stock Quantity" %} *
+                        </label>
+                        {{ form.stock }}
+                        {% if form.stock.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.stock.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div>
+                    <label for="{{ form.category.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {% trans "Category" %}
+                    </label>
+                    {{ form.category }}
+                    {% if form.category.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.category.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label for="{{ form.image.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {% trans "Product Image" %}
+                    </label>
+                    {{ form.image }}
+                    {% if form.image.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.image.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Additional fields for AI description -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label for="{{ form.material.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            {% trans "Material" %}
+                        </label>
+                        {{ form.material }}
+                        {% if form.material.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.material.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label for="{{ form.region.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            {% trans "Region/Origin" %}
+                        </label>
+                        {{ form.region }}
+                        {% if form.region.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.region.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label for="{{ form.style.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            {% trans "Style/Type" %}
+                        </label>
+                        {{ form.style }}
+                        {% if form.style.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.style.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="flex justify-between pt-6">
+                    <a href="{% url 'seller_dashboard' %}" 
+                       class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        {% trans "Cancel" %}
+                    </a>
+                    
+                    <button type="submit" 
+                            class="inline-flex items-center px-6 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        {% trans "Add Product" %}
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
-</body>
-</html>
+</div>
+
+<script>
+document.getElementById('ai-description-btn').addEventListener('click', function() {
+    // Demo AI description generator
+    alert('AI Description Generator\n\nThis feature would generate Hindi descriptions based on the product name, material, region, and style fields. Currently showing as demo.');
+    
+    // You could implement actual AI generation here
+    const productName = document.querySelector('input[name="name"]').value;
+    const material = document.querySelector('input[name="material"]').value;
+    const region = document.querySelector('input[name="region"]').value;
+    
+    if (productName) {
+        const sampleDescription = `यह एक सुंदर ${productName} है जो ${material || 'उच्च गुणवत्ता की सामग्री'} से बना है। ${region ? region + ' की पारंपरिक शिल्पकला का उदाहरण।' : 'हस्तनिर्मित कलाकृति।'}`;
+        document.querySelector('textarea[name="description"]').value = sampleDescription;
+    }
+});
+</script>
+{% endblock %}

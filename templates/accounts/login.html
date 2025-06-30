@@ -12,7 +12,7 @@
         
         {% if form.errors %}
         <div style="background: #FEE2E2; border: 1px solid #EF4444; color: #DC2626; padding: 10px; border-radius: 5px; margin-bottom: 20px;">
-            {{ form.errors }}
+            Please enter a correct username and password. Note that both fields may be case-sensitive.
         </div>
         {% endif %}
         
@@ -35,10 +35,17 @@
         </form>
         
         <div style="text-align: center; margin-top: 20px; color: #6B7280;">
-            <p>Demo Accounts:</p>
-            <p><strong>Admin:</strong> admin / admin123</p>
-            <p><strong>NGO Admin:</strong> ngo_admin / password</p>
+            <p>Want to shop? <a href="/accounts/register/" style="color: #3B82F6;">Register as customer</a></p>
+            <p>New to StoreLoop? <a href="/stores/onboarding/" style="color: #3B82F6;">Create your store</a></p>
         </div>
+        
+        {% if debug %}
+        <div style="background: #F3F4F6; padding: 15px; border-radius: 5px; margin-top: 20px; font-size: 12px; color: #6B7280;">
+            <strong>Development Mode - Test Accounts:</strong><br>
+            <strong>Store Owner:</strong> testuser / testpass (Hindi store with products)<br>
+            <strong>Admin:</strong> admin / admin (full access)<br>
+        </div>
+        {% endif %}
     </div>
 </body>
 </html>

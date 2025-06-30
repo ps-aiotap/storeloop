@@ -16,10 +16,14 @@
                     <h1 style="margin: 0;">{{ store.name }}</h1>
                     <p style="margin: 10px 0 0 0;">{{ store.description }}</p>
                 </div>
-                <div>
+                <div style="display: flex; gap: 15px; align-items: center;">
                     <button id="cart-toggle-btn" onclick="toggleCart()" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid white; padding: 10px 15px; border-radius: 5px; cursor: pointer;">
                         Cart (<span id="cart-count">0</span>)
                     </button>
+                    {% if user.is_authenticated %}
+                    <span style="color: rgba(255,255,255,0.8);">Hi, {{ user.username }}</span>
+                    <a href="/accounts/logout/" style="background: #EF4444; color: white; padding: 8px 15px; border-radius: 5px; text-decoration: none;">Logout</a>
+                    {% endif %}
                 </div>
             </div>
         </header>
@@ -62,9 +66,14 @@
                     <div style="border: 1px solid #e5e7eb; border-radius: 10px; padding: 20px; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                         {% if product.image %}
                         <img src="{{ product.image.url }}" alt="{{ product.name }}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 15px;">
+                        {% elif product.image_url %}
+                        <img src="{{ product.image_url }}" alt="{{ product.name }}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 15px;">
                         {% else %}
-                        <div style="width: 100%; height: 200px; background: #f3f4f6; border-radius: 8px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; color: #6b7280;">
-                            No Image
+                        <div style="width: 100%; height: 200px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; text-align: center;">
+                            <div>
+                                <div style="font-size: 2em; margin-bottom: 10px;">🎨</div>
+                                <div>{{ product.name|truncatewords:2 }}</div>
+                            </div>
                         </div>
                         {% endif %}
                         
@@ -124,7 +133,7 @@
         <!-- Footer -->
         <footer style="background: #1f2937; color: #9ca3af; padding: 40px 0; text-align: center;">
             <div style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
-                <p>&copy; 2024 {{ store.name }}. Powered by StoreLoop.</p>
+                <p>&copy; 2025 {{ store.name }}. Powered by StoreLoop.</p>
             </div>
         </footer>
     </div>
@@ -193,21 +202,417 @@
             setTimeout(() => msg.remove(), 2000);
         }
         
+        function showSuccessMessage(message) {
+            const msg = document.createElement('div');
+            msg.innerHTML = `<div style="display: flex; align-items: center; gap: 10px;"><span style="font-size: 1.2em;">✅</span><span>${message}</span></div>`;
+            msg.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #10b981; color: white; padding: 20px 30px; border-radius: 10px; z-index: 3000; box-shadow: 0 4px 20px rgba(0,0,0,0.3); font-size: 16px; text-align: center;';
+            document.body.appendChild(msg);
+            setTimeout(() => msg.remove(), 3000);
+        }
+        
+        function redirectToLogin(productId) {
+            // Store the product they want to buy
+            localStorage.setItem('pendingPurchase', JSON.stringify({
+                productId: productId,
+                timestamp: Date.now()
+            }));
+            
+            // Redirect to login
+            window.location.href = '/accounts/login/?next=' + encodeURIComponent(window.location.pathname);
+        }
+        
         function checkoutCart() {
             if (cart.length === 0) {
                 alert('Cart is empty!');
                 return;
             }
             
+            showCartCheckoutModal();
+        }
+        
+        function showCartCheckoutModal() {
             const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            alert(`Checkout successful! Total: ₹${total.toFixed(2)}`);
-            cart = [];
-            updateCartDisplay();
-            toggleCart();
+            const gstAmount = total * 0.18;
+            const finalTotal = total + gstAmount;
+            
+            const modal = document.createElement('div');
+            modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; display: flex; align-items: center; justify-content: center; font-family: Arial, sans-serif;';
+            
+            const cartItems = cart.map(item => `
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f3f4f6;">
+                    <span>${item.name} x ${item.quantity}</span>
+                    <span>₹${(item.price * item.quantity).toFixed(2)}</span>
+                </div>
+            `).join('');
+            
+            modal.innerHTML = `
+                <div style="background: white; padding: 30px; border-radius: 10px; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto; font-family: Arial, sans-serif;">
+                    <h2 style="margin: 0 0 20px 0; color: #1f2937;">Complete Your Order</h2>
+                    
+                    <div style="background: #f9fafb; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                        <h3 style="margin: 0 0 10px 0;">Order Summary</h3>
+                        ${cartItems}
+                        <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #e5e7eb;">
+                            <div style="display: flex; justify-content: space-between;"><span>Subtotal:</span><span>₹${total.toFixed(2)}</span></div>
+                            <div style="display: flex; justify-content: space-between;"><span>GST (18%):</span><span>₹${gstAmount.toFixed(2)}</span></div>
+                            <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.1em;"><span>Total:</span><span>₹${finalTotal.toFixed(2)}</span></div>
+                        </div>
+                    </div>
+                    
+                    <form id="cart-checkout-form">
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold;">Full Name *</label>
+                            <input type="text" name="name" required style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 5px;">
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Phone *</label>
+                                <input type="tel" name="phone" required style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 5px;">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Email *</label>
+                                <input type="email" name="email" required style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 5px;">
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold;">Street Address *</label>
+                            <input type="text" name="street" required placeholder="House/Flat No, Street Name" style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 5px;">
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: bold;">City *</label>
+                                <input type="text" name="city" required style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 5px;">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: bold;">State *</label>
+                                <input type="text" name="state" required style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 5px;">
+                            </div>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: bold;">PIN Code *</label>
+                                <input type="text" name="pincode" required pattern="[0-9]{6}" style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 5px;">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Landmark</label>
+                                <input type="text" name="landmark" placeholder="Optional" style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 5px;">
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; gap: 10px;">
+                            <button type="button" onclick="closeCheckoutModal()" style="flex: 1; padding: 12px; border: 1px solid #d1d5db; background: white; border-radius: 8px; cursor: pointer;">Cancel</button>
+                            <button type="submit" style="flex: 2; padding: 12px; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">Place Order</button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            document.getElementById('cart-checkout-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                alert('Cart checkout completed! Total: ₹' + finalTotal.toFixed(2));
+                cart = [];
+                updateCartDisplay();
+                closeCheckoutModal();
+                toggleCart();
+            });
         }
         
         function buyProduct(productId, productName, price) {
-            alert(`Buy Now: ${productName} for ₹${price}`);
+            showCheckoutModal(productId, productName, price);
+        }
+        
+        function showCheckoutModal(productId, productName, price) {
+            const modal = document.createElement('div');
+            modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; display: flex; align-items: center; justify-content: center;';
+            
+            modal.innerHTML = `
+                <div style="background: white; padding: 30px; border-radius: 10px; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto; font-family: Arial, sans-serif;">
+                    <h2 style="margin: 0 0 20px 0; color: #1f2937;">Complete Your Order</h2>
+                    
+                    <div style="display: flex; gap: 10px; margin-bottom: 20px; padding: 15px; background: #f0f9ff; border-radius: 8px;">
+                        <button type="button" onclick="closeCheckoutModal()" style="flex: 1; padding: 12px; border: 1px solid #d1d5db; background: white; border-radius: 8px; cursor: pointer;">Cancel</button>
+                        <button type="button" onclick="document.getElementById('checkout-form').dispatchEvent(new Event('submit', {bubbles: true, cancelable: true}))" style="flex: 2; padding: 12px; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">Place Order</button>
+                    </div>
+                    
+                    {% if not user.is_authenticated %}
+                    <div style="background: #f0f9ff; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
+                        <span>Returning customer? </span>
+                        <button type="button" onclick="redirectToLogin('${productId}')" style="color: #3b82f6; background: none; border: none; text-decoration: underline; cursor: pointer; font-weight: bold;">Login first</button>
+                    </div>
+                    {% endif %}
+                    
+                    <div style="background: #f9fafb; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong>${productName}</strong><br>
+                                <span style="color: #10b981; font-size: 1.2em;">₹${price}</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <label style="font-weight: bold;">Qty:</label>
+                                <select id="product-quantity" style="padding: 5px; border: 1px solid #d1d5db; border-radius: 5px;">
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                    <option value="5">5</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form id="checkout-form">
+                        {% if user.is_authenticated %}
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold;">Delivery Address</label>
+                            <select id="address-selector" onchange="toggleAddressForm()" style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 5px;">
+                                <option value="saved">Use saved address</option>
+                                <option value="new">Add new address</option>
+                            </select>
+                        </div>
+                        
+                        <div id="saved-address" style="background: #f9fafb; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                            <div><strong>{{ user.username }}</strong> - {{ user.email }}</div>
+                            <div>Your saved address will appear here</div>
+                        </div>
+                        
+                        <div id="new-address-form" style="display: none;">
+                        {% endif %}
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold;">Full Name *</label>
+                            <input type="text" name="name" required style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 5px;" value="{% if user.is_authenticated %}{{ user.username }}{% endif %}">
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Phone *</label>
+                                <input type="tel" name="phone" required style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 5px;">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Email *</label>
+                                <input type="email" name="email" required style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 5px;">
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold;">Street Address *</label>
+                            <input type="text" name="street" required placeholder="House/Flat No, Street Name" style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 5px;">
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: bold;">City *</label>
+                                <input type="text" name="city" required style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 5px;">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: bold;">State *</label>
+                                <input type="text" name="state" required style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 5px;">
+                            </div>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: bold;">PIN Code *</label>
+                                <input type="text" name="pincode" required pattern="[0-9]{6}" style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 5px;">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Landmark</label>
+                                <input type="text" name="landmark" placeholder="Optional" style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 5px;">
+                            </div>
+                        </div>
+                        
+                        <div style="border-top: 1px solid #e5e7eb; padding-top: 15px; margin-bottom: 20px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                <span>Product Price:</span>
+                                <span>₹${price}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                <span>GST (18%):</span>
+                                <span>₹${(price * 0.18).toFixed(2)}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.1em;">
+                                <span>Total:</span>
+                                <span>₹${(price * 1.18).toFixed(2)}</span>
+                            </div>
+                        </div>
+                        
+
+                    </form>
+                    
+
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Load saved address for logged in users
+            {% if user.is_authenticated %}
+            fetch('/stores/api/customer-addresses/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ username: '{{ user.username|escapejs }}' })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.addresses.length > 0) {
+                    const addressDiv = document.getElementById('saved-address');
+                    if (addressDiv) {
+                        let addressOptions = '';
+                        data.addresses.forEach((addr, index) => {
+                            addressOptions += `
+                                <div style="border: 1px solid #e5e7eb; padding: 10px; border-radius: 5px; margin-bottom: 10px; cursor: pointer;" onclick="selectAddress(${index})" id="addr-${index}">
+                                    <div><strong>${addr.name}</strong> - ${addr.phone}</div>
+                                    <div>${addr.street}, ${addr.city}, ${addr.state} - ${addr.pincode}</div>
+                                </div>
+                            `;
+                        });
+                        addressDiv.innerHTML = addressOptions;
+                        window.savedAddresses = data.addresses;
+                    }
+                } else {
+                    document.getElementById('address-selector').value = 'new';
+                    toggleAddressForm();
+                }
+            })
+            .catch(error => {
+                document.getElementById('address-selector').value = 'new';
+                toggleAddressForm();
+            });
+            {% endif %}
+            
+            document.getElementById('checkout-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const address = `${formData.get('street')}, ${formData.get('city')}, ${formData.get('state')} - ${formData.get('pincode')}${formData.get('landmark') ? ', Near ' + formData.get('landmark') : ''}`;
+                
+                fetch('/stores/orders/create/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        product_id: productId,
+                        quantity: document.getElementById('product-quantity').value,
+                        customer_name: formData.get('name'),
+                        customer_phone: formData.get('phone'),
+                        customer_email: formData.get('email'),
+                        customer_address: address
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Initialize Razorpay
+                        // Check if Razorpay is loaded
+                        if (typeof Razorpay === 'undefined') {
+                            closeCheckoutModal();
+                            showSuccessMessage(`Order placed successfully! Order ID: ${data.order_id}`);
+                            setTimeout(() => location.reload(), 2000);
+                            return;
+                        }
+                        
+                        const options = {
+                            key: 'rzp_test_xGdsXPASp5sAxd',
+                            amount: Math.round(data.total_amount * 100),
+                            currency: 'INR',
+                            name: 'StoreLoop',
+                            description: `Payment for ${productName}`,
+                            handler: function(response) {
+                                closeCheckoutModal();
+                                showSuccessMessage(`Payment successful! Order ID: ${data.order_id}`);
+                                setTimeout(() => location.reload(), 2000);
+                            },
+                            modal: {
+                                ondismiss: function() {
+                                    alert('Payment cancelled');
+                                }
+                            },
+                            prefill: {
+                                name: formData.get('name'),
+                                email: formData.get('email'),
+                                contact: formData.get('phone')
+                            },
+                            theme: {
+                                color: '#3b82f6'
+                            }
+                        };
+                        
+                        try {
+                            const rzp = new Razorpay(options);
+                            rzp.open();
+                        } catch (error) {
+                            console.error('Razorpay error:', error);
+                            closeCheckoutModal();
+                            showSuccessMessage(`Order placed successfully! Order ID: ${data.order_id}`);
+                            setTimeout(() => location.reload(), 2000);
+                        }
+                    } else {
+                        alert(`Error: ${data.error}`);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Order placement failed. Please try again.');
+                });
+            });
+        }
+        
+        function closeCheckoutModal() {
+            const modal = document.querySelector('div[style*="position: fixed"][style*="z-index: 2000"]');
+            if (modal) modal.remove();
+        }
+        
+        function toggleAddressForm() {
+            const selector = document.getElementById('address-selector');
+            const savedDiv = document.getElementById('saved-address');
+            const newForm = document.getElementById('new-address-form');
+            
+            if (selector && selector.value === 'new') {
+                savedDiv.style.display = 'none';
+                newForm.style.display = 'block';
+            } else if (selector) {
+                savedDiv.style.display = 'block';
+                newForm.style.display = 'none';
+            }
+        }
+        
+        function selectAddress(index) {
+            // Highlight selected address
+            document.querySelectorAll('[id^="addr-"]').forEach(div => {
+                div.style.border = '1px solid #e5e7eb';
+                div.style.background = 'transparent';
+            });
+            
+            const selectedDiv = document.getElementById(`addr-${index}`);
+            selectedDiv.style.border = '2px solid #3b82f6';
+            selectedDiv.style.background = '#f0f9ff';
+            
+            window.selectedAddressIndex = index;
+        }
+        
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
         }
     </script>
 </body>

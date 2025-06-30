@@ -11,10 +11,17 @@ if [ ! -f "manage.py" ]; then
     exit 1
 fi
 
-echo "[1/8] Starting Docker containers..."
-docker run -d --name storeloop-postgres -e POSTGRES_DB=storeloop -e POSTGRES_PASSWORD=postgres -p 5434:5432 postgres:latest 2>/dev/null
+echo "[1/8] Reading configuration and starting Docker containers..."
+# Read database settings from .env file
+DB_PASSWORD="postgres"
+DB_NAME="storeloop"
+DB_USER="postgres"
+if [ -f ".env" ]; then
+    export $(grep -E '^(DB_PASSWORD|DB_NAME|DB_USER)=' .env | xargs)
+fi
+docker run -d --name storeloop-postgres -e POSTGRES_DB="$DB_NAME" -e POSTGRES_USER="$DB_USER" -e POSTGRES_PASSWORD="$DB_PASSWORD" -p 5434:5432 postgres:latest 2>/dev/null
 docker run -d --name storeloop-redis -p 6379:6379 redis:7-alpine 2>/dev/null
-echo "Docker containers started."
+echo "Docker containers started with DB: $DB_NAME, User: $DB_USER"
 
 echo
 echo "[2/8] Waiting for PostgreSQL to be ready..."
@@ -58,6 +65,7 @@ echo "Access your application at:"
 echo "- Main site: http://localhost:8000"
 echo "- Admin: http://localhost:8000/admin"
 echo "- Login: admin / admin123"
+echo "- Database: $DB_NAME (User: $DB_USER)"
 echo
 echo "Press Ctrl+C to stop the server"
 echo "========================================"

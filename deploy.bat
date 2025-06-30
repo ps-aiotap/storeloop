@@ -11,10 +11,21 @@ if not exist "manage.py" (
     exit /b 1
 )
 
-echo [1/8] Starting Docker containers...
-docker run -d --name storeloop-postgres -e POSTGRES_DB=storeloop -e POSTGRES_PASSWORD=postgres -p 5434:5432 postgres:latest 2>nul
+echo [1/8] Reading configuration and starting Docker containers...
+REM Read database settings from .env file
+set DB_PASSWORD=postgres
+set DB_NAME=storeloop
+set DB_USER=postgres
+if exist ".env" (
+    for /f "tokens=1,2 delims==" %%a in (.env) do (
+        if "%%a"=="DB_PASSWORD" set DB_PASSWORD=%%b
+        if "%%a"=="DB_NAME" set DB_NAME=%%b
+        if "%%a"=="DB_USER" set DB_USER=%%b
+    )
+)
+docker run -d --name storeloop-postgres -e POSTGRES_DB=%DB_NAME% -e POSTGRES_USER=%DB_USER% -e POSTGRES_PASSWORD=%DB_PASSWORD% -p 5434:5432 postgres:latest 2>nul
 docker run -d --name storeloop-redis -p 6379:6379 redis:7-alpine 2>nul
-echo Docker containers started.
+echo Docker containers started with DB: %DB_NAME%, User: %DB_USER%
 
 echo.
 echo [2/8] Waiting for PostgreSQL to be ready...
@@ -58,6 +69,7 @@ echo Access your application at:
 echo - Main site: http://localhost:8000
 echo - Admin: http://localhost:8000/admin
 echo - Login: admin / admin123
+echo - Database: %DB_NAME% (User: %DB_USER%)
 echo.
 echo Press Ctrl+C to stop the server
 echo ========================================

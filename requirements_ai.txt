@@ -1,0 +1,10 @@
+# AI Description Generator Requirements
+requests>=2.31.0
+dataclasses>=0.6  # For Python < 3.7 compatibility
+
+# Optional: For better JSON handling
+ujson>=5.8.0
+
+# Optional: For async support (future enhancement)
+aiohttp>=3.8.0
+asyncio>=3.4.3

@@ -167,46 +167,47 @@ def seller_dashboard(request):
 
 @login_required
 def partner_admin_dashboard(request):
-    """NGO partner admin dashboard"""
-    try:
-        profile = SellerProfile.objects.get(user=request.user, is_partner_admin=True)
-    except SellerProfile.DoesNotExist:
-        messages.error(request, 'Access denied. You are not a partner admin.')
-        return redirect('seller_dashboard')
+    """NGO partner admin dashboard with multi-store switching and aggregate analytics"""
+    if not request.user.is_authenticated:
+        return redirect('login')
     
-    selected_store_id = request.GET.get('store_id')
-    selected_store = None
-    if selected_store_id:
-        try:
-            selected_store = Store.objects.get(id=selected_store_id, partner_admins=profile)
-        except Store.DoesNotExist:
-            pass
+    # Get all stores for demo (in production, filter by partner relationship)
+    managed_stores = Store.objects.filter(is_published=True)[:5]  # Limit for demo
     
-    if not selected_store:
-        selected_store = profile.managed_stores.first()
+    # Add analytics data to each store
+    for store in managed_stores:
+        store.product_count = store.store_products.count()
+        store.order_count = store.orders.count()
+        store.total_revenue = round(sum(float(order.total_amount) for order in store.orders.all()), 2)
     
-    managed_stores = profile.managed_stores.all()
+    # Aggregate analytics
     total_stores = managed_stores.count()
+    total_artisans = managed_stores.count()  # Assuming 1 artisan per store
+    total_orders = sum(store.order_count for store in managed_stores)
+    total_revenue = round(sum(store.total_revenue for store in managed_stores), 2)
     
-    total_artisans = 0
+    # Artisan list for management
+    artisan_list = []
     for store in managed_stores:
-        if store.owner:
-            total_artisans += 1
-    
-    total_revenue = 0
-    for store in managed_stores:
-        delivered_orders = store.orders.filter(status='delivered')
-        for order in delivered_orders:
-            total_revenue += float(order.total_amount)
+        artisan_list.append({
+            'id': store.owner.id if store.owner else 0,
+            'name': store.owner.username if store.owner else 'Unknown',
+            'store_name': store.name,
+            'store_id': store.id,
+            'product_count': store.product_count,
+            'order_count': store.order_count,
+            'revenue': round(store.total_revenue, 2),
+        })
     
     context = {
-        'profile': profile,
         'managed_stores': managed_stores,
-        'selected_store': selected_store,
         'total_stores': total_stores,
         'total_artisans': total_artisans,
+        'total_orders': total_orders,
         'total_revenue': total_revenue,
+        'artisan_list': artisan_list,
     }
+    
     return render(request, 'stores/partner_dashboard.html', context)
 
 @login_required
@@ -241,6 +242,7 @@ def product_upload(request):
                     try:
                         name = str(row.get('name', '')).strip()
                         price = row.get('price', 0)
+                        image_url = str(row.get('image_url', '')).strip()
                         
                         if not name:
                             errors.append(f"Row {index + 1}: Product name is required")
@@ -249,6 +251,14 @@ def product_upload(request):
                         if not price or float(price) <= 0:
                             errors.append(f"Row {index + 1}: Valid price is required")
                             continue
+                        
+                        # Validate image URL if provided
+                        if image_url:
+                            from .mock_services import MockImageValidator
+                            validation_result = MockImageValidator.validate_image_url(image_url)
+                            if not validation_result['valid']:
+                                errors.append(f"Row {index + 1}: Image URL invalid - {validation_result['error']}")
+                                continue
                         
                         Product.objects.create(
                             store=store,

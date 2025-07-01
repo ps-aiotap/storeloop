@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Duplicate Products - StoreLoop</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body style="font-family: Arial, sans-serif; background: #f9fafb; padding: 20px;">
+    <div style="max-width: 1000px; margin: 0 auto;">
+        <div style="background: white; border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+            <h2 style="color: #1f2937; margin: 0 0 20px 0;">Duplicate Products Found</h2>
+            
+            <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                <p style="margin: 0; color: #92400e;">
+                    <strong>{{ duplicates|length }}</strong> potential duplicate products found. 
+                    Please review and choose which ones to keep.
+                </p>
+            </div>
+            
+            <form method="post">
+                {% csrf_token %}
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: #f9fafb;">
+                                <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb;">Action</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb;">Product Name</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb;">Price</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb;">Stock</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb;">Source</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for duplicate_group in duplicates %}
+                            {% for product in duplicate_group %}
+                            <tr style="{% if product.is_existing %}background: #fef2f2;{% else %}background: #f0fdf4;{% endif %}">
+                                <td style="padding: 12px; border-bottom: 1px solid #f3f4f6;">
+                                    <input type="radio" name="keep_{{ duplicate_group.0.name|slugify }}" value="{{ product.id }}" 
+                                           {% if product.is_existing %}checked{% endif %}>
+                                    <label>Keep</label>
+                                </td>
+                                <td style="padding: 12px; border-bottom: 1px solid #f3f4f6;">{{ product.name }}</td>
+                                <td style="padding: 12px; border-bottom: 1px solid #f3f4f6;">₹{{ product.price }}</td>
+                                <td style="padding: 12px; border-bottom: 1px solid #f3f4f6;">{{ product.stock }}</td>
+                                <td style="padding: 12px; border-bottom: 1px solid #f3f4f6;">
+                                    {% if product.is_existing %}
+                                        <span style="color: #dc2626;">Existing</span>
+                                    {% else %}
+                                        <span style="color: #10b981;">New Upload</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            <tr><td colspan="5" style="padding: 5px; border-bottom: 2px solid #e5e7eb;"></td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div style="text-align: center; margin-top: 20px;">
+                    <button type="submit" style="background: #3b82f6; color: white; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; margin-right: 10px;">
+                        Resolve Duplicates
+                    </button>
+                    <a href="/stores/products/upload/" style="background: #6b7280; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px;">
+                        Cancel Upload
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

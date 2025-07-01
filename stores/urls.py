@@ -29,6 +29,8 @@ urlpatterns = [
     # Language
     path('set-language/', views.set_language, name='set_language'),
     
+    # Customer registration (add this to accounts/ URLs)
+    path('register/', views.customer_register, name='customer_register'),
     
     # Store listing page
     path('', views.store_listing, name='store_listing'),

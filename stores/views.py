@@ -602,6 +602,47 @@ def hindi_test_page(request):
     """Hindi test page to verify Unicode support"""
     return render(request, 'stores/hindi_test.html')
 
+def customer_register(request):
+    """Customer registration with address fields"""
+    if request.method == 'POST':
+        from django.contrib.auth.models import User
+        from .models import UserAddress
+        
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        phone = request.POST.get('phone')
+        street = request.POST.get('street')
+        city = request.POST.get('city')
+        state = request.POST.get('state')
+        pincode = request.POST.get('pincode')
+        
+        try:
+            # Create user
+            user = User.objects.create_user(username=username, email=email, password=password)
+            
+            # Create address
+            UserAddress.objects.create(
+                user=user,
+                street=street,
+                city=city,
+                state=state,
+                pincode=pincode,
+                is_default=True
+            )
+            
+            # Login user
+            from django.contrib.auth import login
+            login(request, user)
+            
+            messages.success(request, 'Registration successful!')
+            return redirect('/stores/')
+            
+        except Exception as e:
+            messages.error(request, f'Registration failed: {str(e)}')
+    
+    return render(request, 'accounts/register.html')
+
 def store_listing(request):
     """List all published stores"""
     if request.user.is_authenticated and request.user.is_superuser:

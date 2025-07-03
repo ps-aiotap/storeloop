@@ -6,6 +6,7 @@ urlpatterns = [
     path('onboarding/', views.seller_onboarding, name='seller_onboarding'),
     path('dashboard/', views.seller_dashboard, name='seller_dashboard'),
     path('partner-dashboard/', views.partner_admin_dashboard, name='partner_admin_dashboard'),
+    path('test-partner/', views.test_partner_simple, name='test_partner_simple'),
     
     # Product management
     path('products/upload/', views.product_upload, name='product_upload'),
@@ -35,6 +36,6 @@ urlpatterns = [
     # Store listing page
     path('', views.store_listing, name='store_listing'),
     
-    # Store homepage (subdomain access)
+    # Store homepage (subdomain access) - MUST BE LAST
     path('<slug:store_slug>/', views.store_homepage, name='store_homepage'),
 ]

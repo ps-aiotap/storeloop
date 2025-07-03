@@ -250,6 +250,24 @@ class UserAddress(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.street}, {self.city}"
 
+class PartnerStoreAccess(models.Model):
+    """Partner-Store relationship with access levels"""
+    ACCESS_LEVELS = [
+        ('view', 'View Only'),
+        ('manage', 'Full Management'),
+    ]
+    
+    partner = models.ForeignKey(User, on_delete=models.CASCADE)
+    store = models.ForeignKey(Store, on_delete=models.CASCADE)
+    access_level = models.CharField(max_length=10, choices=ACCESS_LEVELS, default='manage')
+    granted_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ('partner', 'store')
+    
+    def __str__(self):
+        return f"{self.partner.username} -> {self.store.name} ({self.access_level})"
+
 class StoreHomepageBlock(models.Model):
     BLOCK_TYPES = [
         ('hero_banner', 'Hero Banner'),

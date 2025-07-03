@@ -11,9 +11,26 @@
         <header style="background: #3B82F6; color: white; padding: 20px 0;">
             <div style="max-width: 1200px; margin: 0 auto; padding: 0 20px; display: flex; justify-content: space-between; align-items: center;">
                 <div style="font-size: 1.5em; font-weight: bold;"><a href="/" style="color: white; text-decoration: none;">StoreLoop</a></div>
-                <a href="/accounts/login/" style="background: white; color: #3B82F6; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
-                    Login
-                </a>
+                <div>
+                    {% if user.is_authenticated %}
+                        <span style="color: white; margin-right: 15px;">Welcome, {{ user.username }}!</span>
+                        {% if user.is_superuser %}
+                            <a href="/stores/partner-dashboard/" style="background: #10b981; color: white; padding: 8px 16px; text-decoration: none; border-radius: 5px; margin-right: 10px;">
+                                Partner Dashboard
+                            </a>
+                        {% endif %}
+                        <a href="/stores/dashboard/" style="background: white; color: #3B82F6; padding: 8px 16px; text-decoration: none; border-radius: 5px; margin-right: 10px;">
+                            My Store
+                        </a>
+                        <a href="/accounts/logout/" style="background: #ef4444; color: white; padding: 8px 16px; text-decoration: none; border-radius: 5px;">
+                            Logout
+                        </a>
+                    {% else %}
+                        <a href="/accounts/login/" style="background: white; color: #3B82F6; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+                            Login
+                        </a>
+                    {% endif %}
+                </div>
             </div>
         </header>
         

@@ -5,6 +5,10 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
+# Simple logging control
+# Add ENABLE_FILE_LOGGING=True to .env file to enable file logging
+# Default: Console logging only
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -42,6 +46,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "stores.middleware.StoreMiddleware",
+    "stores.views.ClearMessagesMiddleware",
 ]
 
 ROOT_URLCONF = "core.urls"
@@ -171,3 +176,43 @@ DEFAULT_CHARSET = 'utf-8'
 # Session settings
 SESSION_COOKIE_AGE = 86400  # 24 hours
 SESSION_SAVE_EVERY_REQUEST = True
+
+# Simple logging toggle via environment variable
+# Set ENABLE_FILE_LOGGING=True in .env to enable file logging
+if os.environ.get('ENABLE_FILE_LOGGING', 'False').lower() == 'true':
+    # Create logs directory
+    LOGS_DIR = BASE_DIR / 'logs'
+    if not os.path.exists(LOGS_DIR):
+        os.makedirs(LOGS_DIR)
+    
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'handlers': {
+            'file': {
+                'level': 'ERROR',
+                'class': 'logging.FileHandler',
+                'filename': LOGS_DIR / 'django.log',
+            },
+        },
+        'root': {
+            'handlers': ['file'],
+            'level': 'ERROR',
+        },
+    }
+else:
+    # Console logging only (default)
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'handlers': {
+            'console': {
+                'level': 'DEBUG',
+                'class': 'logging.StreamHandler',
+            },
+        },
+        'root': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+    }

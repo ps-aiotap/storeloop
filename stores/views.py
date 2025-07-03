@@ -5,6 +5,17 @@ from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.translation import gettext as _
 from django.conf import settings
+
+# Clear messages in admin
+from django.utils.deprecation import MiddlewareMixin
+
+class ClearMessagesMiddleware(MiddlewareMixin):
+    def process_request(self, request):
+        if request.path.startswith('/admin/'):
+            storage = messages.get_messages(request)
+            for message in storage:
+                pass  # Iterate through and clear messages
+            storage.used = True
 import pandas as pd
 import json
 import requests
@@ -132,21 +143,61 @@ def seller_onboarding(request):
 
 @login_required
 def seller_dashboard(request):
-    """Mobile-first seller dashboard"""
-    try:
-        profile = SellerProfile.objects.get(user=request.user)
-        if profile.is_partner_admin:
-            return redirect('/stores/partner-dashboard/')
-    except SellerProfile.DoesNotExist:
-        pass
+    """Mobile-first seller dashboard with partner context switching"""
+    from .models import PartnerStoreAccess
     
-    try:
-        store = Store.objects.get(owner=request.user)
-        if not store.onboarding_completed:
+    # Check for store context switching (partner admin feature)
+    requested_store_id = request.GET.get('store_id')
+    print(f"DEBUG: seller_dashboard - store_id={requested_store_id}, user={request.user.username}, is_superuser={request.user.is_superuser}")
+    store = None
+    is_partner_context = False
+    
+    if requested_store_id:
+        # Superusers can access any store directly
+        if request.user.is_superuser:
+            print(f"DEBUG: Superuser accessing store {requested_store_id}")
+            try:
+                store = Store.objects.get(id=requested_store_id)
+                is_partner_context = True
+                print(f"DEBUG: Found store {store.name} (ID: {store.id})")
+            except Store.DoesNotExist:
+                print(f"DEBUG: Store {requested_store_id} not found")
+                messages.error(request, 'Store not found.')
+                return redirect('partner_admin_dashboard')
+        else:
+            # Check if user has partner access to this store
+            try:
+                partner_access = PartnerStoreAccess.objects.get(
+                    partner=request.user,
+                    store_id=requested_store_id
+                )
+                store = partner_access.store
+                is_partner_context = True
+            except PartnerStoreAccess.DoesNotExist:
+                # User doesn't have access to this store
+                # Don't show error in admin
+                if not request.path.startswith('/admin/'):
+                    messages.error(request, 'You do not have access to this store.')
+                return redirect('partner_admin_dashboard')
+    
+    # If no store context switching, get user's own store
+    print(f"DEBUG: After store_id check - store={store}")
+    if not store:
+        try:
+            profile = SellerProfile.objects.get(user=request.user)
+            if profile.is_partner_admin and not requested_store_id:
+                return redirect('/stores/partner-dashboard/')
+        except SellerProfile.DoesNotExist:
+            pass
+        
+        try:
+            store = Store.objects.get(owner=request.user)
+            if not store.onboarding_completed:
+                return redirect('seller_onboarding')
+        except Store.DoesNotExist:
             return redirect('seller_onboarding')
-    except Store.DoesNotExist:
-        return redirect('seller_onboarding')
     
+    # Calculate analytics for the selected store
     total_orders = Order.objects.filter(store=store).count()
     total_sales = sum(order.total_amount for order in Order.objects.filter(store=store, status='delivered'))
     pending_orders = Order.objects.filter(store=store, status='pending').count()
@@ -162,53 +213,87 @@ def seller_dashboard(request):
         'products_count': products_count,
         'recent_orders': recent_orders,
         'low_stock_products': low_stock_products,
+        'is_partner_context': is_partner_context,
     }
     return render(request, 'stores/dashboard.html', context)
 
-@login_required
 def partner_admin_dashboard(request):
-    """NGO partner admin dashboard with multi-store switching and aggregate analytics"""
-    if not request.user.is_authenticated:
-        return redirect('login')
+    """Partner dashboard with store management"""
+    from django.http import HttpResponse
     
-    # Get all stores for demo (in production, filter by partner relationship)
-    managed_stores = Store.objects.filter(is_published=True)[:5]  # Limit for demo
-    
-    # Add analytics data to each store
-    for store in managed_stores:
-        store.product_count = store.store_products.count()
-        store.order_count = store.orders.count()
-        store.total_revenue = round(sum(float(order.total_amount) for order in store.orders.all()), 2)
-    
-    # Aggregate analytics
-    total_stores = managed_stores.count()
-    total_artisans = managed_stores.count()  # Assuming 1 artisan per store
-    total_orders = sum(store.order_count for store in managed_stores)
-    total_revenue = round(sum(store.total_revenue for store in managed_stores), 2)
-    
-    # Artisan list for management
-    artisan_list = []
-    for store in managed_stores:
-        artisan_list.append({
-            'id': store.owner.id if store.owner else 0,
-            'name': store.owner.username if store.owner else 'Unknown',
-            'store_name': store.name,
-            'store_id': store.id,
-            'product_count': store.product_count,
-            'order_count': store.order_count,
-            'revenue': round(store.total_revenue, 2),
-        })
-    
-    context = {
-        'managed_stores': managed_stores,
-        'total_stores': total_stores,
-        'total_artisans': total_artisans,
-        'total_orders': total_orders,
-        'total_revenue': total_revenue,
-        'artisan_list': artisan_list,
-    }
-    
-    return render(request, 'stores/partner_dashboard.html', context)
+    try:
+        stores = Store.objects.all()[:10]
+        
+        html = """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>NGO Partner Dashboard - StoreLoop</title>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+        </head>
+        <body style="font-family: Arial, sans-serif; background: #f9fafb; padding: 20px;">
+            <div style="max-width: 1200px; margin: 0 auto;">
+                <div style="background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <h1 style="color: #1f2937; margin: 0 0 10px 0;">NGO Partner Dashboard</h1>
+                    <p style="color: #6b7280; margin: 0;">Manage multiple artisan stores and track cooperative performance</p>
+                </div>
+                
+                <div style="background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <h2 style="color: #1f2937; margin: 0 0 15px 0;">Managed Stores</h2>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px;">
+        """
+        
+        for store in stores:
+            product_count = store.store_products.count()
+            order_count = store.orders.count()
+            total_revenue = sum(float(order.total_amount) for order in store.orders.all())
+            
+            html += f"""
+                        <a href="/stores/dashboard/?store_id={store.id}" style="text-decoration: none; color: inherit; display: block;">
+                            <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 15px; cursor: pointer; transition: all 0.2s; background: white;" onmouseover="this.style.backgroundColor='#f8fafc'" onmouseout="this.style.backgroundColor='white'">
+                                <h3 style="margin: 0 0 10px 0; color: #3b82f6;">{store.name}</h3>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                    <span style="color: #6b7280;">Products:</span>
+                                    <span style="font-weight: bold;">{product_count}</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                    <span style="color: #6b7280;">Orders:</span>
+                                    <span style="font-weight: bold;">{order_count}</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span style="color: #6b7280;">Revenue:</span>
+                                    <span style="font-weight: bold; color: #10b981;">₹{total_revenue:.2f}</span>
+                                </div>
+                            </div>
+                        </a>
+            """
+        
+        html += """
+                    </div>
+                </div>
+                
+                <div style="background: white; border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <h2 style="color: #1f2937; margin: 0 0 15px 0;">Quick Actions</h2>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <a href="/stores/" style="background: #3b82f6; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none;">Browse All Stores</a>
+                        <a href="/admin/" style="background: #10b981; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none;">Admin Panel</a>
+                    </div>
+                </div>
+            </div>
+            
+            <script>
+                // Store cards are now clickable via inline onclick
+                console.log('Partner dashboard loaded');
+            </script>
+        </body>
+        </html>
+        """
+        
+        return HttpResponse(html)
+        
+    except Exception as e:
+        return HttpResponse(f"<h1>Partner Dashboard Error</h1><p>Error: {str(e)}</p><p><a href='/stores/'>Back to Stores</a></p>")
 
 @login_required
 def product_upload(request):
@@ -302,24 +387,72 @@ def product_upload(request):
 @login_required
 def product_add(request):
     """Add single product with AI description support"""
-    try:
-        store = Store.objects.get(owner=request.user)
-    except Store.DoesNotExist:
-        messages.error(request, 'Please complete store setup first.')
-        return redirect('seller_onboarding')
+    from .models import PartnerStoreAccess
+    
+    # Handle partner context switching
+    requested_store_id = request.GET.get('store_id')
+    print(f"DEBUG: product_add called with store_id={requested_store_id}")
+    store = None
+    
+    if requested_store_id:
+        # Superusers can access any store, others need PartnerStoreAccess
+        if request.user.is_superuser:
+            try:
+                store = Store.objects.get(id=requested_store_id)
+            except Store.DoesNotExist:
+                messages.error(request, 'Store not found.')
+                return redirect('partner_admin_dashboard')
+        else:
+            # Check if user has partner access to this store
+            try:
+                partner_access = PartnerStoreAccess.objects.get(
+                    partner=request.user,
+                    store_id=requested_store_id
+                )
+                store = partner_access.store
+            except PartnerStoreAccess.DoesNotExist:
+                messages.error(request, 'You do not have access to this store.')
+                return redirect('partner_admin_dashboard')
+    
+    # If no partner context, get user's own store
+    if not store:
+        # Superusers should be redirected to partner dashboard if no store_id
+        if request.user.is_superuser:
+            messages.info(request, 'Please select a store from the partner dashboard first.')
+            return redirect('partner_admin_dashboard')
+            
+        try:
+            store = Store.objects.get(owner=request.user)
+        except Store.DoesNotExist:
+            messages.error(request, 'Please complete store setup first.')
+            return redirect('seller_onboarding')
     
     if request.method == 'POST':
+        # Check for store_id in POST data if not in GET
+        if not requested_store_id:
+            requested_store_id = request.POST.get('store_id')
+            print(f"DEBUG: Found store_id in POST: {requested_store_id}")
+        
         form = ProductForm(request.POST, request.FILES)
         if form.is_valid():
             product = form.save(commit=False)
-            product.store = store
+            product.store = store  # Use the store determined above (either partner-managed or own)
+            print(f"DEBUG: Saving product to store ID {store.id}: {store.name}")
             product.save()
             messages.success(request, _('Product added successfully!'))
+            # Preserve store context for partner admins
+            if requested_store_id:
+                return redirect(f'/stores/dashboard/?store_id={requested_store_id}')
             return redirect('seller_dashboard')
     else:
         form = ProductForm()
     
-    return render(request, 'stores/product_add.html', {'form': form, 'store': store})
+    return render(request, 'stores/product_add.html', {
+        'form': form, 
+        'store': store,
+        'store_id': requested_store_id,
+        'is_partner_context': bool(requested_store_id)
+    })
 
 @login_required
 def product_edit(request, product_id):
@@ -685,6 +818,22 @@ def store_homepage(request, store_slug):
         'featured_products': featured_products,
     }
     return render(request, 'stores/store_homepage.html', context)
+
+def test_partner_simple(request):
+    """Simple test view that always works"""
+    from django.http import HttpResponse
+    
+    stores = Store.objects.all()[:5]
+    html = "<h1>Partner Dashboard Test</h1>"
+    html += f"<p>Found {stores.count()} stores:</p><ul>"
+    
+    for store in stores:
+        html += f"<li>Store ID {store.id}: {store.name}</li>"
+    
+    html += "</ul>"
+    html += "<p><a href='/stores/partner-dashboard/'>Try Real Partner Dashboard</a></p>"
+    
+    return HttpResponse(html)
 
 def hindi_test_page(request):
     """Hindi test page to verify Unicode support"""

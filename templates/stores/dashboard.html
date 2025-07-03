@@ -132,7 +132,7 @@
         
         <!-- Quick Actions -->
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-            <a href="/stores/products/add/" style="background: #3B82F6; color: white; padding: 15px; text-decoration: none; border-radius: 8px; text-align: center;">
+            <a href="{% if is_partner_context %}/stores/products/add/?store_id={{ store.id }}{% else %}/stores/products/add/{% endif %}" style="background: #3B82F6; color: white; padding: 15px; text-decoration: none; border-radius: 8px; text-align: center;">
                 Add Product
             </a>
             <a href="/stores/products/upload/" style="background: #10B981; color: white; padding: 15px; text-decoration: none; border-radius: 8px; text-align: center;">

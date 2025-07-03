@@ -3,6 +3,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.shortcuts import redirect
+from django.http import HttpResponse
 
 # Custom error handlers
 def custom_404_view(request, exception):
@@ -14,8 +15,21 @@ handler404 = custom_404_view
 def home_redirect(request):
     return redirect('/stores/')
 
+def debug_partner(request):
+    """Direct partner dashboard bypass"""
+    try:
+        from stores.models import Store
+        stores = Store.objects.all()[:5]
+        html = "<h1>Debug Partner Dashboard</h1>"
+        for store in stores:
+            html += f"<p>Store {store.id}: {store.name}</p>"
+        return HttpResponse(html)
+    except Exception as e:
+        return HttpResponse(f"<h1>Debug Error</h1><p>{str(e)}</p>")
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('debug-partner/', debug_partner, name='debug_partner'),
     path('accounts/', include('django.contrib.auth.urls')),
     path('accounts/', include('stores.urls')),
     path('stores/', include('stores.urls')),

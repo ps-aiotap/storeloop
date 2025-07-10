@@ -211,8 +211,11 @@ def seller_dashboard(request):
     total_sales = sum(order.total_amount for order in Order.objects.filter(store=store, status='delivered'))
     pending_orders = Order.objects.filter(store=store, status='pending').count()
     products_count = Product.objects.filter(store=store, is_active=True).count()
-    recent_orders = Order.objects.filter(store=store).order_by('-created_at')[:5]
-    low_stock_products = Product.objects.filter(store=store, stock__lte=5, is_active=True)
+    import os
+    recent_orders_limit = int(os.environ.get('RECENT_ORDERS_LIMIT', '5'))
+    low_stock_threshold = int(os.environ.get('LOW_STOCK_THRESHOLD', '5'))
+    recent_orders = Order.objects.filter(store=store).order_by('-created_at')[:recent_orders_limit]
+    low_stock_products = Product.objects.filter(store=store, stock__lte=low_stock_threshold, is_active=True)
     
     context = {
         'store': store,
@@ -231,7 +234,9 @@ def partner_admin_dashboard(request):
     from django.http import HttpResponse
     
     try:
-        stores = Store.objects.all()[:10]
+        import os
+        max_stores_display = int(os.environ.get('MAX_STORES_DISPLAY', '10'))
+        stores = Store.objects.all()[:max_stores_display]
         
         html = """
         <!DOCTYPE html>
@@ -577,8 +582,10 @@ def create_order(request):
             
             # Calculate amounts
             from decimal import Decimal
+            import os
             subtotal = product.price * quantity
-            gst_amount = subtotal * Decimal('0.18')  # 18% GST
+            gst_rate = Decimal(os.environ.get('GST_RATE', '0.18'))
+            gst_amount = subtotal * gst_rate
             total_amount = subtotal + gst_amount
             
             order = Order.objects.create(

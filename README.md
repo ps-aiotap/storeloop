@@ -218,7 +218,7 @@ DB_NAME=storeloop
 DB_USER=postgres
 DB_PASSWORD=postgres
 DB_HOST=localhost
-DB_PORT=5434
+DB_PORT=5432
 
 # Razorpay (optional)
 RAZORPAY_KEY_ID=your-key-id

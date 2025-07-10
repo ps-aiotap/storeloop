@@ -11,26 +11,25 @@ if not exist "manage.py" (
     exit /b 1
 )
 
-echo [1/8] Reading configuration and starting Docker containers...
+echo [1/8] Reading configuration and checking local PostgreSQL...
 REM Read database settings from .env file
 set DB_PASSWORD=postgres
 set DB_NAME=storeloop
 set DB_USER=postgres
+set DB_PORT=5432
 if exist ".env" (
     for /f "tokens=1,2 delims==" %%a in (.env) do (
         if "%%a"=="DB_PASSWORD" set DB_PASSWORD=%%b
         if "%%a"=="DB_NAME" set DB_NAME=%%b
         if "%%a"=="DB_USER" set DB_USER=%%b
+        if "%%a"=="DB_PORT" set DB_PORT=%%b
     )
 )
-docker run -d --name storeloop-postgres -e POSTGRES_DB=%DB_NAME% -e POSTGRES_USER=%DB_USER% -e POSTGRES_PASSWORD=%DB_PASSWORD% -p 5434:5432 postgres:latest 2>nul
-docker run -d --name storeloop-redis -p 6379:6379 redis:7-alpine 2>nul
-echo Docker containers started with DB: %DB_NAME%, User: %DB_USER%
+echo Using local PostgreSQL with DB: %DB_NAME%, User: %DB_USER%, Port: %DB_PORT%
 
 echo.
-echo [2/8] Waiting for PostgreSQL to be ready...
-timeout /t 10 /nobreak >nul
-echo PostgreSQL should be ready.
+echo [2/8] Checking PostgreSQL connection...
+echo Please ensure PostgreSQL is running locally on port %DB_PORT%
 
 echo.
 echo [3/8] Activating virtual environment...
@@ -69,6 +68,7 @@ echo Access your application at:
 echo - Main site: http://localhost:8000
 echo - Admin: http://localhost:8000/admin
 echo - Login: admin / admin123
+echo - PostgreSQL: %DB_NAME% on localhost:%DB_PORT%
 echo - Database: %DB_NAME% (User: %DB_USER%)
 echo.
 echo Press Ctrl+C to stop the server

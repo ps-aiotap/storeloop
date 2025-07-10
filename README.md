@@ -1,4 +1,6 @@
 # 🛍️ StoreLoop - Indian Artisan E-commerce Platform
+<img width="1818" height="814" alt="image" src="https://github.com/user-attachments/assets/c5f5ae01-d2a4-437b-81f2-0b6cf9702618" />
+
 
 **Zero transaction fees • Hindi/English UI • AI descriptions • WhatsApp integration • GST compliance**
 

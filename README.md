@@ -8,6 +8,16 @@ StoreLoop is a specialized e-commerce platform designed for Indian artisans and 
 
 [Watch StoreLoop Demo Video](https://youtu.be/demo-link) - See the platform in action!
 
+## 🎥 Quick Walkthrough
+
+Watch a short Loom demo of StoreLoop in action:  
+👉 [StoreLoop Demo on Loom](https://www.loom.com/share/795ebe98fa57463880091cb22868f6e7?sid=cc3a45ce-d68e-4a6b-85e6-8e4c9bee82c4)
+
+This is what the quick walkthrough covers:
+- The problem StoreLoop solves
+- Key features
+- How it’s built for Indian artisans and NGOs
+
 ## 🚀 Quick Start (1-Click Deployment)
 
 ### Windows

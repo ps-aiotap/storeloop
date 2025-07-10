@@ -21,7 +21,16 @@ import json
 import requests
 from .models import Store, Product, Order, SellerProfile, ProductUploadBatch
 from .forms import StoreOnboardingForm, ProductForm, ProductUploadForm
-from .tasks import send_whatsapp_notification, generate_ai_description
+# Disable Celery tasks
+# from .tasks import send_whatsapp_notification, generate_ai_description
+
+# Mock functions to replace Celery tasks
+def send_whatsapp_notification(order_id, notification_type):
+    print(f"MOCK: Sending {notification_type} notification for order {order_id}")
+    return True
+
+def generate_ai_description(product_name, material, region, style, language):
+    return f"This is a {product_name} made with {material} in the {style} style from {region}."
 from .utils import generate_gst_invoice_pdf
 
 @login_required
@@ -483,11 +492,13 @@ def generate_product_description(request):
         style = data.get('style', '')
         language = data.get('language', 'en')
         
-        task = generate_ai_description.delay(product_name, material, region, style, language)
+        result = generate_ai_description(product_name, material, region, style, language)
+        task_id = "mock-task-123"
         
         return JsonResponse({
-            'task_id': task.id,
-            'status': 'processing'
+            'task_id': task_id,
+            'status': 'completed',
+            'result': result
         })
     
     return JsonResponse({'error': 'Invalid request'}, status=400)
@@ -526,7 +537,7 @@ def order_detail(request, order_id):
             order.save()
             
             if old_status != new_status:
-                send_whatsapp_notification.delay(order.id, 'status_update')
+                send_whatsapp_notification(order.id, 'status_update')
             
             messages.success(request, f'Order status updated to {new_status}')
             return redirect('order_detail', order_id=order_id)

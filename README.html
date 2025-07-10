@@ -1,0 +1,330 @@
+<!DOCTYPE html><html><head>
+      <title>README</title>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      
+      <link rel="stylesheet" href="file:///c:\Users\Pushpendu Sharma\.vscode\extensions\shd101wyy.markdown-preview-enhanced-0.8.18\crossnote\dependencies\katex\katex.min.css">
+      
+      
+      
+      
+      
+      <style>
+      code[class*=language-],pre[class*=language-]{color:#333;background:0 0;font-family:Consolas,"Liberation Mono",Menlo,Courier,monospace;text-align:left;white-space:pre;word-spacing:normal;word-break:normal;word-wrap:normal;line-height:1.4;-moz-tab-size:8;-o-tab-size:8;tab-size:8;-webkit-hyphens:none;-moz-hyphens:none;-ms-hyphens:none;hyphens:none}pre[class*=language-]{padding:.8em;overflow:auto;border-radius:3px;background:#f5f5f5}:not(pre)>code[class*=language-]{padding:.1em;border-radius:.3em;white-space:normal;background:#f5f5f5}.token.blockquote,.token.comment{color:#969896}.token.cdata{color:#183691}.token.doctype,.token.macro.property,.token.punctuation,.token.variable{color:#333}.token.builtin,.token.important,.token.keyword,.token.operator,.token.rule{color:#a71d5d}.token.attr-value,.token.regex,.token.string,.token.url{color:#183691}.token.atrule,.token.boolean,.token.code,.token.command,.token.constant,.token.entity,.token.number,.token.property,.token.symbol{color:#0086b3}.token.prolog,.token.selector,.token.tag{color:#63a35c}.token.attr-name,.token.class,.token.class-name,.token.function,.token.id,.token.namespace,.token.pseudo-class,.token.pseudo-element,.token.url-reference .token.variable{color:#795da3}.token.entity{cursor:help}.token.title,.token.title .token.punctuation{font-weight:700;color:#1d3e81}.token.list{color:#ed6a43}.token.inserted{background-color:#eaffea;color:#55a532}.token.deleted{background-color:#ffecec;color:#bd2c00}.token.bold{font-weight:700}.token.italic{font-style:italic}.language-json .token.property{color:#183691}.language-markup .token.tag .token.punctuation{color:#333}.language-css .token.function,code.language-css{color:#0086b3}.language-yaml .token.atrule{color:#63a35c}code.language-yaml{color:#183691}.language-ruby .token.function{color:#333}.language-markdown .token.url{color:#795da3}.language-makefile .token.symbol{color:#795da3}.language-makefile .token.variable{color:#183691}.language-makefile .token.builtin{color:#0086b3}.language-bash .token.keyword{color:#0086b3}pre[data-line]{position:relative;padding:1em 0 1em 3em}pre[data-line] .line-highlight-wrapper{position:absolute;top:0;left:0;background-color:transparent;display:block;width:100%}pre[data-line] .line-highlight{position:absolute;left:0;right:0;padding:inherit 0;margin-top:1em;background:hsla(24,20%,50%,.08);background:linear-gradient(to right,hsla(24,20%,50%,.1) 70%,hsla(24,20%,50%,0));pointer-events:none;line-height:inherit;white-space:pre}pre[data-line] .line-highlight:before,pre[data-line] .line-highlight[data-end]:after{content:attr(data-start);position:absolute;top:.4em;left:.6em;min-width:1em;padding:0 .5em;background-color:hsla(24,20%,50%,.4);color:#f4f1ef;font:bold 65%/1.5 sans-serif;text-align:center;vertical-align:.3em;border-radius:999px;text-shadow:none;box-shadow:0 1px #fff}pre[data-line] .line-highlight[data-end]:after{content:attr(data-end);top:auto;bottom:.4em}html body{font-family:'Helvetica Neue',Helvetica,'Segoe UI',Arial,freesans,sans-serif;font-size:16px;line-height:1.6;color:#333;background-color:#fff;overflow:initial;box-sizing:border-box;word-wrap:break-word}html body>:first-child{margin-top:0}html body h1,html body h2,html body h3,html body h4,html body h5,html body h6{line-height:1.2;margin-top:1em;margin-bottom:16px;color:#000}html body h1{font-size:2.25em;font-weight:300;padding-bottom:.3em}html body h2{font-size:1.75em;font-weight:400;padding-bottom:.3em}html body h3{font-size:1.5em;font-weight:500}html body h4{font-size:1.25em;font-weight:600}html body h5{font-size:1.1em;font-weight:600}html body h6{font-size:1em;font-weight:600}html body h1,html body h2,html body h3,html body h4,html body h5{font-weight:600}html body h5{font-size:1em}html body h6{color:#5c5c5c}html body strong{color:#000}html body del{color:#5c5c5c}html body a:not([href]){color:inherit;text-decoration:none}html body a{color:#08c;text-decoration:none}html body a:hover{color:#00a3f5;text-decoration:none}html body img{max-width:100%}html body>p{margin-top:0;margin-bottom:16px;word-wrap:break-word}html body>ol,html body>ul{margin-bottom:16px}html body ol,html body ul{padding-left:2em}html body ol.no-list,html body ul.no-list{padding:0;list-style-type:none}html body ol ol,html body ol ul,html body ul ol,html body ul ul{margin-top:0;margin-bottom:0}html body li{margin-bottom:0}html body li.task-list-item{list-style:none}html body li>p{margin-top:0;margin-bottom:0}html body .task-list-item-checkbox{margin:0 .2em .25em -1.8em;vertical-align:middle}html body .task-list-item-checkbox:hover{cursor:pointer}html body blockquote{margin:16px 0;font-size:inherit;padding:0 15px;color:#5c5c5c;background-color:#f0f0f0;border-left:4px solid #d6d6d6}html body blockquote>:first-child{margin-top:0}html body blockquote>:last-child{margin-bottom:0}html body hr{height:4px;margin:32px 0;background-color:#d6d6d6;border:0 none}html body table{margin:10px 0 15px 0;border-collapse:collapse;border-spacing:0;display:block;width:100%;overflow:auto;word-break:normal;word-break:keep-all}html body table th{font-weight:700;color:#000}html body table td,html body table th{border:1px solid #d6d6d6;padding:6px 13px}html body dl{padding:0}html body dl dt{padding:0;margin-top:16px;font-size:1em;font-style:italic;font-weight:700}html body dl dd{padding:0 16px;margin-bottom:16px}html body code{font-family:Menlo,Monaco,Consolas,'Courier New',monospace;font-size:.85em;color:#000;background-color:#f0f0f0;border-radius:3px;padding:.2em 0}html body code::after,html body code::before{letter-spacing:-.2em;content:'\00a0'}html body pre>code{padding:0;margin:0;word-break:normal;white-space:pre;background:0 0;border:0}html body .highlight{margin-bottom:16px}html body .highlight pre,html body pre{padding:1em;overflow:auto;line-height:1.45;border:#d6d6d6;border-radius:3px}html body .highlight pre{margin-bottom:0;word-break:normal}html body pre code,html body pre tt{display:inline;max-width:initial;padding:0;margin:0;overflow:initial;line-height:inherit;word-wrap:normal;background-color:transparent;border:0}html body pre code:after,html body pre code:before,html body pre tt:after,html body pre tt:before{content:normal}html body blockquote,html body dl,html body ol,html body p,html body pre,html body ul{margin-top:0;margin-bottom:16px}html body kbd{color:#000;border:1px solid #d6d6d6;border-bottom:2px solid #c7c7c7;padding:2px 4px;background-color:#f0f0f0;border-radius:3px}@media print{html body{background-color:#fff}html body h1,html body h2,html body h3,html body h4,html body h5,html body h6{color:#000;page-break-after:avoid}html body blockquote{color:#5c5c5c}html body pre{page-break-inside:avoid}html body table{display:table}html body img{display:block;max-width:100%;max-height:100%}html body code,html body pre{word-wrap:break-word;white-space:pre}}.markdown-preview{width:100%;height:100%;box-sizing:border-box}.markdown-preview ul{list-style:disc}.markdown-preview ul ul{list-style:circle}.markdown-preview ul ul ul{list-style:square}.markdown-preview ol{list-style:decimal}.markdown-preview ol ol,.markdown-preview ul ol{list-style-type:lower-roman}.markdown-preview ol ol ol,.markdown-preview ol ul ol,.markdown-preview ul ol ol,.markdown-preview ul ul ol{list-style-type:lower-alpha}.markdown-preview .newpage,.markdown-preview .pagebreak{page-break-before:always}.markdown-preview pre.line-numbers{position:relative;padding-left:3.8em;counter-reset:linenumber}.markdown-preview pre.line-numbers>code{position:relative}.markdown-preview pre.line-numbers .line-numbers-rows{position:absolute;pointer-events:none;top:1em;font-size:100%;left:0;width:3em;letter-spacing:-1px;border-right:1px solid #999;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.markdown-preview pre.line-numbers .line-numbers-rows>span{pointer-events:none;display:block;counter-increment:linenumber}.markdown-preview pre.line-numbers .line-numbers-rows>span:before{content:counter(linenumber);color:#999;display:block;padding-right:.8em;text-align:right}.markdown-preview .mathjax-exps .MathJax_Display{text-align:center!important}.markdown-preview:not([data-for=preview]) .code-chunk .code-chunk-btn-group{display:none}.markdown-preview:not([data-for=preview]) .code-chunk .status{display:none}.markdown-preview:not([data-for=preview]) .code-chunk .output-div{margin-bottom:16px}.markdown-preview .md-toc{padding:0}.markdown-preview .md-toc .md-toc-link-wrapper .md-toc-link{display:inline;padding:.25rem 0}.markdown-preview .md-toc .md-toc-link-wrapper .md-toc-link div,.markdown-preview .md-toc .md-toc-link-wrapper .md-toc-link p{display:inline}.markdown-preview .md-toc .md-toc-link-wrapper.highlighted .md-toc-link{font-weight:800}.scrollbar-style::-webkit-scrollbar{width:8px}.scrollbar-style::-webkit-scrollbar-track{border-radius:10px;background-color:transparent}.scrollbar-style::-webkit-scrollbar-thumb{border-radius:5px;background-color:rgba(150,150,150,.66);border:4px solid rgba(150,150,150,.66);background-clip:content-box}html body[for=html-export]:not([data-presentation-mode]){position:relative;width:100%;height:100%;top:0;left:0;margin:0;padding:0;overflow:auto}html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{position:relative;top:0;min-height:100vh}@media screen and (min-width:914px){html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{padding:2em calc(50% - 457px + 2em)}}@media screen and (max-width:914px){html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{padding:2em}}@media screen and (max-width:450px){html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{font-size:14px!important;padding:1em}}@media print{html body[for=html-export]:not([data-presentation-mode]) #sidebar-toc-btn{display:none}}html body[for=html-export]:not([data-presentation-mode]) #sidebar-toc-btn{position:fixed;bottom:8px;left:8px;font-size:28px;cursor:pointer;color:inherit;z-index:99;width:32px;text-align:center;opacity:.4}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] #sidebar-toc-btn{opacity:1}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc{position:fixed;top:0;left:0;width:300px;height:100%;padding:32px 0 48px 0;font-size:14px;box-shadow:0 0 4px rgba(150,150,150,.33);box-sizing:border-box;overflow:auto;background-color:inherit}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar{width:8px}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar-track{border-radius:10px;background-color:transparent}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar-thumb{border-radius:5px;background-color:rgba(150,150,150,.66);border:4px solid rgba(150,150,150,.66);background-clip:content-box}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc a{text-decoration:none}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc{padding:0 16px}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper .md-toc-link{display:inline;padding:.25rem 0}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper .md-toc-link div,html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper .md-toc-link p{display:inline}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper.highlighted .md-toc-link{font-weight:800}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{left:300px;width:calc(100% - 300px);padding:2em calc(50% - 457px - 300px / 2);margin:0;box-sizing:border-box}@media screen and (max-width:1274px){html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{padding:2em}}@media screen and (max-width:450px){html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{width:100%}}html body[for=html-export]:not([data-presentation-mode]):not([html-show-sidebar-toc]) .markdown-preview{left:50%;transform:translateX(-50%)}html body[for=html-export]:not([data-presentation-mode]):not([html-show-sidebar-toc]) .md-sidebar-toc{display:none}
+/* Please visit the URL below for more information: */
+/*   https://shd101wyy.github.io/markdown-preview-enhanced/#/customize-css */
+
+      </style>
+      <!-- The content below will be included at the end of the <head> element. --><script type="text/javascript">
+  document.addEventListener("DOMContentLoaded", function () {
+    // your code here
+  });
+</script></head><body for="html-export">
+    
+    
+      <div class="crossnote markdown-preview  ">
+      
+<h1 id="️-storeloop---indian-artisan-e-commerce-platform">🛍️ StoreLoop - Indian Artisan E-commerce Platform </h1>
+<p><strong>Zero transaction fees • Hindi UI • AI descriptions • WhatsApp integration • GST compliance</strong></p>
+<p>StoreLoop is a specialized e-commerce platform designed for Indian artisans and NGOs, offering features that mainstream platforms like Wix, Shopify, and WooCommerce don't provide.</p>
+<h2 id="-quick-start-1-click-deployment">🚀 Quick Start (1-Click Deployment) </h2>
+<h3 id="windows">Windows </h3>
+<pre data-role="codeBlock" data-info="bash" class="language-bash bash"><code><span class="token comment"># Double-click or run:</span>
+deploy.bat
+</code></pre><h3 id="linuxmac">Linux/Mac </h3>
+<pre data-role="codeBlock" data-info="bash" class="language-bash bash"><code><span class="token function">chmod</span> +x deploy.sh
+./deploy.sh
+</code></pre><p><strong>That's it!</strong> Your StoreLoop instance will be running at <code>http://localhost:8000</code></p>
+<ul>
+<li><strong>Admin Login:</strong> admin / admin123</li>
+<li><strong>NGO Admin:</strong> ngo_admin / password</li>
+</ul>
+<h2 id="-key-features">✨ Key Features </h2>
+<h3 id="-for-indian-artisans">🎯 <strong>For Indian Artisans</strong> </h3>
+<ul>
+<li><strong>5-step onboarding wizard</strong> with Hindi support</li>
+<li><strong>Zero transaction fees</strong> (vs 2.9% on Wix/Shopify)</li>
+<li><strong>AI-generated Hindi product descriptions</strong> (editable drafts)</li>
+<li><strong>GST compliance</strong> with automatic invoice generation</li>
+<li><strong>WhatsApp notifications</strong> for orders and updates</li>
+<li><strong>Mobile-first PWA</strong> design for smartphone users</li>
+<li><strong>Customer management</strong> with multi-address support</li>
+<li><strong>Smart checkout</strong> with saved address selection</li>
+</ul>
+<h3 id="-for-ngo-partners">🏢 <strong>For NGO Partners</strong> </h3>
+<ul>
+<li><strong>Multi-store management</strong> dashboard</li>
+<li><strong>Aggregate analytics</strong> across all managed stores</li>
+<li><strong>Artisan support tools</strong> and training resources</li>
+<li><strong>Hindi interface</strong> for local NGO staff</li>
+<li><strong>Store performance comparison</strong> and insights</li>
+</ul>
+<h3 id="-for-customers">🛒 <strong>For Customers</strong> </h3>
+<ul>
+<li><strong>User registration</strong> with address management</li>
+<li><strong>Multiple delivery addresses</strong> per customer</li>
+<li><strong>Smart address selection</strong> during checkout</li>
+<li><strong>Order history</strong> and tracking</li>
+<li><strong>Guest checkout</strong> option available</li>
+<li><strong>Auto-fill</strong> customer details for returning users</li>
+</ul>
+<h3 id="-technical-advantages">📱 <strong>Technical Advantages</strong> </h3>
+<ul>
+<li><strong>Mobile-first responsive design</strong></li>
+<li><strong>Progressive Web App (PWA)</strong> with offline support</li>
+<li><strong>Automated testing</strong> with Playwright (48 test scenarios)</li>
+<li><strong>Excel/CSV bulk product upload</strong> with validation</li>
+<li><strong>Custom subdomain</strong> for each store</li>
+<li><strong>Real-time analytics</strong> with Chart.js</li>
+<li><strong>Advanced database schema</strong> with proper foreign key relationships</li>
+<li><strong>User authentication</strong> with session management</li>
+<li><strong>Data migration tools</strong> for address management</li>
+</ul>
+<h2 id="️-manual-setup-if-needed">🛠️ Manual Setup (If needed) </h2>
+<details>
+<summary>Click to expand manual setup instructions</summary>
+<h3 id="prerequisites">Prerequisites </h3>
+<ul>
+<li>Python 3.8+</li>
+<li>Docker (for PostgreSQL and Redis)</li>
+<li>Node.js 16+ (for Playwright tests)</li>
+</ul>
+<h3 id="1-clone-and-setup">1. Clone and Setup </h3>
+<pre data-role="codeBlock" data-info="bash" class="language-bash bash"><code><span class="token function">git</span> clone <span class="token operator">&lt;</span>repository-url<span class="token operator">&gt;</span>
+<span class="token builtin class-name">cd</span> storeloop
+python <span class="token parameter variable">-m</span> venv storeloop-venv
+<span class="token builtin class-name">source</span> storeloop-venv/bin/activate  <span class="token comment"># Windows: storeloop-venv\Scripts\activate</span>
+pip <span class="token function">install</span> <span class="token parameter variable">-r</span> requirements.txt
+</code></pre><h3 id="2-start-services">2. Start Services </h3>
+<pre data-role="codeBlock" data-info="bash" class="language-bash bash"><code><span class="token comment"># Start PostgreSQL and Redis</span>
+<span class="token function">docker</span> run <span class="token parameter variable">-d</span> <span class="token parameter variable">--name</span> storeloop-postgres <span class="token parameter variable">-e</span> <span class="token assign-left variable">POSTGRES_DB</span><span class="token operator">=</span>storeloop <span class="token parameter variable">-e</span> <span class="token assign-left variable">POSTGRES_PASSWORD</span><span class="token operator">=</span>postgres <span class="token parameter variable">-p</span> <span class="token number">5434</span>:5432 postgres:latest
+<span class="token function">docker</span> run <span class="token parameter variable">-d</span> <span class="token parameter variable">--name</span> storeloop-redis <span class="token parameter variable">-p</span> <span class="token number">6379</span>:6379 redis:7-alpine
+
+<span class="token comment"># Setup database</span>
+python manage.py makemigrations
+python manage.py migrate
+python manage.py reset_admin
+python manage.py seed_sample_data <span class="token parameter variable">--users</span> <span class="token number">2</span> <span class="token parameter variable">--stores</span> <span class="token number">3</span> <span class="token parameter variable">--products</span> <span class="token number">8</span>
+</code></pre><h3 id="3-start-application">3. Start Application </h3>
+<pre data-role="codeBlock" data-info="bash" class="language-bash bash"><code><span class="token comment"># Terminal 1: Celery worker</span>
+celery <span class="token parameter variable">-A</span> core worker <span class="token parameter variable">--loglevel</span><span class="token operator">=</span>info
+
+<span class="token comment"># Terminal 2: Django server</span>
+python manage.py runserver
+</code></pre></details>
+<h2 id="-testing">🧪 Testing </h2>
+<h3 id="automated-testing-playwright">Automated Testing (Playwright) </h3>
+<pre data-role="codeBlock" data-info="bash" class="language-bash bash"><code><span class="token builtin class-name">cd</span> tests
+<span class="token function">npm</span> <span class="token function">install</span>
+npx playwright <span class="token function">install</span>
+npx playwright <span class="token builtin class-name">test</span> <span class="token parameter variable">--project</span><span class="token operator">=</span>chromium
+npx playwright show-report
+</code></pre><p><strong>Test Coverage:</strong></p>
+<ul>
+<li>✅ 48 automated test scenarios</li>
+<li>✅ Authentication and authorization</li>
+<li>✅ Customer registration and login</li>
+<li>✅ Multi-address management</li>
+<li>✅ Seller onboarding wizard</li>
+<li>✅ Product management (CRUD)</li>
+<li>✅ Smart checkout process</li>
+<li>✅ Dashboard functionality</li>
+<li>✅ NGO admin features</li>
+<li>✅ Mobile responsiveness</li>
+</ul>
+<h3 id="manual-testing">Manual Testing </h3>
+<p>See <a href="internal/MANUAL_TEST_SCRIPT.md">MANUAL_TEST_SCRIPT.md</a> for comprehensive testing scenarios including:</p>
+<ul>
+<li>Customer registration with address fields</li>
+<li>Multi-address selection during checkout</li>
+<li>5-step seller onboarding</li>
+<li>Excel/CSV product upload</li>
+<li>Hindi UI testing</li>
+<li>NGO partner dashboard</li>
+<li>Complete purchase flow with quantity selection</li>
+<li>Address auto-fill for returning customers</li>
+<li>WhatsApp notifications</li>
+<li>GST invoice generation</li>
+</ul>
+<h2 id="️-architecture">🏗️ Architecture </h2>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>StoreLoop/
+├── core/                 # Django project settings &amp; user management
+├── stores/              # Store management &amp; customer addresses
+├── products/            # Product catalog app
+├── orders/              # Order processing with address linking
+├── templates/           # HTML templates with smart checkout
+│   ├── accounts/        # Login/registration templates
+│   └── stores/          # Store and checkout templates
+├── static/              # CSS, JS, images
+├── tests/               # Playwright test suite
+├── internal/            # Documentation
+├── deploy.bat           # Windows 1-click deployment
+├── deploy.sh            # Linux/Mac 1-click deployment
+└── requirements.txt     # Python dependencies
+</code></pre><h3 id="database-schema">Database Schema </h3>
+<ul>
+<li><strong>User</strong> → <strong>UserAddress</strong> (One-to-Many)</li>
+<li><strong>Order</strong> → <strong>UserAddress</strong> (Many-to-One via foreign key)</li>
+<li><strong>Store</strong> → <strong>Product</strong> (One-to-Many)</li>
+<li><strong>Store</strong> → <strong>Order</strong> (One-to-Many)</li>
+</ul>
+<h2 id="-competitive-advantages">🌟 Competitive Advantages </h2>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>StoreLoop</th>
+<th>Wix</th>
+<th>Shopify</th>
+<th>WooCommerce</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Transaction Fees</td>
+<td><strong>0%</strong></td>
+<td>2.9%</td>
+<td>2.9%</td>
+<td>2.9%</td>
+</tr>
+<tr>
+<td>Hindi UI</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>AI Hindi Descriptions</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>GST Compliance</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>WhatsApp Integration</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>NGO Multi-Store</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>Multi-Address Management</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>Smart Checkout</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>Mobile-First PWA</td>
+<td>✅</td>
+<td>Partial</td>
+<td>Partial</td>
+<td>Partial</td>
+</tr>
+<tr>
+<td>Automated Testing</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+</tbody>
+</table>
+<h2 id="-sample-data">📊 Sample Data </h2>
+<p>The platform comes with pre-seeded sample data:</p>
+<p><strong>Artisan Stores:</strong></p>
+<ul>
+<li>कलाकार शिल्प (Kalakar Shilp) - Traditional crafts</li>
+<li>हस्तकला भंडार (Hastkala Bhandar) - Handmade goods</li>
+<li>शिल्पी संग्रह (Shilpi Sangraha) - Artisan collection</li>
+</ul>
+<p><strong>Products:</strong></p>
+<ul>
+<li>बनारसी सिल्क साड़ी (Banarasi Silk Saree)</li>
+<li>कशीदाकारी शाल (Kashmiri Embroidered Shawl)</li>
+<li>मिट्टी का दीया (Clay Diya)</li>
+<li>हस्तनिर्मित गहने (Handmade Jewelry)</li>
+</ul>
+<h2 id="-configuration">🔧 Configuration </h2>
+<h3 id="environment-variables-env">Environment Variables (.env) </h3>
+<pre data-role="codeBlock" data-info="bash" class="language-bash bash"><code><span class="token assign-left variable">DEBUG</span><span class="token operator">=</span>True
+<span class="token assign-left variable">SECRET_KEY</span><span class="token operator">=</span>your-secret-key
+<span class="token assign-left variable">USE_SQLITE</span><span class="token operator">=</span>False
+<span class="token assign-left variable">DB_NAME</span><span class="token operator">=</span>storeloop
+<span class="token assign-left variable">DB_USER</span><span class="token operator">=</span>postgres
+<span class="token assign-left variable">DB_PASSWORD</span><span class="token operator">=</span>postgres
+<span class="token assign-left variable">DB_HOST</span><span class="token operator">=</span>localhost
+<span class="token assign-left variable">DB_PORT</span><span class="token operator">=</span><span class="token number">5434</span>
+
+<span class="token comment"># Razorpay (optional)</span>
+<span class="token assign-left variable">RAZORPAY_KEY_ID</span><span class="token operator">=</span>your-key-id
+<span class="token assign-left variable">RAZORPAY_KEY_SECRET</span><span class="token operator">=</span>your-key-secret
+
+<span class="token comment"># AI API (optional)</span>
+<span class="token assign-left variable">OPENROUTER_API_KEY</span><span class="token operator">=</span>your-api-key
+</code></pre><h3 id="language-support">Language Support </h3>
+<ul>
+<li>English (default)</li>
+<li>हिंदी (Hindi) - Complete UI translation</li>
+<li>Extensible for other Indian languages</li>
+</ul>
+<h2 id="-mobile-pwa-features">📱 Mobile PWA Features </h2>
+<ul>
+<li><strong>Offline support</strong> for browsing products</li>
+<li><strong>Add to home screen</strong> functionality</li>
+<li><strong>Push notifications</strong> for order updates</li>
+<li><strong>Touch-optimized</strong> interface</li>
+<li><strong>Fast loading</strong> with service workers</li>
+</ul>
+<h2 id="-contributing">🤝 Contributing </h2>
+<ol>
+<li>Fork the repository</li>
+<li>Create a feature branch</li>
+<li>Make your changes</li>
+<li>Run tests: <code>npx playwright test</code></li>
+<li>Submit a pull request</li>
+</ol>
+<h2 id="-license">📄 License </h2>
+<p>This project is licensed under the MIT License - see the LICENSE file for details.</p>
+<h2 id="-support">🆘 Support </h2>
+<ul>
+<li><strong>Documentation:</strong> <a href="internal/MANUAL_TEST_SCRIPT.md">internal/MANUAL_TEST_SCRIPT.md</a></li>
+<li><strong>Issues:</strong> Create a GitHub issue</li>
+<li><strong>Email:</strong> <a href="mailto:support@storeloop.in">support@storeloop.in</a></li>
+</ul>
+<hr>
+<p><strong>🎯 Built specifically for Indian artisans and NGOs - features that global platforms don't offer!</strong></p>
+
+      </div>
+      
+      
+    
+    
+    
+    
+    
+    
+  
+    </body></html>

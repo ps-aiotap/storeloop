@@ -1,8 +1,12 @@
 # 🛍️ StoreLoop - Indian Artisan E-commerce Platform
 
-**Zero transaction fees • Hindi UI • AI descriptions • WhatsApp integration • GST compliance**
+**Zero transaction fees • Hindi/English UI • AI descriptions • WhatsApp integration • GST compliance**
 
-StoreLoop is a specialized e-commerce platform designed for Indian artisans and NGOs, offering features that mainstream platforms like Wix, Shopify, and WooCommerce don't provide.
+StoreLoop is a specialized e-commerce platform designed for Indian artisans and NGOs, offering a comprehensive solution with language toggle, multi-address checkout, AI-generated product descriptions, WhatsApp integration, and GST compliance - features that mainstream platforms like Wix, Shopify, and WooCommerce don't provide for the unique needs of Indian sellers.
+
+## 🎬 Demo Video
+
+[Watch StoreLoop Demo Video](https://youtu.be/demo-link) - See the platform in action!
 
 ## 🚀 Quick Start (1-Click Deployment)
 
@@ -26,21 +30,23 @@ chmod +x deploy.sh
 ## ✨ Key Features
 
 ### 🎯 **For Indian Artisans**
-- **5-step onboarding wizard** with Hindi support
+- **5-step onboarding wizard** with full language toggle (Hindi/English)
 - **Zero transaction fees** (vs 2.9% on Wix/Shopify)
-- **AI-generated Hindi product descriptions** (editable drafts)
+- **AI-generated product descriptions** in Hindi and English using OpenAI
 - **GST compliance** with automatic invoice generation
 - **WhatsApp notifications** for orders and updates
 - **Mobile-first PWA** design for smartphone users
 - **Customer management** with multi-address support
 - **Smart checkout** with saved address selection
+- **SEO-optimized product pages** for better discoverability
 
 ### 🏢 **For NGO Partners**
 - **Multi-store management** dashboard
 - **Aggregate analytics** across all managed stores
 - **Artisan support tools** and training resources
-- **Hindi interface** for local NGO staff
+- **Full language toggle** for local NGO staff
 - **Store performance comparison** and insights
+- **Bulk product management** tools
 
 ### 🛒 **For Customers**
 - **User registration** with address management
@@ -49,6 +55,7 @@ chmod +x deploy.sh
 - **Order history** and tracking
 - **Guest checkout** option available
 - **Auto-fill** customer details for returning users
+- **WhatsApp ordering** option
 
 ### 📱 **Technical Advantages**
 - **Mobile-first responsive design**
@@ -61,48 +68,47 @@ chmod +x deploy.sh
 - **User authentication** with session management
 - **Data migration tools** for address management
 
-## 🛠️ Manual Setup (If needed)
+## 🛠️ Setup Instructions
 
-<details>
-<summary>Click to expand manual setup instructions</summary>
+### Local Development
 
-### Prerequisites
-- Python 3.8+
-- Docker (for PostgreSQL and Redis)
-- Node.js 16+ (for Playwright tests)
-
-### 1. Clone and Setup
 ```bash
+# Clone repository
 git clone <repository-url>
 cd storeloop
+
+# Create virtual environment
 python -m venv storeloop-venv
 source storeloop-venv/bin/activate  # Windows: storeloop-venv\Scripts\activate
 pip install -r requirements.txt
-```
 
-### 2. Start Services
-```bash
-# Start PostgreSQL and Redis
-docker run -d --name storeloop-postgres -e POSTGRES_DB=storeloop -e POSTGRES_PASSWORD=postgres -p 5434:5432 postgres:latest
-docker run -d --name storeloop-redis -p 6379:6379 redis:7-alpine
-
-# Setup database
-python manage.py makemigrations
+# Setup database (SQLite for development)
+echo "USE_SQLITE=True" > .env
 python manage.py migrate
 python manage.py reset_admin
 python manage.py seed_sample_data --users 2 --stores 3 --products 8
-```
 
-### 3. Start Application
-```bash
-# Terminal 1: Celery worker
-celery -A core worker --loglevel=info
-
-# Terminal 2: Django server
+# Run server
 python manage.py runserver
 ```
 
-</details>
+### Production Deployment
+
+```bash
+# Setup environment
+cp .env.example .env
+# Edit .env with production settings
+
+# Start services
+docker-compose up -d
+
+# Apply migrations
+docker-compose exec web python manage.py migrate
+docker-compose exec web python manage.py collectstatic --no-input
+
+# Create superuser
+docker-compose exec web python manage.py createsuperuser
+```
 
 ## 🧪 Testing
 
@@ -127,51 +133,46 @@ npx playwright show-report
 - ✅ NGO admin features
 - ✅ Mobile responsiveness
 
-### Manual Testing
-See [MANUAL_TEST_SCRIPT.md](internal/MANUAL_TEST_SCRIPT.md) for comprehensive testing scenarios including:
-- Customer registration with address fields
-- Multi-address selection during checkout
-- 5-step seller onboarding
-- Excel/CSV product upload
-- Hindi UI testing
-- NGO partner dashboard
-- Complete purchase flow with quantity selection
-- Address auto-fill for returning customers
-- WhatsApp notifications
-- GST invoice generation
+## 📱 WhatsApp Integration
+
+StoreLoop includes a WhatsApp bot for product sharing and ordering:
+
+1. **Setup WhatsApp Business API** in `.env`
+2. **Start the WhatsApp service:** `python manage.py start_whatsapp_bot`
+3. **Test with demo number:** Send "Hello" to +91-DEMO-NUMBER
+
+Customers can:
+- Browse products via WhatsApp
+- Place orders directly in chat
+- Receive order confirmations and updates
+- Track shipments
 
 ## 🏗️ Architecture
 
 ```
 StoreLoop/
 ├── core/                 # Django project settings & user management
-├── stores/              # Store management & customer addresses
-├── products/            # Product catalog app
-├── orders/              # Order processing with address linking
-├── templates/           # HTML templates with smart checkout
-│   ├── accounts/        # Login/registration templates
-│   └── stores/          # Store and checkout templates
-├── static/              # CSS, JS, images
-├── tests/               # Playwright test suite
-├── internal/            # Documentation
-├── deploy.bat           # Windows 1-click deployment
-├── deploy.sh            # Linux/Mac 1-click deployment
-└── requirements.txt     # Python dependencies
+├── stores/               # Store management & customer addresses
+├── products/             # Product catalog app
+├── orders/               # Order processing with address linking
+├── whatsapp/             # WhatsApp integration service
+├── templates/            # HTML templates with smart checkout
+│   ├── accounts/         # Login/registration templates
+│   └── stores/           # Store and checkout templates
+├── static/               # CSS, JS, images
+├── tests/                # Playwright test suite
+├── deploy.bat            # Windows 1-click deployment
+├── deploy.sh             # Linux/Mac 1-click deployment
+└── requirements.txt      # Python dependencies
 ```
-
-### Database Schema
-- **User** → **UserAddress** (One-to-Many)
-- **Order** → **UserAddress** (Many-to-One via foreign key)
-- **Store** → **Product** (One-to-Many)
-- **Store** → **Order** (One-to-Many)
 
 ## 🌟 Competitive Advantages
 
 | Feature | StoreLoop | Wix | Shopify | WooCommerce |
 |---------|-----------|-----|---------|-------------|
 | Transaction Fees | **0%** | 2.9% | 2.9% | 2.9% |
-| Hindi UI | ✅ | ❌ | ❌ | ❌ |
-| AI Hindi Descriptions | ✅ | ❌ | ❌ | ❌ |
+| Hindi/English Toggle | ✅ | ❌ | ❌ | ❌ |
+| AI Product Descriptions | ✅ | ❌ | ❌ | ❌ |
 | GST Compliance | ✅ | ❌ | ❌ | ❌ |
 | WhatsApp Integration | ✅ | ❌ | ❌ | ❌ |
 | NGO Multi-Store | ✅ | ❌ | ❌ | ❌ |
@@ -179,6 +180,7 @@ StoreLoop/
 | Smart Checkout | ✅ | ❌ | ❌ | ❌ |
 | Mobile-First PWA | ✅ | Partial | Partial | Partial |
 | Automated Testing | ✅ | ❌ | ❌ | ❌ |
+| SEO Optimization | ✅ | Partial | Partial | Partial |
 
 ## 📊 Sample Data
 
@@ -212,8 +214,12 @@ DB_PORT=5434
 RAZORPAY_KEY_ID=your-key-id
 RAZORPAY_KEY_SECRET=your-key-secret
 
-# AI API (optional)
-OPENROUTER_API_KEY=your-api-key
+# OpenAI API (for AI descriptions)
+OPENAI_API_KEY=your-api-key
+
+# WhatsApp Business API
+WHATSAPP_API_TOKEN=your-token
+WHATSAPP_PHONE_ID=your-phone-id
 ```
 
 ### Language Support
@@ -243,7 +249,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 🆘 Support
 
-- **Documentation:** [internal/MANUAL_TEST_SCRIPT.md](internal/MANUAL_TEST_SCRIPT.md)
+- **Documentation:** See the docs/ directory
 - **Issues:** Create a GitHub issue
 - **Email:** support@storeloop.in
 

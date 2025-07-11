@@ -30,7 +30,7 @@ def debug_partner(request):
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('debug-partner/', debug_partner, name='debug_partner'),
-    path('accounts/', include('django.contrib.auth.urls')),
+    path('accounts/', include('at_identity.urls')),
     path('accounts/', include('stores.urls')),
     path('stores/', include('stores.urls')),
     path('products/', include('products.urls')),

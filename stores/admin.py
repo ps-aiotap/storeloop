@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+User = get_user_model()
 from django.utils.html import format_html
 from .models import Store, Product, Order, SellerProfile, ProductUploadBatch
 
@@ -172,6 +173,4 @@ class UserAdmin(BaseUserAdmin):
             return '👤 Customer'
     get_role.short_description = 'Role'
 
-# Re-register UserAdmin
-admin.site.unregister(User)
-admin.site.register(User, UserAdmin)
+# Note: User admin is now handled by at_identity app

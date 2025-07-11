@@ -1,0 +1,133 @@
+{% extends 'artisan_crm/base.html' %}
+
+{% block title %}Customers - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <div class="flex justify-between items-center">
+        <h2 class="text-2xl font-bold text-gray-900">
+            {% if is_storeloop %}Artisan Customers{% else %}Leads & Prospects{% endif %}
+        </h2>
+        <button class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+            Add {% if is_storeloop %}Customer{% else %}Lead{% endif %}
+        </button>
+    </div>
+    
+    <!-- Filters -->
+    <div class="mt-4 flex space-x-4">
+        <form method="GET" class="flex space-x-2">
+            <input type="text" name="search" value="{{ search }}" 
+                   placeholder="Search customers..." 
+                   class="px-3 py-2 border border-gray-300 rounded-md">
+            <select name="tag" class="px-3 py-2 border border-gray-300 rounded-md">
+                <option value="">All Tags</option>
+                {% for tag in tags %}
+                <option value="{{ tag.name }}" {% if tag.name == selected_tag %}selected{% endif %}>
+                    {{ tag.name }}
+                </option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600">
+                Filter
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Customer Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for customer in customers %}
+    <div class="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow">
+        <div class="flex justify-between items-start mb-4">
+            <h3 class="text-lg font-semibold text-gray-900">
+                <a href="{% url 'artisan_crm:customer_detail' customer.pk %}" 
+                   class="hover:text-blue-600">
+                    {{ customer.name }}
+                </a>
+            </h3>
+            <span class="text-xs px-2 py-1 bg-gray-100 rounded-full">
+                {{ customer.source }}
+            </span>
+        </div>
+        
+        <div class="space-y-2 text-sm text-gray-600">
+            {% if customer.email %}
+            <div class="flex items-center">
+                <span class="w-4 h-4 mr-2">📧</span>
+                {{ customer.email }}
+            </div>
+            {% endif %}
+            
+            {% if customer.phone %}
+            <div class="flex items-center">
+                <span class="w-4 h-4 mr-2">📱</span>
+                {{ customer.phone }}
+            </div>
+            {% endif %}
+            
+            {% if customer.company %}
+            <div class="flex items-center">
+                <span class="w-4 h-4 mr-2">🏢</span>
+                {{ customer.company }}
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Recent Interactions -->
+        <div class="mt-4 pt-4 border-t">
+            <div class="text-xs text-gray-500">
+                {{ customer.interactions.count }} interaction{{ customer.interactions.count|pluralize }}
+            </div>
+            {% if customer.summary %}
+            <div class="mt-2 text-xs text-gray-600 line-clamp-2">
+                {{ customer.summary|truncatewords:15 }}
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="mt-4 flex justify-between items-center">
+            <span class="text-xs text-gray-500">
+                {{ customer.created_at|date:"M d, Y" }}
+            </span>
+            <a href="{% url 'artisan_crm:customer_detail' customer.pk %}" 
+               class="text-sm text-blue-600 hover:text-blue-800">
+                View Details →
+            </a>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-span-full text-center py-12">
+        <div class="text-gray-500">
+            <div class="text-4xl mb-4">👥</div>
+            <h3 class="text-lg font-medium">No customers found</h3>
+            <p class="mt-2">Start by adding your first {% if is_storeloop %}artisan customer{% else %}lead{% endif %}.</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if is_paginated %}
+<div class="mt-8 flex justify-center">
+    <nav class="flex space-x-2">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}" 
+           class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+            Previous
+        </a>
+        {% endif %}
+        
+        <span class="px-3 py-2 text-sm bg-blue-50 border border-blue-200 rounded-md">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </span>
+        
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" 
+           class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+            Next
+        </a>
+        {% endif %}
+    </nav>
+</div>
+{% endif %}
+{% endblock %}

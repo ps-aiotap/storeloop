@@ -1,0 +1,166 @@
+{% extends 'artisan_crm/base.html' %}
+
+{% block title %}Lead Pipeline - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <div class="flex justify-between items-center">
+        <h2 class="text-2xl font-bold text-gray-900">
+            {% if is_storeloop %}Customer Pipeline{% else %}Lead Pipeline{% endif %}
+        </h2>
+        <div class="text-sm text-gray-600">
+            Total: {{ total_leads }} {% if is_storeloop %}customers{% else %}leads{% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Kanban Board -->
+<div class="flex space-x-6 overflow-x-auto pb-6">
+    {% for stage_data in pipeline_data %}
+    <div class="flex-shrink-0 w-80">
+        <div class="bg-white rounded-lg shadow-sm border">
+            <!-- Stage Header -->
+            <div class="p-4 border-b" style="border-color: {{ stage_data.stage.color }}">
+                <div class="flex justify-between items-center">
+                    <h3 class="font-semibold text-gray-900">{{ stage_data.stage.name }}</h3>
+                    <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600">
+                        {{ stage_data.count }}
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Lead Cards -->
+            <div class="p-4 space-y-3 min-h-96" 
+                 data-stage-id="{{ stage_data.stage.id }}"
+                 ondrop="drop(event)" 
+                 ondragover="allowDrop(event)">
+                {% for lead in stage_data.leads %}
+                <div class="lead-card bg-gray-50 rounded-lg p-4 border cursor-move hover:shadow-md transition-shadow"
+                     draggable="true"
+                     ondragstart="drag(event)"
+                     data-lead-id="{{ lead.id }}">
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="font-medium text-gray-900">
+                            <a href="{% url 'artisan_crm:customer_detail' lead.customer.pk %}" 
+                               class="hover:text-blue-600">
+                                {{ lead.customer.name }}
+                            </a>
+                        </h4>
+                        {% if lead.score %}
+                        <span class="text-xs px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full">
+                            {{ lead.score }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="text-sm text-gray-600 space-y-1">
+                        {% if lead.customer.company %}
+                        <div>🏢 {{ lead.customer.company }}</div>
+                        {% endif %}
+                        
+                        {% if lead.customer.email %}
+                        <div>📧 {{ lead.customer.email }}</div>
+                        {% endif %}
+                        
+                        {% if lead.next_followup %}
+                        <div class="text-xs text-orange-600 mt-2">
+                            📅 Follow-up: {{ lead.next_followup|date:"M d" }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    {% if lead.ai_next_action %}
+                    <div class="mt-3 p-2 bg-blue-50 rounded text-xs text-blue-800">
+                        <strong>AI Suggestion:</strong> {{ lead.ai_next_action|truncatewords:10 }}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mt-3 text-xs text-gray-500">
+                        Updated {{ lead.updated_at|timesince }} ago
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-8 text-gray-400">
+                    <div class="text-2xl mb-2">📋</div>
+                    <p class="text-sm">No {% if is_storeloop %}customers{% else %}leads{% endif %} in this stage</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pipeline Stats -->
+<div class="mt-8 grid grid-cols-1 md:grid-cols-4 gap-6">
+    {% for stage_data in pipeline_data %}
+    <div class="bg-white rounded-lg shadow-sm border p-6">
+        <div class="flex items-center">
+            <div class="w-3 h-3 rounded-full mr-3" style="background-color: {{ stage_data.stage.color }}"></div>
+            <div>
+                <div class="text-2xl font-bold text-gray-900">{{ stage_data.count }}</div>
+                <div class="text-sm text-gray-600">{{ stage_data.stage.name }}</div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+function allowDrop(ev) {
+    ev.preventDefault();
+}
+
+function drag(ev) {
+    ev.dataTransfer.setData("text", ev.target.getAttribute('data-lead-id'));
+}
+
+function drop(ev) {
+    ev.preventDefault();
+    const leadId = ev.dataTransfer.getData("text");
+    const stageId = ev.currentTarget.getAttribute('data-stage-id');
+    
+    // Move lead to new stage
+    fetch(`{% url 'artisan_crm:move_lead' %}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({
+            lead_id: leadId,
+            stage_id: stageId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Move the card visually
+            const leadCard = document.querySelector(`[data-lead-id="${leadId}"]`);
+            ev.currentTarget.appendChild(leadCard);
+            
+            // Show success message
+            showNotification(`Moved ${data.customer_name} to ${data.new_stage}`);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Failed to move lead', 'error');
+    });
+}
+
+function showNotification(message, type = 'success') {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 px-4 py-2 rounded-lg shadow-lg z-50 ${
+        type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+    }`;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+</script>
+{% endblock %}

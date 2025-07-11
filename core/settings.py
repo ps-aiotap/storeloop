@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "products",
     "orders",
     "stores",
+    "artisan_crm",
 ]
 
 MIDDLEWARE = [
@@ -81,22 +82,21 @@ DATABASES = {
         "PASSWORD": os.environ.get("DB_PASSWORD", "postgres"),
         "HOST": os.environ.get("DB_HOST", "localhost"),
         "PORT": os.environ.get("DB_PORT", "5432"),
+    },
+    "crm_db": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.environ.get("CRM_DB_NAME", "artisan_crm"),
+        "USER": os.environ.get("DB_USER", "postgres"),
+        "PASSWORD": os.environ.get("DB_PASSWORD", "postgres"),
+        "HOST": os.environ.get("DB_HOST", "localhost"),
+        "PORT": os.environ.get("DB_PORT", "5432"),
     }
 }
 
-# DEBUG: Print database configuration
-print(f"DEBUG DATABASE CONFIG:")
-print(f"  ENGINE: {DATABASES['default']['ENGINE']}")
-print(f"  NAME: {DATABASES['default']['NAME']}")
-print(f"  HOST: {DATABASES['default']['HOST']}")
-print(f"  PORT: {DATABASES['default']['PORT']}")
-print(f"  USER: {DATABASES['default']['USER']}")
-print(f"  ENV DB_PORT: {os.environ.get('DB_PORT', 'NOT SET')}")
-print(f"  ENV DB_HOST: {os.environ.get('DB_HOST', 'NOT SET')}")
-print(f"  ENV DB_NAME: {os.environ.get('DB_NAME', 'NOT SET')}")
-print(f"  ENV DB_USER: {os.environ.get('DB_USER', 'NOT SET')}")
-print(f"  ENV USE_SQLITE: {os.environ.get('USE_SQLITE', 'NOT SET')}")
-print("=" * 50)
+# Database router for CRM
+DATABASE_ROUTERS = ['artisan_crm.database_router.CRMDatabaseRouter']
+
+
 
 # Auto-create PostgreSQL database if it doesn't exist
 import psycopg2
@@ -104,32 +104,33 @@ from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
 
 def create_database_if_not_exists():
-    try:
-        # Try to connect to the target database
-        conn = psycopg2.connect(
-            host=DATABASES["default"]["HOST"],
-            port=DATABASES["default"]["PORT"],
-            user=DATABASES["default"]["USER"],
-            password=DATABASES["default"]["PASSWORD"],
-            database=DATABASES["default"]["NAME"],
-        )
-        conn.close()
-    except psycopg2.OperationalError as e:
-        if "does not exist" in str(e):
-            # Database doesn't exist, create it
+    # Create both main and CRM databases
+    for db_key in ['default', 'crm_db']:
+        db_config = DATABASES[db_key]
+        try:
             conn = psycopg2.connect(
-                host=DATABASES["default"]["HOST"],
-                port=DATABASES["default"]["PORT"],
-                user=DATABASES["default"]["USER"],
-                password=DATABASES["default"]["PASSWORD"],
-                database="postgres",  # Connect to default postgres database
+                host=db_config["HOST"],
+                port=db_config["PORT"],
+                user=db_config["USER"],
+                password=db_config["PASSWORD"],
+                database=db_config["NAME"],
             )
-            conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-            cursor = conn.cursor()
-            cursor.execute(f"CREATE DATABASE {DATABASES['default']['NAME']}")
-            cursor.close()
             conn.close()
-            print(f"Created database: {DATABASES['default']['NAME']}")
+        except psycopg2.OperationalError as e:
+            if "does not exist" in str(e):
+                conn = psycopg2.connect(
+                    host=db_config["HOST"],
+                    port=db_config["PORT"],
+                    user=db_config["USER"],
+                    password=db_config["PASSWORD"],
+                    database="postgres"
+                )
+                conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+                cursor = conn.cursor()
+                cursor.execute(f'CREATE DATABASE "{db_config["NAME"]}"')
+                cursor.close()
+                conn.close()
+                print(f"Created database: {db_config['NAME']}")
 
 
 # Only create database during migrations or runserver
@@ -140,6 +141,10 @@ if "migrate" in sys.argv or "runserver" in sys.argv:
         create_database_if_not_exists()
     except Exception as e:
         print(f"Warning: Could not auto-create database: {e}")
+        
+    # Run core migrations on CRM database if needed
+    if "migrate" in sys.argv and "--database=crm_db" in sys.argv:
+        print("Note: Run 'python manage.py migrate --database=crm_db' to setup CRM database")
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [

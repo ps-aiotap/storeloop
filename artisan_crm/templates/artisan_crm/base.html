@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ app_name }}{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <style>
+        :root {
+            --primary-color: {{ primary_color }};
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <h1 class="text-xl font-semibold" style="color: var(--primary-color)">
+                        {{ app_name }}
+                    </h1>
+                    <div class="ml-8 flex space-x-4">
+                        <a href="{% url 'artisan_crm:customer_list' %}" 
+                           class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900">
+                            Customers
+                        </a>
+                        <a href="{% url 'artisan_crm:pipeline' %}" 
+                           class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900">
+                            Pipeline
+                        </a>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-xs px-2 py-1 bg-gray-100 rounded-full">
+                        {{ crm_mode|upper }} Mode
+                    </span>
+                    <a href="/admin/" class="text-sm text-gray-600 hover:text-gray-900">Admin</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- HTMX Loading Indicator -->
+    <div id="loading" class="htmx-indicator fixed top-4 right-4 bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg">
+        Processing...
+    </div>
+
+    <script>
+        // Global HTMX configuration
+        document.body.addEventListener('htmx:configRequest', function(evt) {
+            evt.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+        });
+    </script>
+</body>
+</html>

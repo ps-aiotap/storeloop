@@ -1,0 +1,283 @@
+{% extends 'artisan_crm/base.html' %}
+
+{% block title %}{{ customer.name }} - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Customer Info -->
+    <div class="lg:col-span-1">
+        <div class="bg-white rounded-lg shadow-sm border p-6">
+            <div class="flex justify-between items-start mb-4">
+                <h2 class="text-xl font-bold text-gray-900">{{ customer.name }}</h2>
+                {% if lead %}
+                <span class="px-2 py-1 text-xs rounded-full" 
+                      style="background-color: {{ lead.stage.color }}20; color: {{ lead.stage.color }}">
+                    {{ lead.stage.name }}
+                </span>
+                {% endif %}
+            </div>
+            
+            <div class="space-y-3 text-sm">
+                {% if customer.email %}
+                <div class="flex items-center">
+                    <span class="w-5 h-5 mr-3">📧</span>
+                    <a href="mailto:{{ customer.email }}" class="text-blue-600 hover:underline">
+                        {{ customer.email }}
+                    </a>
+                </div>
+                {% endif %}
+                
+                {% if customer.phone %}
+                <div class="flex items-center">
+                    <span class="w-5 h-5 mr-3">📱</span>
+                    <a href="tel:{{ customer.phone }}" class="text-blue-600 hover:underline">
+                        {{ customer.phone }}
+                    </a>
+                </div>
+                {% endif %}
+                
+                {% if customer.company %}
+                <div class="flex items-center">
+                    <span class="w-5 h-5 mr-3">🏢</span>
+                    {{ customer.company }}
+                </div>
+                {% endif %}
+                
+                <div class="flex items-center">
+                    <span class="w-5 h-5 mr-3">📊</span>
+                    {{ customer.source|title }}
+                </div>
+            </div>
+            
+            <!-- AI Summary -->
+            <div class="mt-6 pt-6 border-t">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="font-medium text-gray-900">AI Summary</h3>
+                    <button hx-post="{% url 'artisan_crm:generate_summary' customer.pk %}"
+                            hx-target="#ai-summary"
+                            hx-indicator="#loading"
+                            class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200">
+                        Refresh
+                    </button>
+                </div>
+                <div id="ai-summary" class="text-sm text-gray-600">
+                    {% if customer.summary %}
+                        {{ customer.summary }}
+                    {% else %}
+                        <em>Click "Refresh" to generate AI summary</em>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Tags -->
+            {% if customer_tags %}
+            <div class="mt-6 pt-6 border-t">
+                <h3 class="font-medium text-gray-900 mb-3">Tags</h3>
+                <div class="flex flex-wrap gap-2">
+                    {% for tag in customer_tags %}
+                    <span class="px-2 py-1 text-xs rounded-full" 
+                          style="background-color: {{ tag.color }}20; color: {{ tag.color }}">
+                        {{ tag.name }}
+                    </span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Interaction Timeline -->
+    <div class="lg:col-span-2">
+        <div class="bg-white rounded-lg shadow-sm border">
+            <div class="p-6 border-b">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-lg font-semibold text-gray-900">Interaction Timeline</h3>
+                    <button onclick="showAddInteraction()" 
+                            class="px-3 py-2 bg-green-500 text-white text-sm rounded hover:bg-green-600">
+                        Add Note
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Add Interaction Form (Hidden) -->
+            <div id="add-interaction-form" class="hidden p-6 border-b bg-gray-50">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Channel</label>
+                        <select id="interaction-channel" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                            {% if is_storeloop %}
+                            <option value="whatsapp">WhatsApp</option>
+                            <option value="phone">Phone</option>
+                            <option value="email">Email</option>
+                            {% else %}
+                            <option value="email">Email</option>
+                            <option value="upwork">Upwork</option>
+                            <option value="phone">Phone</option>
+                            {% endif %}
+                            <option value="internal">Internal Note</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Direction</label>
+                        <select id="interaction-direction" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                            <option value="inbound">Inbound</option>
+                            <option value="outbound">Outbound</option>
+                            <option value="internal">Internal</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Content</label>
+                        <textarea id="interaction-content" rows="3" 
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-md"
+                                  placeholder="Enter interaction details..."></textarea>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="addInteraction()" 
+                                class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                            Save
+                        </button>
+                        <button onclick="hideAddInteraction()" 
+                                class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- AI Reply Helper -->
+            <div class="p-6 border-b bg-blue-50">
+                <div class="flex items-center space-x-4">
+                    <input type="text" id="reply-input" 
+                           placeholder="Enter customer message to get AI reply suggestion..."
+                           class="flex-1 px-3 py-2 border border-gray-300 rounded-md">
+                    <button onclick="getSuggestedReply()" 
+                            class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                        Get AI Reply
+                    </button>
+                </div>
+                <div id="suggested-reply" class="mt-3 hidden">
+                    <div class="p-3 bg-white border rounded-md">
+                        <div class="text-sm font-medium text-gray-700 mb-2">Suggested Reply:</div>
+                        <div id="reply-content" class="text-sm text-gray-900"></div>
+                        <button onclick="useReply()" 
+                                class="mt-2 text-xs px-2 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200">
+                            Use This Reply
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Timeline -->
+            <div id="timeline" class="divide-y">
+                {% for interaction in interactions %}
+                <div class="p-6">
+                    <div class="flex items-start space-x-3">
+                        <div class="flex-shrink-0">
+                            {% if interaction.channel == 'whatsapp' %}
+                                <span class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">💬</span>
+                            {% elif interaction.channel == 'email' %}
+                                <span class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">📧</span>
+                            {% elif interaction.channel == 'phone' %}
+                                <span class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">📞</span>
+                            {% else %}
+                                <span class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">📝</span>
+                            {% endif %}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-sm font-medium text-gray-900">
+                                        {{ interaction.channel|title }}
+                                    </span>
+                                    <span class="px-2 py-1 text-xs rounded-full
+                                        {% if interaction.direction == 'inbound' %}bg-green-100 text-green-800
+                                        {% elif interaction.direction == 'outbound' %}bg-blue-100 text-blue-800
+                                        {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                        {{ interaction.direction|title }}
+                                    </span>
+                                </div>
+                                <span class="text-sm text-gray-500">
+                                    {{ interaction.created_at|date:"M d, Y H:i" }}
+                                </span>
+                            </div>
+                            <div class="mt-2 text-sm text-gray-900">
+                                {{ interaction.content|linebreaks }}
+                            </div>
+                            {% if interaction.summary %}
+                            <div class="mt-2 p-2 bg-gray-50 rounded text-xs text-gray-600">
+                                <strong>AI Summary:</strong> {{ interaction.summary }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="p-6 text-center text-gray-500">
+                    <div class="text-4xl mb-4">💬</div>
+                    <p>No interactions yet. Start the conversation!</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showAddInteraction() {
+    document.getElementById('add-interaction-form').classList.remove('hidden');
+}
+
+function hideAddInteraction() {
+    document.getElementById('add-interaction-form').classList.add('hidden');
+}
+
+function addInteraction() {
+    const data = {
+        channel: document.getElementById('interaction-channel').value,
+        direction: document.getElementById('interaction-direction').value,
+        content: document.getElementById('interaction-content').value
+    };
+    
+    fetch(`{% url 'artisan_crm:add_interaction' customer.pk %}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.id) {
+            location.reload(); // Simple reload for now
+        }
+    });
+}
+
+function getSuggestedReply() {
+    const message = document.getElementById('reply-input').value;
+    if (!message) return;
+    
+    fetch(`{% url 'artisan_crm:suggest_reply' customer.pk %}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({message: message})
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('reply-content').textContent = data.reply;
+        document.getElementById('suggested-reply').classList.remove('hidden');
+    });
+}
+
+function useReply() {
+    const reply = document.getElementById('reply-content').textContent;
+    document.getElementById('interaction-content').value = reply;
+    document.getElementById('interaction-direction').value = 'outbound';
+    showAddInteraction();
+}
+</script>
+{% endblock %}

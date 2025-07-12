@@ -11,7 +11,6 @@ This decoupling enables clean service boundaries, faster dev cycles, and cross-a
 <img width="1212" height="538" alt="image" src="https://github.com/user-attachments/assets/2cfc689b-308d-40a2-aca9-3b8ee67805d7" />
 
 ---
-
 ## 🧱 Architecture Overview
 
 ```text
@@ -21,3 +20,25 @@ This decoupling enables clean service boundaries, faster dev cycles, and cross-a
 │ NO USERS    │                │ Master User │                │ NO USERS    │
 │ user_id INT │                │ Management  │                │ user_id INT │
 └─────────────┘                └─────────────┘                └─────────────┘
+✅ What’s Added
+
+    ✅ ATIdentityUser proxy objects (dynamic user from API)
+
+    ✅ UserlessATIdentityBackend for authentication
+
+    ✅ ATIdentityMiddleware for stateless sessions
+
+    ✅ @at_permission_required decorators
+
+    ✅ Clean integer user_id fields
+
+    ✅ Optional cached username for display
+🚫 What’s Removed
+
+    ❌ django.contrib.auth (fully removed)
+
+    ❌ Admin interface (django.contrib.admin)
+
+    ❌ All User foreign keys and model imports
+
+    ❌ Local user/session database

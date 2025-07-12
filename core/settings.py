@@ -6,7 +6,6 @@ from dotenv import load_dotenv
 load_dotenv(override=True)  # Force .env to override system variables
 
 
-
 # Simple logging control
 # Add ENABLE_FILE_LOGGING=True to .env file to enable file logging
 # Default: Console logging only
@@ -22,26 +21,33 @@ DEBUG = os.environ.get("DEBUG", "True").lower() == "true"
 
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
+
+# Userless configuration
+AUTHENTICATION_BACKENDS = [
+    "at_identity.auth.backends_userless.UserlessATIdentityBackend",
+]
+
 # Application definition
 INSTALLED_APPS = [
-    "django.contrib.admin",
-    "django.contrib.auth",
+    # "django.contrib.contenttypes",
+    # "django.contrib.sessions",
+    # "django.contrib.messages",
+    # "django.contrib.staticfiles",
+    # # Third party apps
+    # "tailwind",
+    # "theme",
+    # # Local apps
+    # "products",
+    # "orders",
+    # "stores",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
-    "django.contrib.messages",
-    "django.contrib.staticfiles",
-    # Third party apps
-    "tailwind",
-    "theme",
-    "allauth",
-    "allauth.account",
-    "allauth.socialaccount",
-    # Local apps
-    "at_identity",
-    "products",
-    "orders",
     "stores",
-    "artisan_crm",
+]
+
+# Userless configuration
+AUTHENTICATION_BACKENDS = [
+    "at-identity.auth.backends_userless.UserlessATIdentityBackend",
 ]
 
 MIDDLEWARE = [
@@ -49,8 +55,7 @@ MIDDLEWARE = [
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
-    "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "allauth.account.middleware.AccountMiddleware",
+    "at_identity.auth.middleware.ATIdentityMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "stores.middleware.StoreMiddleware",
@@ -95,12 +100,11 @@ DATABASES = {
         "PASSWORD": os.environ.get("DB_PASSWORD", "postgres"),
         "HOST": os.environ.get("DB_HOST", "localhost"),
         "PORT": os.environ.get("DB_PORT", "5432"),
-    }
+    },
 }
 
 # Database router for CRM
-DATABASE_ROUTERS = ['artisan_crm.database_router.CRMDatabaseRouter']
-
+DATABASE_ROUTERS = ["artisan_crm.database_router.CRMDatabaseRouter"]
 
 
 # Auto-create PostgreSQL database if it doesn't exist
@@ -110,7 +114,7 @@ from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
 def create_database_if_not_exists():
     # Create both main and CRM databases
-    for db_key in ['default', 'crm_db']:
+    for db_key in ["default", "crm_db"]:
         db_config = DATABASES[db_key]
         try:
             conn = psycopg2.connect(
@@ -128,7 +132,7 @@ def create_database_if_not_exists():
                     port=db_config["PORT"],
                     user=db_config["USER"],
                     password=db_config["PASSWORD"],
-                    database="postgres"
+                    database="postgres",
                 )
                 conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
                 cursor = conn.cursor()
@@ -146,10 +150,12 @@ if "migrate" in sys.argv or "runserver" in sys.argv:
         create_database_if_not_exists()
     except Exception as e:
         print(f"Warning: Could not auto-create database: {e}")
-        
+
     # Run core migrations on CRM database if needed
     if "migrate" in sys.argv and "--database=crm_db" in sys.argv:
-        print("Note: Run 'python manage.py migrate --database=crm_db' to setup CRM database")
+        print(
+            "Note: Run 'python manage.py migrate --database=crm_db' to setup CRM database"
+        )
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -208,26 +214,27 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 # Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Custom user model
-AUTH_USER_MODEL = 'at_identity.User'
+# Using Django's default User model for independence
 
-# Authentication backends
+# Userless authentication
 AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',
-    'allauth.account.auth_backends.AuthenticationBackend',
+    "at_identity.auth.backends_userless.UserlessATIdentityBackend",
 ]
+
+AT_IDENTITY_URL = "http://localhost:8001/api/"
+APP_NAME = "storeloop"
 
 # Allauth settings
 SITE_ID = 1
 ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_EMAIL_VERIFICATION = 'optional'
+ACCOUNT_EMAIL_VERIFICATION = "optional"
 ACCOUNT_USERNAME_REQUIRED = True
-ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
-ACCOUNT_LOGIN_REDIRECT_URL = '/'
-ACCOUNT_LOGOUT_REDIRECT_URL = '/'
-ACCOUNT_SIGNUP_REDIRECT_URL = '/accounts/profile/'
-LOGIN_URL = '/accounts/login/'
-LOGOUT_URL = '/accounts/logout/'
+ACCOUNT_AUTHENTICATION_METHOD = "username_email"
+ACCOUNT_LOGIN_REDIRECT_URL = "/"
+ACCOUNT_LOGOUT_REDIRECT_URL = "/"
+ACCOUNT_SIGNUP_REDIRECT_URL = "/accounts/profile/"
+LOGIN_URL = "/accounts/login/"
+LOGOUT_URL = "/accounts/logout/"
 
 # Tailwind configuration
 TAILWIND_APP_NAME = "theme"

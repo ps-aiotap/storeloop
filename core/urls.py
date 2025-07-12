@@ -28,14 +28,14 @@ def debug_partner(request):
         return HttpResponse(f"<h1>Debug Error</h1><p>{str(e)}</p>")
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    # path('admin/', admin.site.urls),  # Removed for userless system
     path('debug-partner/', debug_partner, name='debug_partner'),
-    path('accounts/', include('at_identity.urls')),
+    path('', include('stores.urls_userless')),
     path('accounts/', include('stores.urls')),
     path('stores/', include('stores.urls')),
     path('products/', include('products.urls')),
     path('orders/', include('orders.urls')),
-    path('crm/', include('artisan_crm.urls')),
+    # path('crm/', include('artisan_crm.urls')),  # Removed for userless system
     path('', home_redirect, name='home'),
 ]
 

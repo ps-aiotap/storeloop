@@ -1,8 +1,5 @@
 from django.db import models
-from django.contrib.auth import get_user_model
-from django.conf import settings
-
-User = get_user_model()
+# Completely userless - no User model imports
 from django.utils.text import slugify
 import uuid
 import re
@@ -11,7 +8,8 @@ import unicodedata
 class Store(models.Model):
     name = models.CharField(max_length=200)
     slug = models.SlugField(unique=True, blank=True)
-    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='owned_stores')
+    owner_id = models.IntegerField()  # AT Identity user ID
+    owner_username = models.CharField(max_length=150)  # Cached for display
     logo = models.ImageField(upload_to='store_logos/', blank=True, null=True)
     description = models.TextField(blank=True)
     theme = models.CharField(max_length=50, default='minimal')
@@ -75,7 +73,8 @@ class Store(models.Model):
         return self.name
 
 class SellerProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user_id = models.IntegerField(unique=True)  # AT Identity user ID
+    username = models.CharField(max_length=150)
     phone = models.CharField(max_length=15, blank=True)
     language_preference = models.CharField(max_length=10, choices=[('en', 'English'), ('hi', 'Hindi')], default='en')
     whatsapp_number = models.CharField(max_length=15, blank=True)
@@ -84,7 +83,7 @@ class SellerProfile(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.user.username} - {self.user.get_full_name()}"
+        return f"{self.username} - Profile"
 
 class Product(models.Model):
     store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name='store_products')
@@ -241,7 +240,8 @@ class Customer(models.Model):
         return f"{self.name} - {self.phone}"
 
 class UserAddress(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='addresses')
+    user_id = models.IntegerField()  # AT Identity user ID
+    username = models.CharField(max_length=150)
     street = models.CharField(max_length=200)
     city = models.CharField(max_length=100)
     state = models.CharField(max_length=100)
@@ -251,7 +251,7 @@ class UserAddress(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
-        return f"{self.user.username} - {self.street}, {self.city}"
+        return f"{self.username} - {self.street}, {self.city}"
 
 class PartnerStoreAccess(models.Model):
     """Partner-Store relationship with access levels"""
@@ -260,16 +260,17 @@ class PartnerStoreAccess(models.Model):
         ('manage', 'Full Management'),
     ]
     
-    partner = models.ForeignKey(User, on_delete=models.CASCADE)
+    partner_id = models.IntegerField()  # AT Identity user ID
+    partner_username = models.CharField(max_length=150)
     store = models.ForeignKey(Store, on_delete=models.CASCADE)
     access_level = models.CharField(max_length=10, choices=ACCESS_LEVELS, default='manage')
     granted_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
-        unique_together = ('partner', 'store')
+        unique_together = ('partner_id', 'store')
     
     def __str__(self):
-        return f"{self.partner.username} -> {self.store.name} ({self.access_level})"
+        return f"{self.partner_username} -> {self.store.name} ({self.access_level})"
 
 class StoreHomepageBlock(models.Model):
     BLOCK_TYPES = [

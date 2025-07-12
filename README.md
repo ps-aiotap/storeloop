@@ -1,44 +1,179 @@
-# 🛍️ StoreLoop — Userless E-commerce Platform for Artisans & NGOs
+# 🛍️ StoreLoop — Indian Artisan E-commerce Platform
 
-> ✅ Zero local users · 🔐 AT Identity integration · ⚙️ Microservices-ready · 🌏 Built for Indian artisans, globally usable
+![StoreLoop Screenshot](https://github.com/user-attachments/assets/c5f5ae01-d2a4-437b-81f2-0b6cf9702618)
 
-**StoreLoop** is a modular, userless e-commerce engine designed for artisans, NGOs, and grassroots brands. It removes all user-related logic from Django and relies on a central identity microservice (AT Identity) for authentication, permissions, and session handling.
+**Zero transaction fees • Hindi/English UI • AI descriptions • WhatsApp integration • GST compliance**
 
-This decoupling enables clean service boundaries, faster dev cycles, and cross-app integration — ideal for modern, scalable systems.
-
-🔗 [Loom Walkthrough](https://www.loom.com/share/795ebe98fa57463880091cb22868f6e7)  
-📸 
-<img width="1212" height="538" alt="image" src="https://github.com/user-attachments/assets/2cfc689b-308d-40a2-aca9-3b8ee67805d7" />
+StoreLoop is a userless, microservices-friendly e-commerce platform designed specifically for Indian artisans, NGOs, and community sellers. It delivers a complete, opinionated solution to common local challenges: multilingual interfaces, GST invoicing, multi-address delivery, AI-assisted product management, and native WhatsApp integration. Unlike Shopify, WooCommerce, or Wix, StoreLoop deeply localizes e-commerce for Indian realities.
 
 ---
-## 🧱 Architecture Overview
 
-```text
+## 🎬 Demo Video
+
+[Watch StoreLoop Demo Video](https://youtu.be/demo-link) - See the platform in action!
+
+## 🎥 Quick Walkthrough
+
+Loom video: [StoreLoop Demo on Loom](https://www.loom.com/share/795ebe98fa57463880091cb22868f6e7?sid=cc3a45ce-d68e-4a6b-85e6-8e4c9bee82c4)
+
+Covered in the demo:
+
+* The unique needs of Indian artisans and NGOs
+* What makes StoreLoop different from global platforms
+* Key tech insights into its userless identity architecture
+
+---
+
+## 🌟 Feature Highlights
+
+* **Hindi + English Interface**
+* **AI-generated product descriptions**
+* **Multi-address checkout system**
+* **WhatsApp integration** (for orders & tracking)
+* **GST-compliant invoice generation**
+* **No transaction fees or platform cuts**
+* **Dashboard for NGOs with sub-store support**
+* **Stateless, userless backend via AT Identity integration**
+
+---
+
+## 🚀 Architecture Overview
+
+```
 ┌─────────────┐    HTTP API    ┌─────────────┐    HTTP API    ┌─────────────┐
 │  StoreLoop  │◄──────────────►│ AT Identity │◄──────────────►│ Artisan CRM │
 │             │                │   Service   │                │             │
 │ NO USERS    │                │ Master User │                │ NO USERS    │
 │ user_id INT │                │ Management  │                │ user_id INT │
 └─────────────┘                └─────────────┘                └─────────────┘
-✅ What’s Added
+```
 
-    ✅ ATIdentityUser proxy objects (dynamic user from API)
+### 🚫 What’s Removed
 
-    ✅ UserlessATIdentityBackend for authentication
+* Django auth, admin, and all user FKs
+* Local user session/state logic
 
-    ✅ ATIdentityMiddleware for stateless sessions
+### ✅ What’s Added
 
-    ✅ @at_permission_required decorators
+* Stateless `ATIdentityUser` proxy from remote auth service
+* API-only authentication & permission decorators
+* Lightweight, microservice-compatible user handling
 
-    ✅ Clean integer user_id fields
+---
 
-    ✅ Optional cached username for display
-🚫 What’s Removed
+## 🚀 Quick Start (1-Click Dev Deployment)
 
-    ❌ django.contrib.auth (fully removed)
+### Windows
 
-    ❌ Admin interface (django.contrib.admin)
+```bash
+# Double-click or run:
+start_dev.bat
+```
 
-    ❌ All User foreign keys and model imports
+### Mac/Linux
 
-    ❌ Local user/session database
+```bash
+./start_dev.sh
+```
+
+### Manual Start
+
+1. **Start AT Identity (Port 8001)**
+
+```bash
+cd at_identity_project
+python manage.py runserver 8001
+```
+
+2. **Start StoreLoop (Port 8000)**
+
+```bash
+cd storeloop
+python manage.py runserver 8000
+```
+
+3. **Login Test**
+   Visit: [http://localhost:8000/login/](http://localhost:8000/login/)
+
+---
+
+## 📊 Userless DB Schema (Before vs After)
+
+| Before (User FK)           | After (Userless)                             |
+| -------------------------- | -------------------------------------------- |
+| `owner = ForeignKey(User)` | `owner_id = IntegerField()`                  |
+|                            | `owner_username = CharField(max_length=150)` |
+
+---
+
+## 🔧 Project Structure
+
+```
+StoreLoop/
+├── at_identity/              # Identity service integration
+│   └── auth/                 # Backends, middleware, proxy user
+├── stores/                  # Store logic, models, views
+├── templates/               # Jinja2-based HTML templates
+└── core/                    # Minimal Django settings
+```
+
+---
+
+## 📝 Auth & Permissions Flow
+
+**Login Flow:**
+
+1. Frontend calls AT Identity login API
+2. Identity service returns auth payload
+3. StoreLoop uses proxy object + stores minimal session info
+
+**Permissions:**
+
+1. `@at_permission_required` decorators check access
+2. AT Identity validates and responds via API
+
+---
+
+## 📅 Roadmap (Upcoming Features)
+
+* NGO donation module (via UPI)
+* Inventory alerts
+* Storefront theming system
+
+---
+
+## 👪 Who It’s For
+
+* 🇮🇳 Indian artisans selling offline or via WhatsApp
+* 🧵 NGO initiatives running community crafts
+* 🛍️ Solo or collective makers needing plug-n-play web presence
+
+---
+
+## 🚫 Not Another Shopify Clone
+
+StoreLoop is not built for general-purpose global e-commerce. It’s purpose-built for Indian small sellers who:
+
+* Need Hindi-first UI
+* Want GST invoices without plugins
+* Can’t pay monthly SaaS fees
+* Use WhatsApp for all order comms
+
+---
+
+## 🔎 Explore More
+
+* Full code walkthrough on [Loom](https://www.loom.com/share/795ebe98fa57463880091cb22868f6e7)
+* Deployment guide coming soon
+* Homepage screenshot: *To be updated here*
+
+---
+
+## 🚑 Support / Contributions
+
+* Raise GitHub Issues for bugs or feature ideas
+* Contributions welcome for regional language support, NGO reporting
+
+---
+
+### ✨ StoreLoop — Zero friction. Zero fees. 100% made for India.

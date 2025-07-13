@@ -1,10 +1,43 @@
-# 🛍️ StoreLoop - Completely Userless E-commerce Platform
+# 🛍️ StoreLoop — Indian Artisan E-commerce Platform
 
-**Zero local users • AT Identity integration • API-first authentication • Microservices ready**
+![StoreLoop Screenshot](https://github.com/user-attachments/assets/c5f5ae01-d2a4-437b-81f2-0b6cf9702618)
 
-StoreLoop is now a **completely userless** e-commerce platform that delegates all user management to AT Identity service, enabling true microservices architecture with independent deployment.
+**Zero transaction fees • Hindi/English UI • AI descriptions • WhatsApp integration • GST compliance**
 
-## 🎯 Architecture Overview
+StoreLoop is a userless, microservices-friendly e-commerce platform designed specifically for Indian artisans, NGOs, and community sellers. It delivers a complete, opinionated solution to common local challenges: multilingual interfaces, GST invoicing, multi-address delivery, AI-assisted product management, and native WhatsApp integration. Unlike Shopify, WooCommerce, or Wix, StoreLoop deeply localizes e-commerce for Indian realities.
+
+---
+
+## 🎬 Demo Video
+
+[Watch StoreLoop Demo Video](https://youtu.be/demo-link) - See the platform in action!
+
+## 🎥 Quick Walkthrough
+
+Loom video: [StoreLoop Demo on Loom](https://www.loom.com/share/795ebe98fa57463880091cb22868f6e7?sid=cc3a45ce-d68e-4a6b-85e6-8e4c9bee82c4)
+
+Covered in the demo:
+
+* The unique needs of Indian artisans and NGOs
+* What makes StoreLoop different from global platforms
+* Key tech insights into its userless identity architecture
+
+---
+
+## 🌟 Feature Highlights
+
+* **Hindi + English Interface**
+* **AI-generated product descriptions**
+* **Multi-address checkout system**
+* **WhatsApp integration** (for orders & tracking)
+* **GST-compliant invoice generation**
+* **No transaction fees or platform cuts**
+* **Dashboard for NGOs with sub-store support**
+* **Stateless, userless backend via AT Identity integration**
+
+---
+
+## 🚀 Architecture Overview
 
 ```
 ┌─────────────┐    HTTP API    ┌─────────────┐    HTTP API    ┌─────────────┐
@@ -15,200 +48,132 @@ StoreLoop is now a **completely userless** e-commerce platform that delegates al
 └─────────────┘                └─────────────┘                └─────────────┘
 ```
 
-## ✨ Userless Features
+### 🚫 What’s Removed
 
-### 🚫 **What's Removed**
-- ❌ `django.contrib.auth` - Completely removed
-- ❌ `django.contrib.admin` - No admin interface
-- ❌ User model imports - Zero user dependencies
-- ❌ User foreign keys - Replaced with `user_id` integers
-- ❌ Local user database tables - No user storage
+* Django auth, admin, and all user FKs
+* Local user session/state logic
 
-### ✅ **What's Added**
-- ✅ `ATIdentityUser` proxy objects - Virtual users from API
-- ✅ `UserlessATIdentityBackend` - API-based authentication
-- ✅ `ATIdentityMiddleware` - Session management
-- ✅ `@at_permission_required` - Permission decorators
-- ✅ User ID synchronization - Integer-based relationships
+### ✅ What’s Added
 
-## 🚀 Quick Start
+* Stateless `ATIdentityUser` proxy from remote auth service
+* API-only authentication & permission decorators
+* Lightweight, microservice-compatible user handling
 
-### 1. Start AT Identity Service (Port 8001)
+---
+
+## 🚀 Quick Start (1-Click Dev Deployment)
+
+### Windows
+
+```bash
+# Double-click or run:
+start_dev.bat
+```
+
+### Mac/Linux
+
+```bash
+./start_dev.sh
+```
+
+### Manual Start
+
+1. **Start AT Identity (Port 8001)**
+
 ```bash
 cd at_identity_project
 python manage.py runserver 8001
 ```
 
-### 2. Start StoreLoop (Port 8000)
+2. **Start StoreLoop (Port 8000)**
+
 ```bash
 cd storeloop
 python manage.py runserver 8000
 ```
 
-### 3. Test Userless Authentication
-Visit: `http://localhost:8000/login/`
-
-## 📊 Database Schema (Userless)
-
-### Before (With Users)
-```sql
-CREATE TABLE stores_store (
-    owner_id FOREIGN KEY REFERENCES auth_user(id)  -- Problem!
-);
-```
-
-### After (Userless)
-```sql
-CREATE TABLE stores_store (
-    owner_id INTEGER,           -- AT Identity user ID
-    owner_username VARCHAR(150) -- Cached for display
-);
-```
-
-## 🔧 Configuration
-
-### StoreLoop Settings
-```python
-# Completely userless
-INSTALLED_APPS = [
-    "django.contrib.contenttypes",
-    "django.contrib.sessions", 
-    "django.contrib.messages",
-    "django.contrib.staticfiles",
-    "stores",
-]
-
-# AT Identity integration
-AUTHENTICATION_BACKENDS = [
-    'at_identity.auth.backends_userless.UserlessATIdentityBackend',
-]
-
-AT_IDENTITY_URL = 'http://localhost:8001/api/'
-APP_NAME = 'storeloop'
-```
-
-## 🧪 Testing
-
-### Manual Testing
-1. **Login Test**: `http://localhost:8000/login/`
-2. **Dashboard Test**: `http://localhost:8000/dashboard/`
-3. **Permission Test**: Try creating store without permission
-
-### API Testing
-```bash
-# Test AT Identity authentication
-curl -X POST http://localhost:8001/api/auth/login/ \
-  -H "Content-Type: application/json" \
-  -d '{"username": "test", "password": "test", "app_name": "storeloop"}'
-```
-
-## 📁 Project Structure
-
-```
-StoreLoop/
-├── at_identity/              # AT Identity service components
-│   ├── auth/                 # Userless authentication
-│   │   ├── backends_userless.py
-│   │   ├── middleware.py
-│   │   ├── user_proxy.py
-│   │   └── decorators.py
-│   ├── api/                  # REST API endpoints
-│   └── models.py             # AT Identity models
-├── stores/                   # Userless store management
-│   ├── models.py             # No User foreign keys
-│   ├── views_userless.py     # API-based views
-│   └── urls_userless.py      # Userless URL patterns
-├── templates/                # Userless templates
-└── core/                     # Minimal Django settings
-```
-
-## 🔄 Migration from User-based to Userless
-
-### Phase 1: Remove Django Auth
-```python
-# Remove from INSTALLED_APPS
-# 'django.contrib.auth',
-# 'django.contrib.admin',
-```
-
-### Phase 2: Update Models
-```python
-# Before
-owner = models.ForeignKey(User, on_delete=models.CASCADE)
-
-# After  
-owner_id = models.IntegerField()  # AT Identity user ID
-owner_username = models.CharField(max_length=150)
-```
-
-### Phase 3: Update Views
-```python
-# Before
-@login_required
-def create_store(request):
-    store = Store.objects.create(owner=request.user)
-
-# After
-@at_permission_required('store.create')
-def create_store(request):
-    store = Store.objects.create(
-        owner_id=request.user.id,
-        owner_username=request.user.username
-    )
-```
-
-## 🌟 Benefits
-
-### **True Independence**
-- No shared database dependencies
-- Independent deployment cycles
-- Technology stack flexibility
-- Microservices architecture ready
-
-### **Simplified Architecture**
-- No user synchronization needed
-- No foreign key constraints
-- Cleaner database schema
-- API-first integration
-
-### **Better Performance**
-- No local user queries
-- Cached user data where needed
-- API calls only when necessary
-- Stateless user management
-
-## 🔗 Integration Points
-
-### Authentication Flow
-```
-1. User login → AT Identity API
-2. AT Identity validates → Returns user data
-3. StoreLoop creates ATIdentityUser proxy
-4. Session stores user_id only
-5. Subsequent requests use cached data
-```
-
-### Permission Flow
-```
-1. View access → Check @at_permission_required
-2. Decorator calls AT Identity API
-3. AT Identity returns permissions
-4. Allow/deny access based on response
-```
-
-## 📚 Documentation
-
-- [Complete Architecture Guide](INDEPENDENT_APPS_GUIDE.md)
-- [Plugin Integration Guide](PLUGIN_GUIDE.md)
-- [Userless System Guide](USERLESS_GUIDE.md)
-- [Step-by-Step Testing](TESTING_GUIDE.md)
-
-## 🆘 Support
-
-- **Issues**: Create GitHub issue
-- **Architecture**: See integration guides
-- **Testing**: Follow testing guide
+3. **Login Test**
+   Visit: [http://localhost:8000/login/](http://localhost:8000/login/)
 
 ---
 
-**🎯 Completely userless - zero local user management, 100% AT Identity integration!**
+## 📊 Userless DB Schema (Before vs After)
+
+| Before (User FK)           | After (Userless)                             |
+| -------------------------- | -------------------------------------------- |
+| `owner = ForeignKey(User)` | `owner_id = IntegerField()`                  |
+|                            | `owner_username = CharField(max_length=150)` |
+
+---
+
+## 🔧 Project Structure
+
+```
+StoreLoop/
+├── at_identity/              # Identity service integration
+│   └── auth/                 # Backends, middleware, proxy user
+├── stores/                  # Store logic, models, views
+├── templates/               # Jinja2-based HTML templates
+└── core/                    # Minimal Django settings
+```
+
+---
+
+## 📝 Auth & Permissions Flow
+
+**Login Flow:**
+
+1. Frontend calls AT Identity login API
+2. Identity service returns auth payload
+3. StoreLoop uses proxy object + stores minimal session info
+
+**Permissions:**
+
+1. `@at_permission_required` decorators check access
+2. AT Identity validates and responds via API
+
+---
+
+## 📅 Roadmap (Upcoming Features)
+
+* NGO donation module (via UPI)
+* Inventory alerts
+* Storefront theming system
+
+---
+
+## 👪 Who It’s For
+
+* 🇮🇳 Indian artisans selling offline or via WhatsApp
+* 🧵 NGO initiatives running community crafts
+* 🛍️ Solo or collective makers needing plug-n-play web presence
+
+---
+
+## 🚫 Not Another Shopify Clone
+
+StoreLoop is not built for general-purpose global e-commerce. It’s purpose-built for Indian small sellers who:
+
+* Need Hindi-first UI
+* Want GST invoices without plugins
+* Can’t pay monthly SaaS fees
+* Use WhatsApp for all order comms
+
+---
+
+## 🔎 Explore More
+
+* Full code walkthrough on [Loom](https://www.loom.com/share/795ebe98fa57463880091cb22868f6e7)
+* Deployment guide coming soon
+* Homepage screenshot: *To be updated here*
+
+---
+
+## 🚑 Support / Contributions
+
+* Raise GitHub Issues for bugs or feature ideas
+* Contributions welcome for regional language support, NGO reporting
+
+---
+
+### ✨ StoreLoop — Zero friction. Zero fees. 100% made for India.

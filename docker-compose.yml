@@ -1,23 +1,9 @@
 version: '3'
 
 services:
-  db:
-    image: postgres:13
-    volumes:
-      - postgres_data:/var/lib/postgresql/data/
-    env_file:
-      - ./.env
-    environment:
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_DB=${DB_NAME}
-    restart: always
-
   web:
     build: .
     restart: always
-    depends_on:
-      - db
     env_file:
       - ./.env
     volumes:
@@ -25,7 +11,11 @@ services:
       - media_volume:/app/media
     command: >
       sh -c "python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
              gunicorn core.wsgi:application --bind 0.0.0.0:8000"
+    ports:
+      - "8000:8000"
+    network_mode: "host"
 
   nginx:
     image: nginx:1.21
@@ -40,8 +30,8 @@ services:
     depends_on:
       - web
     restart: always
+    network_mode: "host"
 
 volumes:
-  postgres_data:
   static_volume:
   media_volume:

@@ -1,0 +1,43 @@
+/* Theme Editor Styles */
+.theme-editor-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.theme-editor-form {
+  max-width: 800px;
+}
+
+.theme-editor-preview {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  background-color: var(--color-bg, #f3f4f6);
+  color: var(--color-text, #1f2937);
+}
+
+.preview-container {
+  margin-top: 1rem;
+}
+
+/* Form field styling */
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.color-preview {
+  display: inline-block;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.25rem;
+  margin-left: 0.5rem;
+  vertical-align: middle;
+  border: 1px solid #e5e7eb;
+}

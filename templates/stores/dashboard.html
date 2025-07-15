@@ -40,7 +40,21 @@
                         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                             {% for store in stores %}
                                 <div class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-                                    <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ store.name }}</h3>
+                                    <div class="flex items-start space-x-4 mb-3">
+                                        {% if store.logo %}
+                                            <img src="{{ store.logo.url }}" alt="{{ store.name }} logo" class="w-12 h-12 rounded-lg object-cover flex-shrink-0">
+                                        {% else %}
+                                            <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                <span class="text-indigo-600 font-bold text-lg">{{ store.name|first|upper }}</span>
+                                            </div>
+                                        {% endif %}
+                                        <div class="flex-1">
+                                            <h3 class="text-lg font-semibold text-gray-900">{{ store.name }}</h3>
+                                            {% if store.description %}
+                                                <p class="text-sm text-gray-600 mt-1">{{ store.description|truncatewords:10 }}</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
                                     <div class="space-y-1 text-sm text-gray-600">
                                         <p><span class="font-medium">Owner:</span> {{ store.owner_username }}</p>
                                         <p><span class="font-medium">Owner ID:</span> {{ store.owner_id }}</p>
